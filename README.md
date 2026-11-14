@@ -16,14 +16,45 @@ Na start repozytorium ma tylko dane i narzędzia. Kod, bazę i raporty buduje ag
 | Zadania pypyr: instalacja, formatowanie, lint, testy | `dev/`, [dev/README.md](dev/README.md) |
 | Zależności i ustawienia narzędzi | `pyproject.toml` |
 
-## Uruchomienie
+## Budujesz razem ze mną: punkt startowy i własna gałąź
 
-Dane leżą w Git LFS, więc najpierw (raz):
+Stan repozytorium sprzed pierwszej lekcji praktycznej oznacza tag **`start`**. Gałąź `main` rośnie razem z kursem:
+trafia na nią to, co buduję na nagraniach. Tag `start` się nie zmienia, więc zawsze możesz od niego zacząć.
+
+Pobranie repozytorium i własna gałąź od punktu startowego (dane leżą w Git LFS):
 
 ```bash
-git lfs install
-git lfs pull
+git clone https://github.com/imprv-ai-materials/ai-2030--G3--domilo.git
+cd ai-2030--G3--domilo
+git lfs install && git lfs pull
+git switch -c moja-praca start
 ```
+
+Pracujesz i robisz commity na gałęzi `moja-praca`. Gałęzi `main` nie zmieniaj: służy do podglądania, jak ten sam
+krok wyszedł u mnie.
+
+```bash
+git fetch origin                          # pobierz moje najnowsze zmiany
+git diff moja-praca origin/main           # porównaj swoją wersję z moją
+git switch main && git pull               # obejrzyj moją wersję; z powrotem: git switch moja-praca
+```
+
+Powrót do punktu startowego:
+
+| Chcę… | Polecenie |
+|---|---|
+| zacząć od nowa i zachować dotychczasową próbę | `git switch -c proba-2 start` |
+| wyrzucić zmiany, których nie zapisałem commitem | `git restore . && git clean -fd` |
+| cofnąć swoją gałąź do startu, tracąc jej commity | `git reset --hard start && git clean -fd` |
+
+`git clean -fd` usuwa nowe pliki, których git jeszcze nie śledzi (np. `domilo.duckdb`, wygenerowany kod), ale nie
+rusza plików z `.gitignore` (`.venv`). Najbezpieczniejsza jest pierwsza opcja: nic nie ginie, a do starej próby
+wracasz przez `git switch moja-praca`. Jeśli chcesz trzymać swoją pracę na GitHubie, zrób fork repozytorium
+i wypchnij do niego swoją gałąź.
+
+## Uruchomienie
+
+Najpierw pobierz repozytorium i dane z Git LFS (polecenia w sekcji wyżej).
 
 **W devcontainerze (zalecane).** Wymagania: Docker Desktop, VS Code z rozszerzeniem Dev Containers.
 Otwórz repozytorium w VS Code i wybierz **Dev Containers: Reopen in Container**. Szczegóły i problemy na Windowsie:
