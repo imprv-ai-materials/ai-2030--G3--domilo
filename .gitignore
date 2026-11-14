@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+
+# Python: wirtualne środowisko Poetry (w katalogu projektu) i pamięci podręczne narzędzi
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+.coverage
+coverage/
+dist/
+
+# Node (panel w ui/, gdy powstanie)
+node_modules/
+.next/
+.pnpm-store
+
+# Edytor
+.vscode

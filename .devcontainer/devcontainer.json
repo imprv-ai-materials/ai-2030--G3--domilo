@@ -1,0 +1,42 @@
+{
+  "name": "Domilo S.A.",
+  "dockerComposeFile": "compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/domilo",
+  // Kontener roboczy i serwer Inngest startują razem.
+  "runServices": ["app", "inngest"],
+  "remoteUser": "vscode",
+  // Zostaw `sleep infinity` z compose.yaml zamiast nadpisywać polecenie.
+  "overrideCommand": false,
+
+  // Porty usług z wnętrza kontenera. VS Code sam wybiera wolne porty na hoście i pokazuje je w zakładce Ports.
+  "forwardPorts": [3100, 8101],
+  "portsAttributes": {
+    "3100": { "label": "Panel (Next.js)", "onAutoForward": "notify" },
+    "8101": { "label": "API (FastAPI) + funkcje Inngest" },
+    // Serwer Inngest jest opublikowany na stałym porcie hosta 8588 (zob. compose.yaml).
+    "8588": { "label": "Inngest dev dashboard" }
+  },
+
+  // `sed` usuwa CR ze skryptu: na Windowsie Git mógł zapisać go z końcami CRLF, a wtedy bash nie wystartuje.
+  // .gitattributes wymusza LF w nowych klonach; to zabezpiecza starsze. Na macOS i Linuksie nic nie zmienia.
+  "postCreateCommand": "sed -i 's/\\r$//' .devcontainer/postCreate.sh && bash .devcontainer/postCreate.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "ms-python.flake8",
+        "ms-toolsai.jupyter",
+        "tamasfe.even-better-toml",
+        "ms-azuretools.vscode-docker",
+        "anthropic.claude-code"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspaces/domilo/.venv/bin/python"
+      }
+    }
+  }
+}

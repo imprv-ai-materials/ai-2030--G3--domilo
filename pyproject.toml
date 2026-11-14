@@ -1,0 +1,58 @@
+[project]
+name = "ai-2030-g3-domilo"
+version = "0.1.0"
+description = "Domilo S.A.: cztery modele predykcyjne (kurs „Zostań praktykiem modeli predykcyjnych”)"
+authors = [
+    {name = "IMPRV.ai Dev Team",email = "dev@imprv.ai"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+# Biblioteki do danych i modeli (DuckDB, pandas, pyarrow, scikit-learn, LightGBM) dodaje agent
+# w pierwszej lekcji praktycznej („Środowisko i pierwsze zapytanie”).
+dependencies = []
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pypyr = "^5.9.1"
+pre-commit = "^4.6.0"
+black = "*"
+isort = "*"
+flake8 = "*"
+pytest = "*"
+pytest-cov = "*"
+jupyter = "^1.1.1"
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 120
+
+# ---------------------------------------------------------------------------
+# pypyr: `pypyr <nazwa>` uruchamia pipeline z dev/. Uruchamiaj z katalogu głównego repozytorium.
+# Zmienne poniżej trafiają do pipeline'ów jako {nazwa} (krok pypyr.steps.configvars).
+# ---------------------------------------------------------------------------
+[tool.pypyr.vars]
+src_dir = "api/api"
+test_dir = "api/tests"
+python_target_version = "py312"
+max_line_length = "120"
+min_coverage = "0"
+linter_ignore_errors = "D100,D101,D102,D103,D104,D105,D106,D107,E203,E231,W503,N806,E704"
+linter_exclude = ".venv,migrations"
+
+[tool.pypyr.shortcuts]
+install = { pipeline_name = "dev/install" }
+format = { pipeline_name = "dev/format" }
+check_format = { pipeline_name = "dev/check_format" }
+lint = { pipeline_name = "dev/lint" }
+test = { pipeline_name = "dev/test" }
+precommit = { pipeline_name = "dev/precommit" }

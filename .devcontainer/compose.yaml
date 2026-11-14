@@ -1,0 +1,50 @@
+# Usługi devcontainera. VS Code („Reopen in Container”) sam uruchamia `docker compose up` na tym pliku.
+# Usługi rozmawiają ze sobą po nazwach w sieci compose (inngest:8288, app:8101), więc działa to tak samo na macOS,
+# Windowsie i Linuksie. Porty dla hosta przekazuje devcontainer.json (`forwardPorts`); na stałe publikujemy tylko
+# panel Inngest.
+#
+# Baza danych to plik DuckDB w repozytorium (powstaje w pierwszej lekcji praktycznej), więc nie ma tu serwera bazy.
+
+# Własna nazwa projektu compose: od niej zależą nazwy wolumenów (.venv, node_modules). Ta sama nazwa w dwóch
+# repozytoriach oznaczałaby wspólne .venv.
+name: domilo-devcontainer
+
+services:
+  # Kontener roboczy: narzędzia (Python 3.12, Poetry, Node 20, pnpm, Claude Code) i podmontowane repozytorium.
+  # Tylko czeka (`sleep infinity`); procesy uruchamiasz w jego terminalach.
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # Entrypoint (jako root) dopasowuje uid/gid użytkownika `vscode` do właściciela repozytorium na hoście
+    # z Linuksem, potem uruchamia `sleep infinity`. Na macOS i Windowsie nic nie robi. Zob. entrypoint.sh.
+    entrypoint: ["/usr/local/bin/devcontainer-entrypoint.sh"]
+    command: sleep infinity
+    volumes:
+      - ..:/workspaces/domilo:cached
+      # Linuksowe .venv i node_modules w nazwanych wolumenach: nie mieszają się z .venv zbudowanym na hoście
+      # (venv z macOS / Windowsa nie działa pod Linuksem) i przetrwają przebudowę kontenera.
+      - venv:/workspaces/domilo/.venv
+      - ui-node-modules:/workspaces/domilo/ui/node_modules
+      # Pamięć podręczna Next.js też w wolumenie, żeby kontener nie pisał do .next należącego do hosta.
+      - ui-next:/workspaces/domilo/ui/.next
+    environment:
+      # SDK Inngest w kontenerze widzi serwer pod nazwą usługi, więc nie potrzebuje klucza podpisu.
+      INNGEST_DEV: http://inngest:8288
+
+  inngest:
+    image: inngest/inngest:latest
+    # Serwer Inngest szuka funkcji pod app:8101/api/inngest. Dopóki nie ma inngest_app.py, lista funkcji jest pusta.
+    command: inngest dev --no-discovery -u http://app:8101/api/inngest
+    restart: unless-stopped
+    # Panel i API zdarzeń na stałym porcie hosta 8588: http://localhost:8588. Nie 8288 ani 8488, żeby nie kolidować
+    # z serwerami Inngest innych repozytoriów kursu.
+    ports:
+      - "8588:8288"
+    depends_on:
+      - app
+
+volumes:
+  venv:
+  ui-node-modules:
+  ui-next:
