@@ -1,0 +1,32 @@
+{
+  "wersja": "v0_mediana_dzielnicy",
+  "uczony_na": "trening (rcn_transakcje, data_aktu 2023-01-01 – 2025-06-30, podzial.sql)",
+  "transakcje_treningowe": 38522,
+  "parametry": {},
+  "metryki": {
+    "trening": {
+      "n": 38522,
+      "mae": 75739.54919342314,
+      "rmse": 105863.29074634195,
+      "mape": 13.668271238012142,
+      "mdape": 10.95974085964198,
+      "mediana_bledu_proc": 0.0
+    },
+    "walidacja": {
+      "n": 7686,
+      "mae": 80020.3253807473,
+      "rmse": 111434.31285669349,
+      "mape": 13.633200136082776,
+      "mdape": 11.004166574345872,
+      "mediana_bledu_proc": -4.507264936732697
+    },
+    "test": {
+      "n": 7487,
+      "mae": 83401.19090577663,
+      "rmse": 118320.0654591336,
+      "mape": 13.395027396527937,
+      "mdape": 11.276825437894075,
+      "mediana_bledu_proc": -6.430706628061661
+    }
+  }
+}

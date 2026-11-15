@@ -1,0 +1,35 @@
+{
+  "wersja": "v1_liniowa",
+  "uczony_na": "trening (rcn_transakcje, data_aktu 2023-01-01 – 2025-06-30, podzial.sql)",
+  "transakcje_treningowe": 38522,
+  "parametry": {
+    "metraz_log": true,
+    "min_transakcji_dzielnicy": 30
+  },
+  "metryki": {
+    "trening": {
+      "n": 38522,
+      "mae": 52572.26724739848,
+      "rmse": 75273.74763819734,
+      "mape": 9.869695327162455,
+      "mdape": 7.263067046302105,
+      "mediana_bledu_proc": -0.513280426930492
+    },
+    "walidacja": {
+      "n": 7686,
+      "mae": 57813.672310116606,
+      "rmse": 84156.02227277351,
+      "mape": 10.173947428730212,
+      "mdape": 7.593900644768581,
+      "mediana_bledu_proc": -4.668651766983549
+    },
+    "test": {
+      "n": 7487,
+      "mae": 63251.62813788086,
+      "rmse": 94998.62412528446,
+      "mape": 10.166854305746911,
+      "mdape": 8.296481163816276,
+      "mediana_bledu_proc": -6.348085308809229
+    }
+  }
+}

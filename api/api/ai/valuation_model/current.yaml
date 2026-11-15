@@ -1,0 +1,12 @@
+# Wersja modelu wyceny używana obecnie (katalog w versions/).
+wersja: v1_liniowa
+model: versions/v1_liniowa/model.joblib
+klasa: api.ai.valuation_model.versions.v1_liniowa.model.ModelLiniowy
+ustalono: 2026-11-15
+uzasadnienie: >
+  Na zbiorze testowym RCN (akty 2026-01 – 2026-06, 7 487 transakcji) v1 ma MAPE 10,2% i MdAPE 8,3%,
+  a baseline v0_mediana_dzielnicy ma MAPE 13,4% i MdAPE 11,3% (evals/porownanie.md, docs/b2_wycena_v0_v1.md).
+ograniczenia: >
+  Nie spełnia jeszcze warunków banku: MAPE 10,2% > 8% (na transakcjach RCN, operatów kontrolnych jeszcze nie
+  liczyliśmy), brak przedziału P10/P90 (predict_interval rzuca NotImplementedError) i brak odpowiedzi „nie wiem”.
+  Model nie uwzględnia czasu transakcji: na teście zaniża wycenę (mediana błędu ze znakiem −6,3%).
