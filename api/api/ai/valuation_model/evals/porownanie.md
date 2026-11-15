@@ -52,3 +52,21 @@ Miasto nieobecne w RCN i w treningu; jeden pakiet dewelopera (PK060, rynek pierw
 | v2_lgbm_geo | +24,9 | 26,4 | 24,9 | 21,49 mln zł |
 
 v2 wycenia bez ostrzeżenia, choć miasto, dzielnica i sąsiedztwo są dla niej nieznane.
+
+## Przedział 80% (P10–P90): v2_lgbm_geo_cqr
+
+P50 = v2_lgbm_geo; P10/P90 = LightGBM `objective='quantile'` (alpha 0,1 / 0,9, te same cechy), kalibracja CQR na
+walidacji 2025-H2. Wymóg banku: pokrycie 77–83%. Szerokość = mediana (P90 − P10) / P50. Segmenty: 4 segmenty ceny,
+4 segmenty wyceny, 6 miast, 4 typy budynku, 2 grupy metrażu (jak w b1_bledy.md). Test otwarty raz 2026-11-15.
+Raport: [b1_przedzialy.md](../../../../../docs/b1_przedzialy.md), wyniki: `versions/v2_lgbm_geo_cqr/metryki.json`.
+
+| Przedział | Walidacja: pokrycie | Test: pokrycie | Test: pod P10 / nad P90 | Test: szerokość | Test: segmenty w normie |
+|---|---:|---:|---:|---:|---:|
+| stały −8,0% / +15,4% wokół wyceny (baseline) | 80,0 | 79,1 | 7,6 / 13,3 | 23,4 | 9 z 20 |
+| kwantylowe, przed kalibracją | 73,9 | 71,3 | 6,1 / 22,6 | 20,8 | 2 z 20 |
+| **CQR (główna, wybrana przed testem)** | 80,0 | **77,6** | 4,8 / 17,6 | 23,9 | 11 z 20 |
+| CQR asymetryczny (wariant, nie wybierany na teście) | 80,2 | 79,8 | 7,3 / 12,8 | 23,4 | 17 z 20 |
+
+CQR spełnia normę banku łącznie, ale z zapasem 0,6 pp. Nie spełnia jej w segmentach od 600 tys. zł, w apartamentowcach
+(53,7%), kamienicach, domach wielorodzinnych ani w Poznaniu. Łącznego pokrycia baseline nie poprawia (79,1%), poprawia
+równość między segmentami.

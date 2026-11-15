@@ -1,0 +1,122 @@
+{
+  "wersja": "v2_lgbm_geo_cqr",
+  "p50": "versions/v2_lgbm_geo/model.joblib (bez ponownego uczenia)",
+  "modele_kwantylowe": "LightGBM objective=quantile, alpha 0,1 i 0,9, cechy i hiperparametry jak v2_lgbm_geo",
+  "wybor_liczby_drzew": "wczesne zatrzymanie na trening 2025-01-01 – 2025-06-30 (uczenie na 2023-01 – 2024-12), potem uczenie na całym treningu",
+  "kalibracja": "CQR symetryczny w ln(ceny) na walidacji 2025-07-01 – 2025-12-31 (metoda główna, wybrana przed otwarciem testu); obok CQR asymetryczny i stały przedział względny (odniesienie)",
+  "test_otwarty": "2026-11-15",
+  "parametry": {
+    "drzewa_p10": 964,
+    "drzewa_p90": 344,
+    "korekta_cqr_ln": 0.01532661249836309,
+    "korekta_cqr_asym_dol_ln": -0.012861829482545772,
+    "korekta_cqr_asym_gora_ln": 0.03317109744140723,
+    "n_kalibracji": 7686,
+    "staly_dol_ln": -0.08328732663956477,
+    "staly_gora_ln": 0.14314280060141352
+  },
+  "metryki": {
+    "trening": {
+      "staly": {
+        "n": 38522,
+        "pokrycie": 79.37542183687243,
+        "ponizej_p10": 15.240641711229946,
+        "powyzej_p90": 5.3839364518976165,
+        "mediana_szerokosci": 23.3807822934887,
+        "srednia_szerokosci": 23.380782293488704
+      },
+      "surowy": {
+        "n": 38522,
+        "pokrycie": 80.51762629146981,
+        "ponizej_p10": 9.664607237422771,
+        "powyzej_p90": 9.81776647110742,
+        "mediana_szerokosci": 20.655936075970203,
+        "srednia_szerokosci": 22.243815569580576
+      },
+      "cqr": {
+        "n": 38522,
+        "pokrycie": 89.57998027101397,
+        "ponizej_p10": 4.708997455999169,
+        "powyzej_p90": 5.711022272986865,
+        "mediana_szerokosci": 23.74595984996903,
+        "srednia_szerokosci": 25.341616404324903
+      },
+      "cqr_asymetryczny": {
+        "n": 38522,
+        "pokrycie": 78.8692175899486,
+        "ponizej_p10": 17.418617932609937,
+        "powyzej_p90": 3.712164477441462,
+        "mediana_szerokosci": 23.23917121676697,
+        "srednia_szerokosci": 24.878709000776592
+      }
+    },
+    "walidacja": {
+      "staly": {
+        "n": 7686,
+        "pokrycie": 80.0416341399948,
+        "ponizej_p10": 9.979182930002601,
+        "powyzej_p90": 9.979182930002601,
+        "mediana_szerokosci": 23.3807822934887,
+        "srednia_szerokosci": 23.3807822934887
+      },
+      "surowy": {
+        "n": 7686,
+        "pokrycie": 73.92661982825918,
+        "ponizej_p10": 8.131667967733542,
+        "powyzej_p90": 17.941712204007285,
+        "mediana_szerokosci": 20.79542053582393,
+        "srednia_szerokosci": 22.21617947654172
+      },
+      "cqr": {
+        "n": 7686,
+        "pokrycie": 80.0416341399948,
+        "ponizej_p10": 6.1150143117356235,
+        "powyzej_p90": 13.843351548269581,
+        "mediana_szerokosci": 23.896693126642905,
+        "srednia_szerokosci": 25.310077840009804
+      },
+      "cqr_asymetryczny": {
+        "n": 7686,
+        "pokrycie": 80.18475149622691,
+        "ponizej_p10": 9.836065573770492,
+        "powyzej_p90": 9.979182930002601,
+        "mediana_szerokosci": 23.391502621464465,
+        "srednia_szerokosci": 24.849867459852437
+      }
+    },
+    "test": {
+      "staly": {
+        "n": 7487,
+        "pokrycie": 79.05703218912782,
+        "ponizej_p10": 7.613196206758381,
+        "powyzej_p90": 13.329771604113796,
+        "mediana_szerokosci": 23.3807822934887,
+        "srednia_szerokosci": 23.380782293488696
+      },
+      "surowy": {
+        "n": 7487,
+        "pokrycie": 71.27020168291706,
+        "ponizej_p10": 6.143982903699746,
+        "powyzej_p90": 22.585815413383198,
+        "mediana_szerokosci": 20.804358445384626,
+        "srednia_szerokosci": 22.358882494174047
+      },
+      "cqr": {
+        "n": 7487,
+        "pokrycie": 77.64124482436223,
+        "ponizej_p10": 4.808334446373714,
+        "powyzej_p90": 17.550420729264058,
+        "mediana_szerokosci": 23.91159294991752,
+        "srednia_szerokosci": 25.45442507800687
+      },
+      "cqr_asymetryczny": {
+        "n": 7487,
+        "pokrycie": 79.81835180980366,
+        "ponizej_p10": 7.332710030719915,
+        "powyzej_p90": 12.848938159476425,
+        "mediana_szerokosci": 23.40391164946428,
+        "srednia_szerokosci": 24.99744202087511
+      }
+    }
+  }
+}

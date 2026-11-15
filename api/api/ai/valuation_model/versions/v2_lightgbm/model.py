@@ -93,7 +93,10 @@ class ModelLightGBM(ModelWyceny):
                 callbacks=[lgb.early_stopping(self.stopping_rounds, verbose=False)],
             )
             self.najlepsza_iteracja_ = int(self.reg_.best_iteration_)
-            self.l2_walidacja_ = float(self.reg_.best_score_["walidacja"]["l2"])
+            # Przy innym celu niż l2 (np. quantile w v2_lgbm_geo_cqr) LightGBM liczy własną metrykę, bez „l2”.
+            wynik = self.reg_.best_score_["walidacja"]
+            self.l2_walidacja_ = float(wynik["l2"]) if "l2" in wynik else None
+            self.wynik_walidacji_ = {k: float(v) for k, v in wynik.items()}
         else:
             self.reg_.fit(self._macierz(X), ln_y, categorical_feature=list(self.kategorie_))
             self.najlepsza_iteracja_ = self.max_drzew
