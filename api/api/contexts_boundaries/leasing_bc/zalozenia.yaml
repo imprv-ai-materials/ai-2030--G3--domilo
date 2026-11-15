@@ -20,3 +20,73 @@ cennik_llm:
   zrodlo: null  # 2026-11-15: polecenie wskazało ten plik jako miejsce cennika, ale cen nie podano
   data: null
   odpowiedzialny: null
+
+# --- Wartość zapytania w kolejce: EV = p × czynsz × czas najmu × liczba lokali (leasing_bc/wartosc.py) -------------
+# Metodę podał użytkownik w czacie 2026-11-15; wartości policzono z data/ przez leasing_bc/zalozenia_z_danych.py
+# (SQL tam i w docs/kolejka_ev.md). Test api/tests/test_leasing_wartosc.py sprawdza zgodność z danymi.
+
+czas_najmu_mies:
+  wartosc:
+    B2B: 16.5
+    B2C: 19.01
+    MID: 4.51
+  jednostka: miesiące (średnia liczba dni najmu / 30,4375)
+  opis: >
+    Spodziewany czas najmu według linii = średni czas zakończonych najmów (pms_najmy z data_wyprowadzenia,
+    najem = ciągły pobyt najemcy w lokalu z przedłużeniami). Zakończonych najmów: B2B 2 990, B2C 7 640, MID 5 481
+    (od 2019-04, rekordy sprzed 2023-03-01 to import). UWAGA: wartość zaniżona — średnia pomija trwające najmy,
+    które są dłuższe; do zastąpienia krzywą przeżycia w projekcie Retencja.
+  zrodlo: >
+    metoda: polecenie użytkownika w czacie 2026-11-15 („średnia z zakończonych najmów”); wartości: data/pms/pms_najmy,
+    SQL_CZAS_NAJMU w leasing_bc/zalozenia_z_danych.py
+  data: 2026-09-30  # stan danych (dzień eksportu)
+  odpowiedzialny: Natalia
+
+czynsz_mediana_pln:
+  wartosc:
+    Gdańsk: {B2B: 2795, B2C: 2495, MID: 3285}
+    Kraków: {B2B: 2860, B2C: 2250, MID: 3450}
+    Poznań: {B2B: 2360, B2C: 1910, MID: 2850}
+    Warszawa: {B2B: 3110, B2C: 2530, MID: 3735}
+    Wrocław: {B2B: 2595, B2C: 2080, MID: 3270}
+    Łódź: {B2B: 2200, B2C: 1850, MID: null}  # brak w danych: w Łodzi nie ma lokali MID
+  zastepstwo:
+    # Para bez lokali danej linii -> linia, której czynsz i czas najmu bierzemy. Decyzja wykonawcy (2026-11-15),
+    # nie użytkownika: wszystkie 67 umów z zapytań MID z Łodzi w historii CRM to najmy B2C. DO POTWIERDZENIA.
+    Łódź/MID: B2C
+  jednostka: PLN miesięcznie za jeden lokal (mediana czynsz_katalogowy)
+  opis: >
+    Mediana czynszu katalogowego lokali danej linii w mieście (pms_lokale × pms_budynki.miasto, wszystkie statusy).
+    UWAGA: czynsz_katalogowy to stan na dzień eksportu 2026-09-30, nie czynsz z chwili zapytania; przy ocenie
+    starszych zapytań (np. okno migracji 2025-03 – 2025-04) skala złotych jest wyższa niż wtedy.
+  zrodlo: >
+    metoda: polecenie użytkownika w czacie 2026-11-15 („mediany czynszu dla linii w każdym mieście z pms_lokale”);
+    wartości: data/pms/pms_lokale + pms_budynki, SQL_CZYNSZ w leasing_bc/zalozenia_z_danych.py
+  data: 2026-09-30
+  odpowiedzialny: null  # nie podano — DO UZUPEŁNIENIA
+
+godziny_doradcow:
+  wartosc:
+    okres: 2025-10-01 – 2026-09-30
+    dni_pracy: 302
+    godziny_na_dzien_pracy:
+      razem: 66.69
+      Gdańsk: 6.1
+      Kraków: 12.19
+      Poznań: 6.05
+      Warszawa: 24.38
+      Wrocław: 12.1
+      Łódź: 5.86
+    doradcy: {Gdańsk: 1, Kraków: 2, Poznań: 1, Warszawa: 4, Wrocław: 2, Łódź: 1}
+  jednostka: godziny pracy doradców na dzień pracy (dzień z jakimkolwiek wpisem w crm_grafik)
+  opis: >
+    Czas pracy doradców z crm_grafik w 12 miesiącach przed eksportem, według miasta doradcy (crm_doradcy.miasto).
+    Godziny na dzień pracy = suma godzin w okresie / liczba dni pracy (302), więc miasta sumują się do „razem”.
+    Call center (CC, tylko okno migracji) nie ma wpisów w grafiku: jego godziny — brak w danych. Do przeliczenia
+    godzin na liczbę zapytań potrzebny jest czas obsługi jednego zapytania — brak w danych i niepodany.
+  zrodlo: >
+    metoda: polecenie użytkownika w czacie 2026-11-15 („godziny doradców z crm_grafik”); okres 12 miesięcy przed
+    eksportem — decyzja wykonawcy; wartości: data/crm/crm_grafik + crm_doradcy, SQL_GODZINY
+    w leasing_bc/zalozenia_z_danych.py
+  data: 2026-09-30
+  odpowiedzialny: null  # nie podano — DO UZUPEŁNIENIA

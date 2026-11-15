@@ -124,3 +124,18 @@ odsetek umów 10,51%), ECE z 10 równych przedziałów w pp:
 Na obsłużonych zapytaniach testu ECE v2b 0,63 → 0,59 pp, AUC 0,7771 → 0,7768. W oknie wszystkie wersje zaniżają,
 bo w marcu–kwietniu 2025 obsłużone zapytania z okna dały 10,51% umów, a spoza okna 8,31%. Kalibracja nie jest wersją
 w `versions/`, a `current.yaml` nadal jest pusty.
+
+## Kolejka według pieniędzy: od najnowszego, według p, według EV (2026-11-15)
+
+Okno migracji (5 320 zapytań, 42 dni), kolejka dzienna. Górne 10% to pierwsze 10% zapytań każdego dnia. p to v2b
+skalibrowany („kontakt”, [kalibracja.md](kalibracja.md)), a EV = p × mediana czynszu (linia, miasto) × średni czas
+najmu linii × liczba lokali (`contexts_boundaries/leasing_bc/wartosc.py`). Liczy [`kolejka_ev.py`](kolejka_ev.py),
+raport: [docs/kolejka_ev.md](../../../../../docs/kolejka_ev.md).
+
+| Kolejność | Udział wartości umów (95% CI) | Udział umów | Udział wpłat do 2026-09 |
+|---|---:|---:|---:|
+| od najnowszego (baseline) | 9,1% (6,9–11,5) | 10,7% | 9,5% |
+| według p | 37,9% (33,1–43,1) | 33,9% | 37,2% |
+| **według EV** | **43,3%** (37,5–49,2) | 31,2% | 40,9% |
+
+EV − p: wartość +2,4 … +8,4 pp, umowy −4,7 … −0,7 pp, wpłaty +0,7 … +6,7 pp. `current.yaml` nadal pusty.
