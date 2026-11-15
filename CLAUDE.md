@@ -115,6 +115,8 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
 - **Tabele:** po jednej na każdy plik Parquet z `data/`, nazwa = nazwa pliku bez rozszerzenia (39 tabel, w tym
   `metadane` ze `zdjecia/metadane.parquet` oraz `telemetra_firmware` i `telemetra_urzadzenia_ciepla`). Zdjęć JPEG
   nie wczytujemy.
+- **Tabele pochodne** (drugi krok `pypyr baza`, po przebudowie): `leady_cel` — target kolejki zapytań `umowa_45d`
+  (`api/api/ai/features/leady/leady_cel.sql`, opis i liczby w `docs/kolejka_target.md`).
 - **Widoki:** `telemetra_windy` i `telemetra_cieplo` czytają partycje `rok=/miesiac=` (kolumny `rok`, `miesiac`
   jako INTEGER). Mają ścieżki względne `data/...`: `polacz()` ustawia `file_search_path` na katalog repozytorium,
   a w CLI uruchamiaj zapytania z katalogu głównego.

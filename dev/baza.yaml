@@ -5,3 +5,9 @@ steps:
       cmd:
         run: poetry run python -m api.adapters.duckdb_baza
         cwd: api
+  - name: pypyr.steps.cmd
+    description: Tabela leady_cel (target kolejki zapytań, api/api/ai/features/leady/leady_cel.sql)
+    in:
+      cmd:
+        run: poetry run python -m api.ai.features.leady.leady_cel
+        cwd: api
