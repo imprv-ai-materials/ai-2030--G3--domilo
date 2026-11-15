@@ -4,6 +4,7 @@ from api.adapters.duckdb_baza import (
     KATALOG_REPO,
     KOLUMNY_CZASU_CRM,
     WIDOKI_TELEMETRII,
+    _tabele_trwale,
     pliki_tabel,
     polacz,
     zbuduj_baze,
@@ -23,7 +24,8 @@ def test_kazdy_plik_parquet_poza_telemetria_ma_tabele_o_tej_samej_nazwie_i_liczb
     con, _ = baza
     tabele = {r[0] for r in con.execute("SELECT table_name FROM duckdb_tables()").fetchall()}
     pliki = pliki_tabel()
-    assert tabele == set(pliki)
+    # + tabele trwałe aplikacji (puste w nowej bazie, potrzebne jako źródła modeli dbt)
+    assert tabele == set(pliki) | set(_tabele_trwale())
     zrodlo = duckdb.connect()
     for nazwa, plik in pliki.items():
         assert (

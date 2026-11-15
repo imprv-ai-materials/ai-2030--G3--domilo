@@ -14,13 +14,14 @@ import duckdb
 import inngest.fast_api
 import numpy as np
 import pandas as pd
-from api.adapters import kolejka_doradcow, wyceny_historia
+from api.adapters import kolejka_doradcow, kolejka_pominiecia, wyceny_historia
 from api.adapters.duckdb_baza import polaczenie
 from api.adapters.llm_client import BrakKluczaAPI
 from api.ai.features.wycena.cechy_llm import KOLUMNY_LLM
 from api.ai.features.wycena.ceny_w_opisie import bez_kwot
 from api.ai.valuation_model.obecny import ObecnyModel, wczytaj_obecny
-from api.contexts_boundaries.leasing_bc.schematy import KolejkaDoradcy
+from api.contexts_boundaries.leasing_bc import panel
+from api.contexts_boundaries.leasing_bc.schematy import KolejkaDoradcy, WynikPominiecia, ZgloszeniePominiecia
 from api.contexts_boundaries.valuation_bc.cechy_opisu import cechy_z_opisu
 from api.contexts_boundaries.valuation_bc.schematy import (
     Czynnik,
@@ -47,6 +48,12 @@ def obecny_model() -> ObecnyModel:
 
 def baza() -> Iterator[duckdb.DuckDBPyConnection]:
     with polaczenie() as con:
+        yield con
+
+
+def baza_zapis() -> Iterator[duckdb.DuckDBPyConnection]:
+    """Połączenie do zapisu (osobna zależność: w jednym procesie DuckDB nie miesza połączeń odczytu i zapisu)."""
+    with polaczenie(tylko_odczyt=False) as con:
         yield con
 
 
@@ -143,3 +150,26 @@ def kolejka_doradcy(
         stan_danych_na=pierwsza["stan_danych_na"],
         pozycje=pozycje,
     )
+
+
+@app.post("/leads/skips", response_model=WynikPominiecia)
+def pominiecie(z: ZgloszeniePominiecia, con: duckdb.DuckDBPyConnection = Depends(baza_zapis)) -> WynikPominiecia:
+    """CRM zgłasza pominięcie pozycji kolejki z powodem (słownik leasing_bc/pominiecia.py) -> kolejka_pominiecia.
+
+    Ten sam powód drugi raz to powtórzenie (bez zmian), inny powód to poprawka. 404: pozycji nie ma w kolejce tego
+    doradcy tego dnia.
+    """
+    try:
+        wynik = kolejka_pominiecia.zapisz(con, kolejka_pominiecia.Pominiecie(**z.model_dump()))
+    except kolejka_pominiecia.PozycjaPozaKolejka as e:
+        raise HTTPException(404, str(e)) from e
+    return WynikPominiecia(wynik=wynik)
+
+
+@app.get("/team/dashboard")
+def panel_kierownika(con: duckdb.DuckDBPyConnection = Depends(baza)) -> dict:
+    """Panel kierownika zespołu najmu: metryki z modeli dbt (schemat metryki, models/panel; docs/kolejka_panel.md)."""
+    try:
+        return panel.dane_panelu(con)
+    except duckdb.CatalogException as e:
+        raise HTTPException(503, f"Brak modeli dbt panelu (uruchom: pypyr baza): {e}") from e

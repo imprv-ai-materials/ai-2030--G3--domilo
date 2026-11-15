@@ -1,0 +1,128 @@
+version: 2
+
+# Panel kierownika zespołu najmu (ui/app/zespol, GET /team/dashboard; docs/kolejka_panel.md).
+models:
+  - name: ranking_dzien
+    description: Ranking dzienny kolejki z flagami gorny_decyl i top_adopcji.
+    data_tests:
+      - unikalna_kombinacja:
+          arguments:
+            kolumny: [data_kolejki, id_leada]
+    columns:
+      - name: ranga
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 1}
+      - name: id_leada
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('umowa_45d')
+                field: id_leada
+      - name: gorny_decyl
+        data_tests: [not_null]
+      - name: top_adopcji
+        data_tests: [not_null]
+
+  - name: pierwszy_kontakt
+    description: Pierwszy kontakt z zapytaniem (kto, kiedy, w czasie której kolejki).
+    columns:
+      - name: id_leada
+        data_tests: [unique, not_null]
+      - name: id_doradcy_kontaktu
+        data_tests: [not_null]
+      - name: pierwszy_kontakt
+        data_tests: [not_null]
+      - name: data_kolejki_kontaktu
+        data_tests: [not_null]
+
+  - name: adopcja_dzien
+    description: Doradca × dzień kolejki; odsetek pierwszych kontaktów z top 20 jego kolejki.
+    data_tests:
+      - unikalna_kombinacja:
+          arguments:
+            kolumny: [data_kolejki, id_doradcy]
+    columns:
+      - name: pierwsze_kontakty
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 0}
+      - name: adopcja
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1}
+      - name: adopcja_losowa
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 0, max: 1}
+
+  - name: kolejka_zapytania
+    description: Zapytanie z pierwszym dniem w rankingu (ranga, górny decyl) i wynikiem (umowa_45d, kontakt).
+    columns:
+      - name: id_leada
+        data_tests: [unique, not_null]
+      - name: nowe
+        data_tests: [not_null]
+      - name: umowa_45d
+        data_tests:
+          - not_null:
+              config:
+                where: "not cenzurowany"
+      - name: godz_do_pierwszego_kontaktu
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1080}
+
+  - name: pominiecia
+    description: Pominięcia pozycji kolejki z powodem i miejscem w rankingu dnia.
+    data_tests:
+      - unikalna_kombinacja:
+          arguments:
+            kolumny: [data_kolejki, id_leada]
+    columns:
+      - name: powod
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["znam_klienta", "brak_lokalu", "duplikat", "inne"]
+      - name: ranga
+        description: Pominąć można tylko zapytanie z rankingu dnia.
+        data_tests: [not_null]
+
+  - name: panel_tydzien
+    description: Metryki panelu kierownika według tygodnia.
+    columns:
+      - name: tydzien
+        data_tests: [unique, not_null]
+      - name: adopcja
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1}
+      - name: konwersja_decyl
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1}
+      - name: konwersja_poza_decylem
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1}
+      - name: bez_kontaktu_decyl
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1}
+      - name: mediana_godz_kontaktu_decyl
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1080}
+      - name: pominiecia
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 0}
+      - name: przychod_wartosc_wyjsciowa
+        data_tests: [not_null]

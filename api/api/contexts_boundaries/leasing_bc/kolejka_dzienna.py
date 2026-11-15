@@ -42,7 +42,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
-from api.adapters import kolejka_doradcow
+from api.adapters import kolejka_doradcow, kolejka_ranking
 from api.adapters.crm_lejek import KlientLejka
 from api.adapters.duckdb_baza import KATALOG_REPO, SCIEZKA_BAZY, polaczenie
 from api.adapters.llm_client import BrakKluczaAPI, KlientLLM
@@ -116,22 +116,43 @@ def aktywni_doradcy(con, dzien: date) -> pd.DataFrame:
     return con.execute(SQL_DORADCY, {"dzien": dzien}).df()
 
 
-def przydziel_kolejki(ev: pd.DataFrame, doradcy: pd.DataFrame, maks: int = MAKS_POZYCJI) -> pd.DataFrame:
-    """Kolejki: id_doradcy, miasto, pozycja (od 1), id_leada.
+KOLUMNY_RANKINGU = ["id_leada", "miasto", "ranga", "otwarte_w_miescie", "id_doradcy", "pozycja"]
 
-    `ev`: id_leada, miasto, ev (NaN = poza kolejką); `doradcy`: id_doradcy, miasto. W mieście z k doradcami bierzemy
-    k × maks zapytań o największym EV i rozdajemy je po kolei: zapytanie nr r (od 0) dostaje doradca r mod k na
-    pozycji r div k + 1.
+
+def ranking_kolejki(ev: pd.DataFrame, doradcy: pd.DataFrame, maks: int = MAKS_POZYCJI) -> pd.DataFrame:
+    """Pełny ranking dnia: każde otwarte zapytanie z EV, miejsce w mieście i (dla kolejek) doradca i pozycja.
+
+    `ev`: id_leada, miasto, ev (NaN = poza rankingiem); `doradcy`: id_doradcy, miasto. Ranga: EV malejąco w mieście
+    (remis: id_leada), od 1. W mieście z k doradcami pierwsze k × maks zapytań rozdajemy po kolei: zapytanie
+    z rangą r (od 1) dostaje doradca (r − 1) mod k na pozycji (r − 1) div k + 1. Miasto bez doradcy ma ranking bez
+    kolejek (id_doradcy, pozycja = NA).
     """
-    wiersze = []
-    for miasto, d in doradcy.groupby("miasto", sort=True):
-        ids = sorted(d["id_doradcy"])
+    z = ev[ev["ev"].notna()].sort_values(["miasto", "ev", "id_leada"], ascending=[True, False, True], kind="mergesort")
+    z = z[["id_leada", "miasto"]].copy()
+    z["ranga"] = z.groupby("miasto").cumcount() + 1
+    z["otwarte_w_miescie"] = z.groupby("miasto")["id_leada"].transform("size")
+    doradcy_miast = {m: sorted(d["id_doradcy"]) for m, d in doradcy.groupby("miasto")}
+    id_d, poz = [], []
+    for miasto, ranga in zip(z["miasto"], z["ranga"]):
+        ids = doradcy_miast.get(miasto, [])
         k = len(ids)
-        z = ev[(ev["miasto"] == miasto) & ev["ev"].notna()]
-        z = z.sort_values(["ev", "id_leada"], ascending=[False, True], kind="mergesort").head(maks * k)
-        for r, id_leada in enumerate(z["id_leada"]):
-            wiersze.append({"id_doradcy": ids[r % k], "miasto": miasto, "pozycja": r // k + 1, "id_leada": id_leada})
-    return pd.DataFrame(wiersze, columns=["id_doradcy", "miasto", "pozycja", "id_leada"])
+        if k and ranga <= maks * k:
+            id_d.append(ids[(ranga - 1) % k])
+            poz.append((ranga - 1) // k + 1)
+        else:
+            id_d.append(None)
+            poz.append(None)
+    z["id_doradcy"] = pd.Series(id_d, index=z.index, dtype="object")
+    z["pozycja"] = pd.array(poz, dtype="Int64")
+    return z[KOLUMNY_RANKINGU].reset_index(drop=True)
+
+
+def przydziel_kolejki(ev: pd.DataFrame, doradcy: pd.DataFrame, maks: int = MAKS_POZYCJI) -> pd.DataFrame:
+    """Kolejki: id_doradcy, miasto, pozycja (od 1), id_leada; część `ranking_kolejki` z doradcą."""
+    r = ranking_kolejki(ev, doradcy, maks)
+    k = r[r["id_doradcy"].notna()].copy()
+    k["pozycja"] = k["pozycja"].astype(int)
+    return k[["id_doradcy", "miasto", "pozycja", "id_leada"]].reset_index(drop=True)
 
 
 def uzyj_llm() -> bool:
@@ -246,6 +267,8 @@ def krok_kolejki(katalog: str, data_kolejki: str, sciezka: Path = SCIEZKA_BAZY) 
     ev = pd.read_parquet(_plik(katalog, "ev"))
     with polaczenie(sciezka=sciezka) as con:
         doradcy = aktywni_doradcy(con, date.fromisoformat(data_kolejki))
+    ranking = ranking_kolejki(ev, doradcy)
+    ranking.to_parquet(_plik(katalog, "ranking"), index=False)
     kolejki = przydziel_kolejki(ev, doradcy)
     kolejki.to_parquet(_plik(katalog, "kolejki"), index=False)
     miasta_bez_doradcy = sorted(set(ev["miasto"]) - set(doradcy["miasto"]))
@@ -319,9 +342,20 @@ def krok_zapis(
         stan_danych_na=pd.Timestamp(stan_iso),
         id_przebiegu=id_przebiegu,
     ).sort_values(["id_doradcy", "pozycja"])
+    ranking = pd.read_parquet(_plik(katalog, "ranking")).merge(ev, on="id_leada", validate="1:1")
+    ranking = ranking.assign(
+        data_kolejki=dzien,
+        p=ranking["p"].astype(float).round(6),
+        ev_pln=ranking["ev"].astype(float).round(2),
+        wersja_modelu=wersja_modelu,
+        zrodlo_kolejki="zadanie",
+        stan_danych_na=pd.Timestamp(stan_iso),
+        id_przebiegu=id_przebiegu,
+    )
     with polaczenie(tylko_odczyt=False, sciezka=sciezka) as con:
         n = kolejka_doradcow.zapisz(con, dzien, df)
-    return {"pozycje": n}
+        n_rankingu = kolejka_ranking.zapisz(con, ranking)
+    return {"pozycje": n, "ranking": n_rankingu}
 
 
 def krok_webhook(data_kolejki: str, id_doradcy: str, sciezka: Path = SCIEZKA_BAZY, klient: KlientLejka | None = None):

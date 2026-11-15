@@ -1,6 +1,7 @@
 version: 2
 
-# Tabele domilo.duckdb budowane przez `pypyr baza` (krok 1: Parquety z data/, krok 2: leady_cel).
+# Tabele domilo.duckdb budowane przez `pypyr baza` (krok 1: Parquety z data/, krok 2: leady_cel) oraz tabele trwałe
+# aplikacji (kolejka_ranking, kolejka_pominiecia: zapisuje je kod, przebudowa bazy je przenosi).
 sources:
   - name: domilo
     schema: main
@@ -46,3 +47,43 @@ sources:
         columns:
           - name: id_doradcy
             data_tests: [unique, not_null]
+      - name: crm_aktywnosci
+        columns:
+          - name: id_aktywnosci
+            data_tests: [unique, not_null]
+      - name: kolejka_ranking
+        description: >
+          Pełny ranking dzienny kolejki (adapters/kolejka_ranking.py): zadanie kolejka-doradcow (`zadanie`) albo
+          symulacja wstecz (`symulacja_wstecz`, leasing_bc/kolejka_wstecz.py).
+        data_tests:
+          - unikalna_kombinacja:
+              arguments:
+                kolumny: [data_kolejki, id_leada]
+          - unikalna_kombinacja:
+              arguments:
+                kolumny: [data_kolejki, id_doradcy, pozycja]
+              config:
+                where: "id_doradcy is not null"
+        columns:
+          - name: zrodlo_kolejki
+            data_tests:
+              - accepted_values:
+                  arguments:
+                    values: ["zadanie", "symulacja_wstecz"]
+          - name: pozycja
+            data_tests:
+              - zakres:
+                  arguments: {min: 1, max: 40}
+      - name: kolejka_pominiecia
+        description: Pominięcia pozycji kolejki z CRM (POST /leads/skips, adapters/kolejka_pominiecia.py).
+        data_tests:
+          - unikalna_kombinacja:
+              arguments:
+                kolumny: [data_kolejki, id_leada]
+        columns:
+          - name: powod
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["znam_klienta", "brak_lokalu", "duplikat", "inne"]

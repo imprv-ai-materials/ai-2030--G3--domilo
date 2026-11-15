@@ -1,0 +1,16 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - name: pypyr.steps.default
+    description: od= i do= opcjonalne (RRRR-MM-DD); domyślnie 2026-04-15 – 2026-06-30
+    in:
+      defaults:
+        od: ""
+        do: ""
+  - name: pypyr.steps.cmd
+    description: >
+      Ranking kolejki policzony wstecz (symulacja, punkt odniesienia panelu kierownika) do tabeli kolejka_ranking;
+      sygnały LLM tylko z cache. Potem metryki panelu w dbt są widokami, więc nie trzeba przebudowywać modeli.
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.leasing_bc.kolejka_wstecz {od} {do}
+        cwd: api

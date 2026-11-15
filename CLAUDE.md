@@ -74,16 +74,19 @@ evals/porownanie.md           # model vs baseline, wszystkie cztery modele
 dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml, mock_lejek.yaml)
 ├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
-├── main.py                   # FastAPI: POST /valuation, GET /leads/next?doradca=, odczyty panelu, Inngest (pypyr api)
+├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, Inngest (pypyr api)
 ├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka)
 ├── adapters/                 # połączenia z systemami zewnętrznymi
 │   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
 │   ├── wyceny_historia.py    # tabela wyceny_historia w domilo.duckdb (przenoszona przy przebudowie bazy)
 │   ├── kolejka_doradcow.py   # tabela kolejka_doradcow (dzień × zapytanie; przenoszona przy przebudowie bazy)
+│   ├── kolejka_ranking.py    # tabela kolejka_ranking: pełny ranking dnia (zadanie / symulacja wstecz), dla panelu
+│   ├── kolejka_pominiecia.py # tabela kolejka_pominiecia: pominięcia z CRM z powodem (POST /leads/skips)
 │   └── crm_lejek.py          # webhook kolejek do CRM, idempotentny po (id_leada, data_kolejki); atrapa: dev/mock_lejek/
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
-│   ├── leasing_bc/           # zapytania i doradcy (najem); kolejka_dzienna.py: kroki zadania kolejka-doradcow
+│   ├── leasing_bc/           # zapytania i doradcy (najem); kolejka_dzienna.py: kroki zadania kolejka-doradcow;
+│   │                         # kolejka_wstecz.py (ranking wstecz), panel.py (GET /team/dashboard), pominiecia.py
 │   ├── retention_bc/         # retencja najemców
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
@@ -108,7 +111,7 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
         ├── prompts/          # prompty
         ├── schemas/          # schematy odpowiedzi
         └── cache/            # cache odpowiedzi LLM (poza gitem)
-ui/                           # panel rzeczoznawcy (Next.js, port 3100; pnpm --dir ui dev)
+ui/                           # Next.js (port 3100; pnpm --dir ui dev): panel rzeczoznawcy i /zespol (kierownik najmu)
 ```
 
 Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasing_bc` ↔ `features/leady` ↔ `lead_model`;
@@ -126,7 +129,12 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
-  (`api/api/data_platform/dbt/`, opis i liczby w `docs/kolejka_metryki.md`).
+  (`api/api/data_platform/dbt/`, opis i liczby w `docs/kolejka_metryki.md`). Panel kierownika (`models/panel`,
+  widoki poza `pierwszy_kontakt`): `ranking_dzien`, `pierwszy_kontakt`, `adopcja_dzien`, `kolejka_zapytania`,
+  `pominiecia`, `panel_tydzien` (`docs/kolejka_panel.md`).
+- **Tabele trwałe aplikacji** (nie z `data/`; przebudowa je przenosi, a brakujące tworzy puste):
+  `wyceny_historia`, `kolejka_doradcow`, `kolejka_ranking` (`zrodlo_kolejki`: `zadanie` albo `symulacja_wstecz`,
+  `pypyr kolejka_wstecz`), `kolejka_pominiecia`.
 - **Widoki:** `telemetra_windy` i `telemetra_cieplo` czytają partycje `rok=/miesiac=` (kolumny `rok`, `miesiac`
   jako INTEGER). Mają ścieżki względne `data/...`: `polacz()` ustawia `file_search_path` na katalog repozytorium,
   a w CLI uruchamiaj zapytania z katalogu głównego.

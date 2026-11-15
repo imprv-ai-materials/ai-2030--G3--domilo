@@ -44,5 +44,5 @@ api/api/data_platform/dbt/logs/
 
 # Kolejka doradców (leasing_bc/kolejka_dzienna.py): pliki pośrednie przebiegów i stan atrapy CRM (dev/mock_lejek)
 kolejka_dzienna/
-dev/mock_lejek/stan.json
-dev/mock_lejek/stan.tmp
+dev/mock_lejek/stan*.json
+dev/mock_lejek/stan*.tmp

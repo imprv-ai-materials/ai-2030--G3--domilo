@@ -1,7 +1,7 @@
 # Definicje metryk Domilo jako modele dbt: ten sam kod dla raportów (docs/) i dla eksperymentów.
 # Modele zapisują się w domilo.duckdb w schemacie `metryki` (np. metryki.przychod_na_godzine_doradcy).
 # Uruchomienie: `pypyr baza` (krok 3) albo `cd api && poetry run python -m api.data_platform.dbt_uruchom build`.
-# Opis i liczby: docs/kolejka_metryki.md.
+# Opis i liczby: docs/kolejka_metryki.md (models/kolejka), docs/kolejka_panel.md (models/panel).
 name: domilo
 version: "1.0.0"
 config-version: 2
@@ -19,9 +19,22 @@ vars:
   # Okno migracji CRM: zapytania obsługiwało zewnętrzne call center, którego godzin nie ma w crm_grafik.
   okno_migracji_od: "2025-03-03"
   okno_migracji_do: "2025-04-13"
+  # Panel kierownika zespołu najmu (models/panel, docs/kolejka_panel.md):
+  # adopcja = pierwszy kontakt z zapytaniem z pierwszych `top_adopcji` pozycji kolejki doradcy;
+  top_adopcji: 20
+  # górny decyl = pierwsze ceil(`udzial_gornego_decyla` × liczba otwartych) zapytań rankingu miasta;
+  udzial_gornego_decyla: 0.1
+  # kolejka obowiązuje od 05:30 dnia (zadanie Inngest): kontakt przed 05:30 należy do kolejki z poprzedniego dnia;
+  godzina_kolejki: "05:30"
+  # wartość wyjściowa przychodu na godzinę doradcy (docs/kolejka_metryki.md): kwartał 2026-Q2.
+  kwartal_wyjsciowy: "2026-04-01"
 
 models:
   domilo:
     +materialized: table
     kolejka:
       +schema: metryki
+    panel:
+      +schema: metryki
+      # Widoki: dzienne zadanie i POST /leads/skips dopisują dane, a panel ma je widzieć bez przebudowy modeli.
+      +materialized: view

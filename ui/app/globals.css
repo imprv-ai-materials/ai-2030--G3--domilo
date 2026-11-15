@@ -14,6 +14,13 @@
   --spadek: #e34948;
   --uwaga-tlo: #fdf3e1;
   --uwaga-ramka: #fab219;
+  /* Wykresy panelu kierownika (skill dataviz, palette.md): seria 1 = niebieski, kontekst = szarość wyciszona
+     (forma „wyróżnienie”; validate_palette.js: CVD ΔE 15,9, normal 17,8, kontrast >= 3:1), siatka i oś hairline. */
+  --seria-1: #2a78d6;
+  --seria-kontekst: #898781;
+  --wyciszony: #898781;
+  --siatka: #e1e0d9;
+  --os: #c3c2b7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -30,6 +37,11 @@
     --spadek: #e66767;
     --uwaga-tlo: #3a2f17;
     --uwaga-ramka: #fab219;
+    --seria-1: #3987e5;
+    --seria-kontekst: #898781;
+    --wyciszony: #898781;
+    --siatka: #2c2c2a;
+    --os: #383835;
   }
 }
 
@@ -210,4 +222,49 @@ details {
 summary {
   cursor: pointer;
   color: var(--tekst-2);
+}
+
+h3 {
+  font-size: 15px;
+  margin: 20px 0 6px;
+}
+code {
+  font-size: 13px;
+}
+.kafel {
+  max-width: 230px;
+}
+.kafel .opis {
+  color: var(--tekst-2);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+.legenda .klucz-linii::before {
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  vertical-align: middle;
+}
+.dymek-tytul {
+  color: var(--tekst-2);
+  margin-bottom: 2px;
+}
+.dymek-wiersz {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.dymek-wiersz.wtorny {
+  color: var(--tekst-2);
+}
+.dymek .klucz {
+  display: inline-block;
+  width: 12px;
+  height: 2px;
+  border-radius: 1px;
+}
+svg:focus-visible,
+g[tabindex]:focus-visible {
+  outline: 2px solid var(--akcent);
+  outline-offset: 2px;
 }

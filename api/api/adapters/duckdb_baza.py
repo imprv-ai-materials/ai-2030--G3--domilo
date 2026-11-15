@@ -41,11 +41,13 @@ _NAZWA_TABELI = re.compile(r"^[a-z][a-z0-9_]*$")
 
 def _tabele_trwale() -> dict[str, str]:
     """Tabele spoza data/ (zapisywane przez aplikację), które przebudowa przenosi ze starej bazy: nazwa -> DDL."""
-    from api.adapters import kolejka_doradcow, wyceny_historia
+    from api.adapters import kolejka_doradcow, kolejka_pominiecia, kolejka_ranking, wyceny_historia
 
     return {
         wyceny_historia.TABELA: wyceny_historia.SQL_TABELI,
         kolejka_doradcow.TABELA: kolejka_doradcow.SQL_TABELI,
+        kolejka_ranking.TABELA: kolejka_ranking.SQL_TABELI,
+        kolejka_pominiecia.TABELA: kolejka_pominiecia.SQL_TABELI,
     }
 
 
@@ -127,6 +129,9 @@ def zbuduj_baze(sciezka: Path = SCIEZKA_BAZY) -> dict[str, int]:
             con.execute(f"CREATE VIEW {nazwa} AS {_select_widoku(nazwa)}")
             liczby[nazwa] = con.execute(f"SELECT count(*) FROM {nazwa}").fetchone()[0]
         _przenies_tabele_trwale(con, sciezka)
+        # Brakujące tabele trwałe tworzymy puste: modele dbt (schemat metryki) czytają je jako źródła.
+        for ddl in _tabele_trwale().values():
+            con.execute(ddl)
         con.execute("CHECKPOINT")
     except BaseException:
         con.close()
