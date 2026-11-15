@@ -1,0 +1,656 @@
+{
+  "wersja": "v2_lgbm_naiwny",
+  "zbiory": {
+    "trening": "zamknięte, niecenzurowane zapytania 2023-01-01 – 2026-02-28 bez okna migracji",
+    "test": "wszystkie niecenzurowane zapytania 2026-03-01 – 2026-06-30",
+    "okno_migracji": "wszystkie zapytania z okna migracji 2025-03-03 – 2025-04-13"
+  },
+  "uczony_na": "zamknięte, niecenzurowane zapytania 2023-01-01 – 2026-02-28 bez okna migracji; target umowa_45d, nieobsłużone = 0",
+  "trening": {
+    "n": 127527,
+    "umowy_umowa_45d": 9654,
+    "pozytywne_po_nieobsluzone_0": 9407,
+    "umowy_nieobsluzonych_zamienione_na_0": 247,
+    "nieobsluzone": 23048,
+    "liczba_drzew": 199,
+    "auc_walidacji_w_czasie": 0.805662566854136,
+    "walidacja_od": "2025-08-28 22:44:31+00:00"
+  },
+  "cechy": [
+    "zrodlo",
+    "miasto",
+    "linia",
+    "termin_dni",
+    "liczba_osob",
+    "zwierze",
+    "liczba_lokali",
+    "budzet_do_mediany",
+    "www_liczba_sesji",
+    "www_spacer_3d",
+    "www_kalkulator",
+    "umowa_ramowa",
+    "dlugosc_wiadomosci",
+    "syg_konkretne_pytania",
+    "syg_niedopasowanie_oferty",
+    "syg_pilny_termin",
+    "syg_relokacja",
+    "syg_budzet_niski",
+    "syg_brak_informacji"
+  ],
+  "parametry": {
+    "objective": "binary",
+    "metric": "auc",
+    "learning_rate": 0.03,
+    "num_leaves": 31,
+    "min_child_samples": 200,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "seed": 42,
+    "deterministic": true,
+    "force_row_wise": true,
+    "num_threads": 4,
+    "verbose": -1
+  },
+  "pokrycie_sygnalow_v1": {
+    "trening": 1.0,
+    "test": 1.0,
+    "okno_migracji": 1.0
+  },
+  "waznosc_cech": [
+    {
+      "cecha": "zrodlo",
+      "gain": 64444.17025709152,
+      "udzial": 0.34821876193510615
+    },
+    {
+      "cecha": "budzet_do_mediany",
+      "gain": 36460.47285604477,
+      "udzial": 0.19701115968830935
+    },
+    {
+      "cecha": "termin_dni",
+      "gain": 27448.8915143013,
+      "udzial": 0.148317822721121
+    },
+    {
+      "cecha": "dlugosc_wiadomosci",
+      "gain": 7380.965708971024,
+      "udzial": 0.03988243980502698
+    },
+    {
+      "cecha": "www_liczba_sesji",
+      "gain": 6590.207718133926,
+      "udzial": 0.03560964418269084
+    },
+    {
+      "cecha": "www_spacer_3d",
+      "gain": 6486.091902732849,
+      "udzial": 0.035047062956302284
+    },
+    {
+      "cecha": "linia",
+      "gain": 6073.502946853638,
+      "udzial": 0.03281767254237966
+    },
+    {
+      "cecha": "syg_niedopasowanie_oferty",
+      "gain": 5427.52170085907,
+      "udzial": 0.029327166127041455
+    },
+    {
+      "cecha": "liczba_lokali",
+      "gain": 4847.239437818527,
+      "udzial": 0.026191658750613658
+    },
+    {
+      "cecha": "syg_konkretne_pytania",
+      "gain": 4834.222056865692,
+      "udzial": 0.026121320405640785
+    },
+    {
+      "cecha": "www_kalkulator",
+      "gain": 3523.046709060669,
+      "udzial": 0.01903649249225392
+    },
+    {
+      "cecha": "miasto",
+      "gain": 3274.56609082222,
+      "udzial": 0.017693847953536457
+    },
+    {
+      "cecha": "liczba_osob",
+      "gain": 2860.9136304855347,
+      "udzial": 0.015458710980941164
+    },
+    {
+      "cecha": "syg_pilny_termin",
+      "gain": 1973.5340991020203,
+      "udzial": 0.010663828828650296
+    },
+    {
+      "cecha": "zwierze",
+      "gain": 973.0054993629456,
+      "udzial": 0.005257555012230615
+    },
+    {
+      "cecha": "syg_budzet_niski",
+      "gain": 771.8672025203705,
+      "udzial": 0.004170720804809811
+    },
+    {
+      "cecha": "syg_relokacja",
+      "gain": 752.1675608158112,
+      "udzial": 0.004064275414675054
+    },
+    {
+      "cecha": "umowa_ramowa",
+      "gain": 737.137090921402,
+      "udzial": 0.003983059509542687
+    },
+    {
+      "cecha": "syg_brak_informacji",
+      "gain": 208.53466796875,
+      "udzial": 0.001126799889127843
+    }
+  ],
+  "koszt_na_1000": {
+    "test": {
+      "tokeny_wejscia": 1190733.193139252,
+      "tokeny_wejscia_z_cache": 1058000.0,
+      "tokeny_wyjscia": 70297.3647893803,
+      "uwaga": "tokeny v1 (sygnały); kwota: brak cennika"
+    },
+    "okno_migracji": {
+      "tokeny_wejscia": 1190957.7067669171,
+      "tokeny_wejscia_z_cache": 1058000.0,
+      "tokeny_wyjscia": 70111.84210526316,
+      "uwaga": "tokeny v1 (sygnały); kwota: brak cennika"
+    }
+  },
+  "test": {
+    "v2_lgbm_naiwny": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.7932226684597488,
+      "lift_10": 3.752473575224049,
+      "k": 125,
+      "precision_k": 0.432,
+      "auc_ci95": [
+        0.7799237950106344,
+        0.8059178233714651
+      ],
+      "lift_10_ci95": [
+        3.5013435328021916,
+        4.000964120917719
+      ],
+      "precision_k_ci95": [
+        0.344,
+        0.52
+      ]
+    },
+    "v0_regula_zrodla": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.6843268776282526,
+      "lift_10": 2.310493242532209,
+      "k": 125,
+      "precision_k": 0.17719298245614035,
+      "auc_ci95": [
+        0.6679714272244386,
+        0.7002994371498994
+      ],
+      "lift_10_ci95": [
+        2.107864934995674,
+        2.515510466689407
+      ],
+      "precision_k_ci95": [
+        0.15997392581435566,
+        0.19455709524554704
+      ]
+    },
+    "v1_llm_zero_shot": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.6168029774919418,
+      "lift_10": 1.4880511979750708,
+      "k": 125,
+      "precision_k": 0.11542012927054478,
+      "auc_ci95": [
+        0.6014770774242536,
+        0.6323916355238591
+      ],
+      "lift_10_ci95": [
+        1.3280543199974673,
+        1.6505343997183874
+      ],
+      "precision_k_ci95": [
+        0.0967152402264609,
+        0.1347631916122279
+      ]
+    },
+    "roznica_v2_minus_v0_ci95": {
+      "auc": [
+        0.09641061439944909,
+        0.12155134175661168
+      ],
+      "lift": [
+        1.1830077111236164,
+        1.709006273046451
+      ],
+      "prec": [
+        0.16734584440801184,
+        0.33925159607585775
+      ]
+    },
+    "roznica_v2_minus_v1_ci95": {
+      "auc": [
+        0.15948469712527635,
+        0.1943168202076107
+      ],
+      "lift": [
+        1.973711549924008,
+        2.543717455575902
+      ],
+      "prec": [
+        0.22688095575579628,
+        0.40524458782483663
+      ]
+    },
+    "ablacja": {
+      "bez_zapytanie": {
+        "n": 15217,
+        "umowy": 1167,
+        "konwersja": 0.07669054347111783,
+        "auc": 0.7365996700485169,
+        "lift_10": 2.947148196066377,
+        "k": 125,
+        "precision_k": 0.376
+      },
+      "bez_budzet": {
+        "n": 15217,
+        "umowy": 1167,
+        "konwersja": 0.07669054347111783,
+        "auc": 0.7710188548061002,
+        "lift_10": 3.401214633251022,
+        "k": 125,
+        "precision_k": 0.376
+      },
+      "bez_www": {
+        "n": 15217,
+        "umowy": 1167,
+        "konwersja": 0.07669054347111783,
+        "auc": 0.7793167076818928,
+        "lift_10": 3.435483798321561,
+        "k": 125,
+        "precision_k": 0.44
+      },
+      "bez_firma_b2b": {
+        "n": 15217,
+        "umowy": 1167,
+        "konwersja": 0.07669054347111783,
+        "auc": 0.7931801589988016,
+        "lift_10": 3.7353389926887792,
+        "k": 125,
+        "precision_k": 0.376
+      },
+      "bez_tekst": {
+        "n": 15217,
+        "umowy": 1167,
+        "konwersja": 0.07669054347111783,
+        "auc": 0.7819826058848464,
+        "lift_10": 3.649666080012431,
+        "k": 125,
+        "precision_k": 0.432
+      },
+      "bez_sygnalow_llm": {
+        "n": 15217,
+        "umowy": 1167,
+        "konwersja": 0.07669054347111783,
+        "auc": 0.7833598636281855,
+        "lift_10": 3.581127749871353,
+        "k": 125,
+        "precision_k": 0.432
+      }
+    },
+    "po_zrodle": [
+      {
+        "zrodlo": "domteraz",
+        "n": 3849,
+        "umowy": 139,
+        "konwersja": 0.03611327617563003,
+        "udzial_w_umowach": 0.11910882604970009,
+        "konwersja_treningu": 0.02865903998112985,
+        "obsluzone_treningu": 0.4105436961905885,
+        "sredni_wynik_v2": 0.029781460942720578,
+        "udzial_czolowki_v2": 0.000657030223390276,
+        "sredni_wynik_v0": 0.02871334598619209,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.49662249935048064,
+        "udzial_czolowki_v1": 0.2923784494086728
+      },
+      {
+        "zrodlo": "lokum24",
+        "n": 5506,
+        "umowy": 268,
+        "konwersja": 0.048674173628768615,
+        "udzial_w_umowach": 0.22964867180805484,
+        "konwersja_treningu": 0.047699144447213224,
+        "obsluzone_treningu": 0.9565163219536507,
+        "sredni_wynik_v2": 0.04826628670276038,
+        "udzial_czolowki_v2": 0.04139290407358739,
+        "sredni_wynik_v0": 0.047705615479615895,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.47284780239738466,
+        "udzial_czolowki_v1": 0.31537450722733246
+      },
+      {
+        "zrodlo": "polecenie",
+        "n": 778,
+        "umowy": 113,
+        "konwersja": 0.14524421593830333,
+        "udzial_w_umowach": 0.09682947729220223,
+        "konwersja_treningu": 0.15790319987136195,
+        "obsluzone_treningu": 0.9890657662003538,
+        "sredni_wynik_v2": 0.154957659573073,
+        "udzial_czolowki_v2": 0.13731931668856767,
+        "sredni_wynik_v0": 0.15907144592365163,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.46735218508997434,
+        "udzial_czolowki_v1": 0.04730617608409987
+      },
+      {
+        "zrodlo": "relokacja_b2b",
+        "n": 1710,
+        "umowy": 303,
+        "konwersja": 0.17719298245614035,
+        "udzial_w_umowach": 0.2596401028277635,
+        "konwersja_treningu": 0.1994831527681145,
+        "obsluzone_treningu": 0.9949309213795845,
+        "sredni_wynik_v2": 0.21151531755975134,
+        "udzial_czolowki_v2": 0.4940867279894875,
+        "sredni_wynik_v0": 0.19948315276811449,
+        "udzial_czolowki_v0": 1.0,
+        "sredni_wynik_v1": 0.5473099415204679,
+        "udzial_czolowki_v1": 0.14914586070959265
+      },
+      {
+        "zrodlo": "social",
+        "n": 722,
+        "umowy": 23,
+        "konwersja": 0.03185595567867036,
+        "udzial_w_umowach": 0.01970865467009426,
+        "konwersja_treningu": 0.030653111521873076,
+        "obsluzone_treningu": 0.9054220579174368,
+        "sredni_wynik_v2": 0.03445867830697542,
+        "udzial_czolowki_v2": 0.0,
+        "sredni_wynik_v0": 0.030666974102848646,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.47313019390581723,
+        "udzial_czolowki_v1": 0.03942181340341656
+      },
+      {
+        "zrodlo": "www",
+        "n": 2652,
+        "umowy": 321,
+        "konwersja": 0.12104072398190045,
+        "udzial_w_umowach": 0.2750642673521851,
+        "konwersja_treningu": 0.13005334391394435,
+        "obsluzone_treningu": 0.9899043336419345,
+        "sredni_wynik_v2": 0.12947685613138502,
+        "udzial_czolowki_v2": 0.32654402102496716,
+        "sredni_wynik_v0": 0.13007445709858678,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.47179487179487173,
+        "udzial_czolowki_v1": 0.15637319316688567
+      }
+    ],
+    "obsluzone_wsrod_czolowki_10_v2": 0.9934296977660972
+  },
+  "okno_migracji": {
+    "v2_lgbm_naiwny": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.7635151662715737,
+      "lift_10": 3.32737030411449,
+      "k": 127,
+      "precision_k": 0.49606299212598426,
+      "auc_ci95": [
+        0.7432822674289566,
+        0.7836332707136084
+      ],
+      "lift_10_ci95": [
+        2.996681270471227,
+        3.678592570908145
+      ],
+      "precision_k_ci95": [
+        0.4094488188976378,
+        0.5748031496062992
+      ]
+    },
+    "v0_regula_zrodla": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.6334666466771799,
+      "lift_10": 1.8890115327522554,
+      "k": 127,
+      "precision_k": 0.2200557103064067,
+      "auc_ci95": [
+        0.6078911224888427,
+        0.6587998040130063
+      ],
+      "lift_10_ci95": [
+        1.5955012547923433,
+        2.176757914025416
+      ],
+      "precision_k_ci95": [
+        0.17800936196645664,
+        0.2626943265324752
+      ]
+    },
+    "v1_llm_zero_shot": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.6198020289329034,
+      "lift_10": 1.4011702861254636,
+      "k": 127,
+      "precision_k": 0.15064935064935064,
+      "auc_ci95": [
+        0.5969434537173431,
+        0.6417084203147627
+      ],
+      "lift_10_ci95": [
+        1.1718886672332698,
+        1.6383454502506891
+      ],
+      "precision_k_ci95": [
+        0.11466458333333333,
+        0.1881797838203006
+      ]
+    },
+    "roznica_v2_minus_v0_ci95": {
+      "auc": [
+        0.11086013854857593,
+        0.1497582861971165
+      ],
+      "lift": [
+        1.0590602703078926,
+        1.8075336993540863
+      ],
+      "prec": [
+        0.18819934793879292,
+        0.3531123455934548
+      ]
+    },
+    "roznica_v2_minus_v1_ci95": {
+      "auc": [
+        0.11597314152914338,
+        0.17185879135364338
+      ],
+      "lift": [
+        1.5396998869463288,
+        2.325839788843349
+      ],
+      "prec": [
+        0.25519478147577807,
+        0.42936695736867087
+      ]
+    },
+    "ablacja": {
+      "bez_zapytanie": {
+        "n": 5320,
+        "umowy": 559,
+        "konwersja": 0.10507518796992481,
+        "auc": 0.7389217099728376,
+        "lift_10": 2.754919499105546,
+        "k": 127,
+        "precision_k": 0.4094488188976378
+      },
+      "bez_budzet": {
+        "n": 5320,
+        "umowy": 559,
+        "konwersja": 0.10507518796992481,
+        "auc": 0.7431938991485303,
+        "lift_10": 3.0232558139534884,
+        "k": 127,
+        "precision_k": 0.4015748031496063
+      },
+      "bez_www": {
+        "n": 5320,
+        "umowy": 559,
+        "konwersja": 0.10507518796992481,
+        "auc": 0.7489085627521465,
+        "lift_10": 3.32737030411449,
+        "k": 127,
+        "precision_k": 0.4566929133858268
+      },
+      "bez_firma_b2b": {
+        "n": 5320,
+        "umowy": 559,
+        "konwersja": 0.10507518796992481,
+        "auc": 0.7630894503229316,
+        "lift_10": 3.3989266547406083,
+        "k": 127,
+        "precision_k": 0.5196850393700787
+      },
+      "bez_tekst": {
+        "n": 5320,
+        "umowy": 559,
+        "konwersja": 0.10507518796992481,
+        "auc": 0.7466774053796518,
+        "lift_10": 3.1842576028622545,
+        "k": 127,
+        "precision_k": 0.4409448818897638
+      },
+      "bez_sygnalow_llm": {
+        "n": 5320,
+        "umowy": 559,
+        "konwersja": 0.10507518796992481,
+        "auc": 0.751098388479142,
+        "lift_10": 3.1484794275491947,
+        "k": 127,
+        "precision_k": 0.44881889763779526
+      }
+    },
+    "po_zrodle": [
+      {
+        "zrodlo": "domteraz",
+        "n": 1453,
+        "umowy": 119,
+        "konwersja": 0.08189951823812801,
+        "udzial_w_umowach": 0.21288014311270126,
+        "konwersja_treningu": 0.02865903998112985,
+        "obsluzone_treningu": 0.4105436961905885,
+        "sredni_wynik_v2": 0.029224018261201745,
+        "udzial_czolowki_v2": 0.0018796992481203006,
+        "sredni_wynik_v0": 0.028683460109348084,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.4970406056434962,
+        "udzial_czolowki_v1": 0.37030075187969924
+      },
+      {
+        "zrodlo": "lokum24",
+        "n": 2040,
+        "umowy": 133,
+        "konwersja": 0.06519607843137255,
+        "udzial_w_umowach": 0.23792486583184258,
+        "konwersja_treningu": 0.047699144447213224,
+        "obsluzone_treningu": 0.9565163219536507,
+        "sredni_wynik_v2": 0.045986934024682555,
+        "udzial_czolowki_v2": 0.05263157894736842,
+        "sredni_wynik_v0": 0.047669615554175475,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.4658333333333333,
+        "udzial_czolowki_v1": 0.3176691729323308
+      },
+      {
+        "zrodlo": "polecenie",
+        "n": 249,
+        "umowy": 46,
+        "konwersja": 0.18473895582329317,
+        "udzial_w_umowach": 0.08228980322003578,
+        "konwersja_treningu": 0.15790319987136195,
+        "obsluzone_treningu": 0.9890657662003538,
+        "sredni_wynik_v2": 0.15813190609842429,
+        "udzial_czolowki_v2": 0.15601503759398497,
+        "sredni_wynik_v0": 0.15758944430646699,
+        "udzial_czolowki_v0": 0.325187969924812,
+        "sredni_wynik_v1": 0.4726907630522088,
+        "udzial_czolowki_v1": 0.03571428571428571
+      },
+      {
+        "zrodlo": "relokacja_b2b",
+        "n": 359,
+        "umowy": 79,
+        "konwersja": 0.2200557103064067,
+        "udzial_w_umowach": 0.1413237924865832,
+        "konwersja_treningu": 0.1994831527681145,
+        "obsluzone_treningu": 0.9949309213795845,
+        "sredni_wynik_v2": 0.19080771595707088,
+        "udzial_czolowki_v2": 0.2932330827067669,
+        "sredni_wynik_v0": 0.19948315276811449,
+        "udzial_czolowki_v0": 0.674812030075188,
+        "sredni_wynik_v1": 0.5548746518105849,
+        "udzial_czolowki_v1": 0.09586466165413533
+      },
+      {
+        "zrodlo": "social",
+        "n": 248,
+        "umowy": 12,
+        "konwersja": 0.04838709677419355,
+        "udzial_w_umowach": 0.02146690518783542,
+        "konwersja_treningu": 0.030653111521873076,
+        "obsluzone_treningu": 0.9054220579174368,
+        "sredni_wynik_v2": 0.03675821610012903,
+        "udzial_czolowki_v2": 0.0,
+        "sredni_wynik_v0": 0.030664855293108813,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.4721774193548387,
+        "udzial_czolowki_v1": 0.041353383458646614
+      },
+      {
+        "zrodlo": "www",
+        "n": 971,
+        "umowy": 170,
+        "konwersja": 0.17507723995880536,
+        "udzial_w_umowach": 0.3041144901610018,
+        "konwersja_treningu": 0.13005334391394435,
+        "obsluzone_treningu": 0.9899043336419345,
+        "sredni_wynik_v2": 0.13694056369574595,
+        "udzial_czolowki_v2": 0.49624060150375937,
+        "sredni_wynik_v0": 0.1300887839822092,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.46570545829042226,
+        "udzial_czolowki_v1": 0.13909774436090225
+      }
+    ],
+    "obsluzone_wsrod_czolowki_10_v2": 1.0
+  }
+}

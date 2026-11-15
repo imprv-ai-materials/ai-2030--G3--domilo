@@ -8,7 +8,7 @@ import duckdb
 import pandas as pd
 from api.ai.lead_model.base import KOLUMNY_WEJSCIA
 
-KOLUMNY_CELU = ("umowa_45d", "okno_migracji", "cenzurowany", "obsluzony")
+KOLUMNY_CELU = ("umowa_45d", "okno_migracji", "cenzurowany", "obsluzony", "zamkniety")
 
 
 def wczytaj_zbior(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:

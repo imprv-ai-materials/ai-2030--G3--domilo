@@ -41,3 +41,28 @@ Wrażliwość v0 na historię, z której liczymy konwersję (ten sam zbiór ocen
 | tylko obsłużone zapytania przed oknem | 72 232 | 0,651 | 1,89 | 21,7% |
 
 `current.yaml` jest pusty: żadna wersja nie została wybrana do użycia.
+
+## v2_lgbm_naiwny: zwykły test i okno migracji (2026-11-15)
+
+LightGBM na cechach z chwili utworzenia zapytania (`features/leady/cechy_*.sql`: zapytanie, budżet, www, firma B2B,
+tekst z sygnałami v1). Uczony na 127 527 zamkniętych zapytaniach 2023-01 – 2026-02 bez okna migracji, nieobsłużone
+= 0. Liczy go [`ewaluacja_v2.py`](ewaluacja_v2.py); wynik w `versions/v2_lgbm_naiwny/metryki.json` i w MLflow
+(`leady`, run `v2_lgbm_naiwny`). Raport: [docs/kolejka_v2_lgbm_naiwny.md](../../../../../docs/kolejka_v2_lgbm_naiwny.md).
+v0 uczona tu na tym samym treningu (w oknie AUC 0,633 zamiast 0,637 wersji zapisanej wyżej).
+
+| Wersja | Zbiór | AUC | lift@10% | precision@k |
+|---|---|---:|---:|---:|
+| v0_regula_zrodla (baseline) | test 2026-03 – 2026-06 (15 217; k = 125) | 0,684 (0,668–0,700) | 2,31 (2,11–2,52) | 17,7% (16,0–19,5) |
+| v1_llm_zero_shot | test | 0,617 (0,601–0,632) | 1,49 (1,33–1,65) | 11,5% (9,7–13,5) |
+| **v2_lgbm_naiwny** | test | **0,793** (0,780–0,806) | **3,75** (3,50–4,00) | **43,2%** (34,4–52,0) |
+| v0_regula_zrodla (baseline) | okno migracji (5 320; k = 127) | 0,633 (0,608–0,659) | 1,89 (1,60–2,18) | 22,0% (17,8–26,3) |
+| v1_llm_zero_shot | okno migracji | 0,620 (0,597–0,642) | 1,40 (1,17–1,64) | 15,1% (11,5–18,8) |
+| **v2_lgbm_naiwny** | okno migracji | **0,764** (0,743–0,784) | **3,33** (3,00–3,68) | **49,6%** (40,9–57,5) |
+
+Różnice (95% CI): v2 − v0 na teście: AUC +0,096 … +0,122, lift +1,18 … +1,71, precision +16,7 … +33,9 pp.
+W oknie: AUC +0,111 … +0,150, lift +1,06 … +1,81, precision +18,8 … +35,3 pp. v2 − v1: wszystkie przedziały
+powyżej zera (raport, T2–T3). Bez sygnałów LLM: test AUC 0,783, okno 0,751.
+
+Wada wersji naiwnej: w oknie migracji `domteraz` dało 21,3% umów, a w czołówce 10% v2 jest 0,2% zapytań
+z `domteraz` (raport, T5). Koszt: odpowiedź v1 dla każdego zapytania, ok. 1,19 mln tokenów wejścia i 70 tys. wyjścia
+na 1 000 zapytań; kwota: brak cennika. `current.yaml` nadal pusty.

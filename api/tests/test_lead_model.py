@@ -184,10 +184,79 @@ def test_zbior_laczy_wejscie_z_celem_i_nie_zawiera_stanu_na_eksport():
     )
     con.execute(
         "CREATE TABLE leady_cel AS SELECT 'L1' AS id_leada, 1 AS umowa_45d, TRUE AS okno_migracji, "
-        "FALSE AS cenzurowany, TRUE AS obsluzony"
+        "FALSE AS cenzurowany, TRUE AS obsluzony, TRUE AS zamkniety"
     )
     zbior = wczytaj_zbior(con)
 
     assert set(KOLUMNY_WEJSCIA) <= set(zbior.columns)
     assert not set(zbior.columns) & {"jezyk", "status", "id_umowy"}
-    assert zbior.loc[0, ["umowa_45d", "okno_migracji", "cenzurowany", "obsluzony"]].tolist() == [1, True, False, True]
+    flagi = ["umowa_45d", "okno_migracji", "cenzurowany", "obsluzony", "zamkniety"]
+    assert zbior.loc[0, flagi].tolist() == [1, True, False, True, True]
+
+
+# --- v2_lgbm_naiwny ---------------------------------------------------------------------------------------------
+
+
+def _cechy_v2(n: int = 4000, ziarno: int = 0) -> tuple[pd.DataFrame, np.ndarray]:
+    from api.ai.features.leady.cechy import KOLUMNY_CECH
+
+    rng = np.random.default_rng(ziarno)
+    df = pd.DataFrame({k: rng.integers(0, 3, n).astype(float) for k in KOLUMNY_CECH})
+    df["zrodlo"] = rng.choice(["www", "domteraz", "polecenie"], n)
+    df["miasto"] = rng.choice(["Łódź", "Kraków"], n)
+    df["linia"] = rng.choice(["B2C", "MID"], n)
+    df["utworzono"] = pd.date_range("2024-01-01", "2026-02-28", periods=n, tz="Europe/Warsaw")
+    df["id_leada"] = [f"L{i}" for i in range(n)]
+    logit = -2.5 + 1.5 * (df["zrodlo"] == "polecenie") + 0.8 * df["www_spacer_3d"]
+    y = (rng.random(n) < 1 / (1 + np.exp(-logit))).astype(int)
+    return df, y
+
+
+@pytest.fixture(scope="module")
+def v2_wyuczony():
+    from api.ai.lead_model.versions.v2_lgbm_naiwny.model import ModelLGBMNaiwny
+
+    X, y = _cechy_v2()
+    return ModelLGBMNaiwny(parametry={"num_threads": 1}).fit(X, y), X, y
+
+
+def test_v2_uczy_sie_sygnalu_i_zwraca_prawdopodobienstwo(v2_wyuczony):
+    from sklearn.metrics import roc_auc_score
+
+    model, X, y = v2_wyuczony
+    wynik = model.predict(X)
+    assert wynik.shape == (len(X),) and ((wynik > 0) & (wynik < 1)).all()
+    assert roc_auc_score(y, wynik) > 0.6
+    assert model.liczba_drzew_ >= 1
+
+
+def test_v2_wymaga_cech_z_features_leady(v2_wyuczony):
+    model, X, _ = v2_wyuczony
+    with pytest.raises(ValueError, match="www_spacer_3d"):
+        model.predict(X.drop(columns=["www_spacer_3d"]))
+
+
+def test_v2_nieznana_kategoria_nie_przerywa_predykcji(v2_wyuczony):
+    model, X, _ = v2_wyuczony
+    wynik = model.predict(X.head(3).assign(zrodlo="nowe_zrodlo"))
+    assert np.isfinite(wynik).all()
+
+
+def test_v2_wklady_sumuja_sie_do_log_szansy(v2_wyuczony):
+    model, X, _ = v2_wyuczony
+    wyj = model.explain(X.head(20))
+    logit = wyj.filter(like="wklad_").sum(axis=1)
+    assert np.allclose(1 / (1 + np.exp(-logit)), wyj["wynik"])
+
+
+def test_v2_zapis_i_odczyt_daje_ten_sam_wynik(v2_wyuczony, tmp_path):
+    model, X, _ = v2_wyuczony
+    model.zapisz(tmp_path / "model.joblib")
+    assert np.allclose(ModelLeadow.wczytaj(tmp_path / "model.joblib").predict(X.head(50)), model.predict(X.head(50)))
+
+
+def test_target_treningu_v2_nieobsluzone_to_zero():
+    from api.ai.lead_model.evals.ewaluacja_v2 import target_treningu
+
+    tr = pd.DataFrame({"umowa_45d": [1, 1, 0, 0], "obsluzony": [True, False, True, False]})
+    assert list(target_treningu(tr)) == [1, 0, 0, 0]
