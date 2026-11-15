@@ -1,0 +1,108 @@
+{
+  "uczony_na": "trening (rcn_transakcje, data_aktu 2023-01-01 – 2025-06-30, podzial.sql)",
+  "policzono": "2026-11-15",
+  "progi": {
+    "knn": 2.4116615855758026,
+    "isolation_forest": 0.596102487589623,
+    "kwantyl_treningu": 0.99
+  },
+  "zakresy": {
+    "metraz": [
+      20.0,
+      140.0
+    ],
+    "rok_budowy": [
+      1883.0,
+      2025.0
+    ]
+  },
+  "zakresy_metrazu_wg_pokoi": {
+    "1": [
+      20.0,
+      42.3
+    ],
+    "2": [
+      20.7,
+      66.90800000000019
+    ],
+    "3": [
+      30.6,
+      102.7880000000001
+    ],
+    "4": [
+      49.4,
+      140.0
+    ],
+    "5": [
+      85.2,
+      140.0
+    ]
+  },
+  "odmowy": {
+    "walidacja (RCN 2025-H2)": {
+      "lokale": 7686,
+      "odmowy_proc": 5.087171480614104,
+      "miasto_proc": 0.0,
+      "dzielnica_proc": 0.6635441061670571,
+      "metraz_proc": 0.0,
+      "rok_budowy_proc": 2.3679417122040074,
+      "typ_lokalu_proc": 0.7155867811605517,
+      "knn_proc": 0.5334374186833204,
+      "isolation_forest_proc": 1.0278428311215198
+    },
+    "test (RCN 2026-H1)": {
+      "lokale": 7487,
+      "odmowy_proc": 5.623080005342594,
+      "miasto_proc": 0.0,
+      "dzielnica_proc": 0.8681714972619206,
+      "metraz_proc": 0.0,
+      "rok_budowy_proc": 2.2572458928809938,
+      "typ_lokalu_proc": 1.0284493121410445,
+      "knn_proc": 0.6811807132362762,
+      "isolation_forest_proc": 1.0685187658608253
+    },
+    "oferty z Katowic": {
+      "lokale": 1240,
+      "odmowy_proc": 100.0,
+      "miasto_proc": 100.0,
+      "dzielnica_proc": 100.0,
+      "metraz_proc": 0.0,
+      "rok_budowy_proc": 27.09677419354839,
+      "typ_lokalu_proc": 0.7258064516129032,
+      "knn_proc": 99.83870967741936,
+      "isolation_forest_proc": 1.532258064516129
+    },
+    "oferty z 6 miast z treningu": {
+      "lokale": 13591,
+      "odmowy_proc": 18.011919652711352,
+      "miasto_proc": 0.0,
+      "dzielnica_proc": 0.713707600618056,
+      "metraz_proc": 1.2508277536605106,
+      "rok_budowy_proc": 14.20057390920462,
+      "typ_lokalu_proc": 2.111691560591568,
+      "knn_proc": 1.1331027886101095,
+      "isolation_forest_proc": 1.1919652711353101
+    },
+    "lokale Domilo": {
+      "lokale": 7200,
+      "odmowy_proc": 7.902777777777778,
+      "miasto_proc": 0.0,
+      "dzielnica_proc": 5.694444444444445,
+      "metraz_proc": 0.9722222222222222,
+      "rok_budowy_proc": 0.0,
+      "typ_lokalu_proc": 1.8472222222222223,
+      "knn_proc": 0.2638888888888889,
+      "isolation_forest_proc": 0.5555555555555556
+    }
+  },
+  "punkt_proponowany": {
+    "walidacja": {
+      "przyjete_proc": 94.9128285193859,
+      "mape_przyjetych_proc": 8.671943264808416
+    },
+    "test": {
+      "przyjete_proc": 94.3769199946574,
+      "mape_przyjetych_proc": 8.502099944073644
+    }
+  }
+}

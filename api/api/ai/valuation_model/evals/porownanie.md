@@ -70,3 +70,21 @@ Raport: [b1_przedzialy.md](../../../../../docs/b1_przedzialy.md), wyniki: `versi
 CQR spełnia normę banku łącznie, ale z zapasem 0,6 pp. Nie spełnia jej w segmentach od 600 tys. zł, w apartamentowcach
 (53,7%), kamienicach, domach wielorodzinnych ani w Poznaniu. Łącznego pokrycia baseline nie poprawia (79,1%), poprawia
 równość między segmentami.
+
+## Detektor danych spoza zakresu: v3_przedzialy/ood.py
+
+Reguły (miasto / dzielnica < 80 transakcji, metraż i rok budowy poza p0,5–p99,5, nietypowy typ lokalu = pokoje ×
+metraż) + kNN (10 najbliższych, cechy standaryzowane na treningu) + Isolation Forest; progi kNN i IF = kwantyl 0,99
+treningu (wybrany na walidacji). Baseline: bezpiecznik v1 (odmowa tylko przy mieście nieznanym w treningu).
+Raport: [b1_ood.md](../../../../../docs/b1_ood.md), wyniki: `versions/v3_przedzialy/ood_metryki.json`.
+
+| Zbiór | Baseline (v1: nieznane miasto): odmowy | Detektor: odmowy | Detektor: MAPE przyjętych | Bez odmów: MAPE |
+|---|---:|---:|---:|---:|
+| walidacja | 0,0 | 5,1 | 8,67 | 8,72 |
+| test | 0,0 | 5,6 | 8,50 | 8,55 |
+| oferty z Katowic (1 240) | 100,0 | 100,0 | — (brak cen) | — |
+| lokale Domilo (7 200) | 0,0 | 7,9 | — (brak cen) | — |
+
+Wybiera te same Katowice co v1 i dokłada lokale, których rejestr nie zna (dzielnice < 80 transakcji, metraże spoza
+RCN, rok 2026, brak roku), ale nie poprawia MAPE w znanych miastach. Odmowa przy szerokości przedziału CQR > 34,3%
+(próg z walidacji) daje na teście 86,3% przyjętych i MAPE 7,71%.
