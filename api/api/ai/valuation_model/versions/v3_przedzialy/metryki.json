@@ -1,0 +1,212 @@
+{
+  "wersja": "v3_przedzialy",
+  "skladniki": {
+    "p50": "versions/v2_lgbm_geo/model.joblib (w v2_lgbm_geo_cqr/model.joblib)",
+    "p10_p90": "versions/v2_lgbm_geo_cqr/model.joblib (kwantylowe LightGBM + CQR na walidacji)",
+    "odmowa": "versions/v3_przedzialy/ood.joblib (reguły + kNN + Isolation Forest, progi kwantyl 0,99 treningu)"
+  },
+  "max_szerokosc": null,
+  "wariant_B_max_szerokosc": 0.34259164756879923,
+  "policzono": "2026-11-15",
+  "metryki": {
+    "v2_lgbm_geo_cqr (bez odmów)": {
+      "walidacja": {
+        "n": 7686,
+        "odmowy_proc": 0.0,
+        "n_przyjetych": 7686,
+        "mae": 46772.122246587074,
+        "mape": 8.718686874731754,
+        "mdape": 5.990258829307603,
+        "mediana_bledu_proc": -3.0089425513061014,
+        "pokrycie": 80.0416341399948,
+        "ponizej_p10": 6.1150143117356235,
+        "powyzej_p90": 13.843351548269581,
+        "mediana_szerokosci": 23.896693126642905
+      },
+      "test": {
+        "n": 7487,
+        "odmowy_proc": 0.0,
+        "n_przyjetych": 7487,
+        "mae": 50540.2673842792,
+        "mape": 8.547125917045022,
+        "mdape": 6.486624006433534,
+        "mediana_bledu_proc": -4.459205148990641,
+        "pokrycie": 77.64124482436223,
+        "ponizej_p10": 4.808334446373714,
+        "powyzej_p90": 17.550420729264058,
+        "mediana_szerokosci": 23.91159294991752
+      }
+    },
+    "v3_przedzialy": {
+      "walidacja": {
+        "n": 7686,
+        "odmowy_proc": 5.087171480614104,
+        "n_przyjetych": 7295,
+        "mae": 45268.37511246887,
+        "mape": 8.671943264808416,
+        "mdape": 5.913880885814441,
+        "mediana_bledu_proc": -3.0060841122303716,
+        "pokrycie": 80.30157642220699,
+        "ponizej_p10": 6.141192597669637,
+        "powyzej_p90": 13.557230980123371,
+        "mediana_szerokosci": 23.79294212951634
+      },
+      "test": {
+        "n": 7487,
+        "odmowy_proc": 5.623080005342594,
+        "n_przyjetych": 7066,
+        "mae": 49017.84620428659,
+        "mape": 8.502099944073644,
+        "mdape": 6.407359913510792,
+        "mediana_bledu_proc": -4.443661996387986,
+        "pokrycie": 77.93659779224456,
+        "ponizej_p10": 4.726861024624965,
+        "powyzej_p90": 17.336541183130482,
+        "mediana_szerokosci": 23.742560022194755
+      }
+    },
+    "v3_przedzialy + szerokość (wariant B)": {
+      "walidacja": {
+        "n": 7686,
+        "odmowy_proc": 17.056986729117877,
+        "n_przyjetych": 6375,
+        "mae": 46364.28492899456,
+        "mape": 7.91719993897155,
+        "mdape": 5.6141380836074655,
+        "mediana_bledu_proc": -2.878515468236562,
+        "pokrycie": 79.68627450980392,
+        "ponizej_p10": 6.023529411764706,
+        "powyzej_p90": 14.290196078431372,
+        "mediana_szerokosci": 22.69518958620459
+      },
+      "test": {
+        "n": 7487,
+        "odmowy_proc": 18.33845331908642,
+        "n_przyjetych": 6114,
+        "mae": 50447.04633891403,
+        "mape": 7.654905962079297,
+        "mdape": 6.040669182346436,
+        "mediana_bledu_proc": -4.213220493413861,
+        "pokrycie": 77.00359829898593,
+        "ponizej_p10": 4.645076872751063,
+        "powyzej_p90": 18.351324828263003,
+        "mediana_szerokosci": 22.638639404316653
+      }
+    }
+  },
+  "odmowy": [
+    {
+      "zbior": "oferty z Katowic",
+      "wariant": "v3_przedzialy",
+      "lokale": 1240,
+      "odmowy": 1240,
+      "odmowy_proc": "100,0"
+    },
+    {
+      "zbior": "oferty z Katowic",
+      "wariant": "v3 + szerokość (B)",
+      "lokale": 1240,
+      "odmowy": 1240,
+      "odmowy_proc": "100,0"
+    },
+    {
+      "zbior": "lokale Domilo",
+      "wariant": "v3_przedzialy",
+      "lokale": 7200,
+      "odmowy": 569,
+      "odmowy_proc": "7,9"
+    },
+    {
+      "zbior": "lokale Domilo",
+      "wariant": "v3 + szerokość (B)",
+      "lokale": 7200,
+      "odmowy": 936,
+      "odmowy_proc": "13,0"
+    }
+  ],
+  "koszty": {
+    "wolumen_roczny": 7200,
+    "warianty": [
+      {
+        "kwantyl_progu": "0,950",
+        "wariant": "v3 (OOD)",
+        "odmowy_Domilo": 998,
+        "odmowy_proc": "13,9",
+        "wyceny_wewnetrzne_rocznie": "998",
+        "koszt_wycen_wewn_pln": "149 700"
+      },
+      {
+        "kwantyl_progu": "0,950",
+        "wariant": "v3 + szerokość (B)",
+        "odmowy_Domilo": 1333,
+        "odmowy_proc": "18,5",
+        "wyceny_wewnetrzne_rocznie": "1 333",
+        "koszt_wycen_wewn_pln": "199 950"
+      },
+      {
+        "kwantyl_progu": "0,980",
+        "wariant": "v3 (OOD)",
+        "odmowy_Domilo": 659,
+        "odmowy_proc": "9,2",
+        "wyceny_wewnetrzne_rocznie": "659",
+        "koszt_wycen_wewn_pln": "98 850"
+      },
+      {
+        "kwantyl_progu": "0,980",
+        "wariant": "v3 + szerokość (B)",
+        "odmowy_Domilo": 1022,
+        "odmowy_proc": "14,2",
+        "wyceny_wewnetrzne_rocznie": "1 022",
+        "koszt_wycen_wewn_pln": "153 300"
+      },
+      {
+        "kwantyl_progu": "0,990 (propozycja)",
+        "wariant": "v3 (OOD)",
+        "odmowy_Domilo": 569,
+        "odmowy_proc": "7,9",
+        "wyceny_wewnetrzne_rocznie": "569",
+        "koszt_wycen_wewn_pln": "85 350"
+      },
+      {
+        "kwantyl_progu": "0,990 (propozycja)",
+        "wariant": "v3 + szerokość (B)",
+        "odmowy_Domilo": 936,
+        "odmowy_proc": "13,0",
+        "wyceny_wewnetrzne_rocznie": "936",
+        "koszt_wycen_wewn_pln": "140 400"
+      },
+      {
+        "kwantyl_progu": "0,995",
+        "wariant": "v3 (OOD)",
+        "odmowy_Domilo": 551,
+        "odmowy_proc": "7,7",
+        "wyceny_wewnetrzne_rocznie": "551",
+        "koszt_wycen_wewn_pln": "82 650"
+      },
+      {
+        "kwantyl_progu": "0,995",
+        "wariant": "v3 + szerokość (B)",
+        "odmowy_Domilo": 918,
+        "odmowy_proc": "12,8",
+        "wyceny_wewnetrzne_rocznie": "918",
+        "koszt_wycen_wewn_pln": "137 700"
+      },
+      {
+        "kwantyl_progu": "0,999",
+        "wariant": "v3 (OOD)",
+        "odmowy_Domilo": 537,
+        "odmowy_proc": "7,5",
+        "wyceny_wewnetrzne_rocznie": "537",
+        "koszt_wycen_wewn_pln": "80 550"
+      },
+      {
+        "kwantyl_progu": "0,999",
+        "wariant": "v3 + szerokość (B)",
+        "odmowy_Domilo": 904,
+        "odmowy_proc": "12,6",
+        "wyceny_wewnetrzne_rocznie": "904",
+        "koszt_wycen_wewn_pln": "135 600"
+      }
+    ]
+  }
+}

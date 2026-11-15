@@ -14,6 +14,9 @@ sprawdzone_niewybrane: >
   v2_lightgbm (2026-11-15): LightGBM na tych samych cechach, test MAPE 10,2% / MdAPE 8,3% / MAE 63 095 zł /
   RMSE 95 538 zł, czyli bez poprawy względem v1 (docs/b3_wycena_v2_geo.md); v1 zostaje jako prostsza.
 kandydat: >
+  v3_przedzialy (2026-11-15, docs/b1_v3.md): P50 v2_lgbm_geo + przedział CQR + odmowa z powodem (detektor OOD).
+  Test: odmowy 5,6%, na przyjętych MAPE 8,50% i pokrycie 77,9% (norma 77–83%); Katowice 100% odmów, Domilo 7,9%.
+  Nadal MAPE > 8% i brak sprawdzianu na 300 operatach kontrolnych. Wcześniejsze składniki:
   v2_lgbm_geo (2026-11-15): test MAPE 8,55% / MdAPE 6,5% / MAE 50 540 zł (v1: 10,17% / 8,3% / 63 252 zł),
   docs/b4_wycena_v2_lgbm_geo.md. Jeszcze nie używana: brak cech otoczenia i sąsiedztwa dla lokali Domilo
   (liczone na dzień wyceny) i MAPE > 8%. Przedział P10/P90: v2_lgbm_geo_cqr (2026-11-15, docs/b1_przedzialy.md),

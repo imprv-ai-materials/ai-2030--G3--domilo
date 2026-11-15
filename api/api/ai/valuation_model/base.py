@@ -15,6 +15,9 @@ import pandas as pd
 
 KOLUMNY_CECH = ("miasto", "dzielnica", "metraz", "pokoje", "pietro", "rok_budowy")
 KOLUMNY_PRZEDZIALU = ("p10", "p50", "p90")
+# Wersje z odpowiedzią „nie wiem” (od v3) dokładają do przedziału: odmowa (bool) i powod (słowami, „” gdy brak odmowy).
+# Przy odmowie p10, p50, p90 i predict() są NaN.
+KOLUMNY_ODMOWY = ("odmowa", "powod")
 
 
 class ModelWyceny(ABC):
@@ -31,7 +34,10 @@ class ModelWyceny(ABC):
         """Wycena punktowa każdego lokalu w PLN (tablica długości len(X))."""
 
     def predict_interval(self, X: pd.DataFrame) -> pd.DataFrame:
-        """Przedział wyceny w PLN: kolumny p10, p50, p90 (przedział 80% = p10–p90), indeks jak w X."""
+        """Przedział wyceny w PLN: kolumny p10, p50, p90 (przedział 80% = p10–p90), indeks jak w X.
+
+        Wersja, która umie odmówić (np. v3_przedzialy), dokłada kolumny KOLUMNY_ODMOWY; przy odmowie p10/p50/p90 = NaN.
+        """
         raise NotImplementedError(f"{type(self).__name__} nie ma jeszcze przedziału wyceny")
 
     @abstractmethod

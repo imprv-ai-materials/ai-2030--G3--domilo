@@ -1,0 +1,64 @@
+# Stałe ekonomiczne i warunki banku dla wyceny lokali (valuation_bc).
+#
+# Zasada (CLAUDE.md): liczby tylko od użytkownika, każda z opisem źródła i osobą odpowiedzialną.
+# Każda pozycja: wartosc, jednostka, opis, zrodlo (kto i kiedy podał), odpowiedzialny (kto odpowiada za liczbę).
+# odpowiedzialny: null = osoby nie podano (ani w czacie, ani w danych) — DO UZUPEŁNIENIA przed użyciem w decyzji.
+# Odczyt: api.contexts_boundaries.valuation_bc.zalozenia.wczytaj_zalozenia().
+
+koszt_operatu_pln:
+  wartosc: 450
+  jednostka: PLN za operat
+  opis: Koszt jednego operatu szacunkowego rzeczoznawcy (operat roczny lub kontrolny jednego lokalu).
+  zrodlo: podane przez użytkownika w czacie 2026-11-15 („operat 450 PLN”)
+  odpowiedzialny: null
+
+koszt_wyceny_wewnetrznej_pln:
+  wartosc: 150
+  jednostka: PLN za wycenę
+  opis: Koszt jednej wyceny wewnętrznej Domilo, wykonywanej, gdy model odmawia wyceny („nie wiem”).
+  zrodlo: podane przez użytkownika w czacie 2026-11-15 („wycena wewnętrzna 150 PLN”)
+  odpowiedzialny: null
+
+probka_kontrolna_lokali:
+  wartosc: 300
+  jednostka: lokale
+  opis: >
+    Liczba operatów kontrolnych, na których bank sprawdza model (lokale Domilo). Zgodne z danymi: 300 operatów
+    typ = 'kontrolny' z września 2026 (docs/b1_dane.md, tabela 1d). Częstotliwości próbki nie podano.
+  zrodlo: podane przez użytkownika w czacie 2026-11-15 („próbka kontrolna 300”)
+  odpowiedzialny: null
+
+bank_mape_max_proc:
+  wartosc: 8
+  jednostka: "% (MAPE na operatach kontrolnych, wartość dopuszczalna: ≤)"
+  opis: Warunek banku - średni bezwzględny błąd procentowy wyceny modelu względem operatów kontrolnych.
+  zrodlo: warunki banku podane przez użytkownika na początku projektu, zapisane w docs/b1_dane.md (Kontekst)
+  odpowiedzialny: null
+
+bank_przedzial_poziom:
+  wartosc: 0.8
+  jednostka: ułamek (przedział P10–P90)
+  opis: Warunek banku - wycena z przedziałem 80%.
+  zrodlo: użytkownik w czacie 2026-11-15 („bank wymaga przedziału 80% z pokryciem 77-83%”); docs/b1_dane.md
+  odpowiedzialny: null
+
+bank_pokrycie_min_proc:
+  wartosc: 77
+  jednostka: "% cen w [P10; P90]"
+  opis: Warunek banku - dolna granica pokrycia przedziału 80%.
+  zrodlo: użytkownik w czacie 2026-11-15 („pokrycie 77-83%”); docs/b1_dane.md
+  odpowiedzialny: null
+
+bank_pokrycie_max_proc:
+  wartosc: 83
+  jednostka: "% cen w [P10; P90]"
+  opis: Warunek banku - górna granica pokrycia przedziału 80%.
+  zrodlo: użytkownik w czacie 2026-11-15 („pokrycie 77-83%”); docs/b1_dane.md
+  odpowiedzialny: null
+
+bank_odpowiedz_nie_wiem:
+  wartosc: true
+  jednostka: tak / nie
+  opis: Warunek banku - model ma odpowiadać „nie wiem” w przypadkach niepewnych (bez liczby kryterium).
+  zrodlo: warunki banku podane przez użytkownika na początku projektu, zapisane w docs/b1_dane.md (Kontekst)
+  odpowiedzialny: null
