@@ -17,7 +17,8 @@ Stan danych: eksport 2026-09-30 23:59 Europe/Warsaw; tabela zbudowana w `domilo.
 4. Od 2024-02 część najemców dostaje ofertę retencyjną (`retencja_decyzje`), więc wynik częściowo zależy od tego,
    komu firma ją dała. W losowym teście z lat 2025–2026 z grupy z ofertą odeszło 36,88%, a z grupy kontrolnej 42,09%
    (różnica 5,21 p.p. ± 2,78 p.p., 95%). Model uczony na historii nauczy się więc także dotychczasowej polityki
-   ofert.
+   ofert. W latach 2024-02 – 2025-06 rabat dostawał praktycznie każdy najemca z wysokim score, więc z tych danych
+   nie da się odczytać, jak ryzykowny byłby bez rabatu (sekcja „Dlaczego model nie mierzy ryzyka bez rabatu”).
 5. Przeprowadzka do innego lokalu Domilo zdarza się rzadko (36 umów) i prawie nie zmienia odsetka odejść.
 
 ## Definicja
@@ -175,6 +176,56 @@ W okresach „polityka” ofertę dostają umowy z wysokim score, więc wyższy 
 że oferta szkodzi. Bez takiego obciążenia porównać można tylko grupy z losowego `test_2025`: kontrola − oferta =
 5,21 p.p., połowa 95% przedziału 2,78 p.p., z = 3,67.
 
+### Dlaczego model nie mierzy „ryzyka bez rabatu” (umowy z końcem 2024-02 – 2025-06)
+
+Po prostu:
+
+- W tym okresie Domilo dawało ofertę według score dostawcy (`polityka_2024`). Oferta to rabat 150 zł miesięcznie
+  w nowej umowie: mają go wszystkie 1 314 przedłużeń z grupy z ofertą.
+- Ofertę dostało 2 666 z 7 616 kończących się umów (35,01%). Z 2 422 umów ze score od 0,5455 w górę ofertę dostało
+  2 421, a poniżej 0,5011 nie dostał jej nikt. To nie był los, tylko próg.
+- **Co widzimy w danych:** najemcy z ofertą przedłużali rzadziej (49,44%) niż bez oferty (69,78%). Nie znaczy to, że
+  rabat szkodzi. Ofertę dostali ci, którzy i tak częściej odchodzą. Gdy porównamy osoby losowo przydzielone do
+  oferty i do kontroli (test 2025), oferta zmniejsza odejścia o 5,21 p.p.
+- **Czego w danych brakuje:** jak zachowałby się ryzykowny najemca **bez** rabatu. W tym okresie praktycznie każdy
+  ryzykowny najemca rabat dostał, więc takiego przypadku nie ma w danych.
+- **Co z tego wynika dla modelu:** model uczony na tym okresie widzi u ryzykownych najemców wynik **po rabacie**,
+  a u pozostałych bez rabatu. Uczy się więc „ryzyka przy obecnej polityce ofert”, a nie „ryzyka bez rabatu”.
+  - Najbardziej zaniża ryzyko tym, którym firma dawała rabat. Rabat obniżył ich odejścia, a model widzi tylko ten
+    niższy wynik.
+  - Jeśli takim modelem wybierać, komu dać rabat, firma będzie oceniać najemców tak, jakby już go dostali. Do tego
+    nie potrzebujemy ryzyka, tylko tego, o ile rabat zmienia decyzję konkretnego najemcy, a tego model nie liczy.
+- W treningu v1_ryzyko (końce umów 2023-03 – 2025-12, 14 903 umowy) ten okres to 7 616 umów, czyli ponad połowa.
+  Pozostałe to 4 025 umów sprzed programu ofert (bez `retencja_decyzje`) i 3 262 umowy z losowego testu 2025
+  (1 662 kontrola, 1 600 oferta).
+- Jedyne miejsce w tym okresie, gdzie są obok siebie umowy z ofertą i bez, to wąski pas score 0,5011–0,5455. Bez
+  oferty przedłużyło tam 47,5% z 162 umów, z ofertą 56,3% z 245. Przydział nie był tam losowy, a umów jest mało,
+  więc to tylko wskazówka.
+
+| Grupa (`polityka_2024`) | Umowy | Udział | Przedłużone | % przedłużeń | % odejść |
+|---|---:|---:|---:|---:|---:|
+| oferta (rabat 150 zł / mies.) | 2 666 | 35,01% | 1 318 | 49,44 | 50,56 |
+| brak oferty | 4 950 | 64,99% | 3 454 | 69,78 | 30,22 |
+| razem | 7 616 | 100% | 4 772 | 62,66 | 37,34 |
+
+| Linia | % przedłużeń z ofertą | % przedłużeń bez oferty |
+|---|---:|---:|
+| B2C | 58,83 (2 084 umowy) | 74,80 (4 266) |
+| B2B | 15,81 (582) | 38,45 (684) |
+
+| Score dostawcy | Umowy | % z ofertą | % przedłużeń |
+|---|---:|---:|---:|
+| 0,0–0,1 | 459 | 0,0 | 92,8 |
+| 0,1–0,2 | 1 022 | 0,0 | 82,6 |
+| 0,2–0,3 | 1 136 | 0,0 | 72,3 |
+| 0,3–0,4 | 1 100 | 0,0 | 63,3 |
+| 0,4–0,5 | 1 059 | 0,0 | 55,1 |
+| 0,5–0,6 | 906 | 80,8 | 55,1 |
+| 0,6–0,7 | 814 | 100,0 | 51,5 |
+| 0,7–0,8 | 614 | 100,0 | 45,9 |
+| 0,8–0,9 | 401 | 100,0 | 42,4 |
+| 0,9–1,0 | 105 | 100,0 | 30,5 |
+
 ## SQL i kod
 
 Budowa tabeli (z katalogu `api/`): `poetry run python -m api.ai.features.najemcy.migawki`, czyli
@@ -258,6 +309,43 @@ SELECT count(*) FILTER (WHERE r.id_umowy IS NULL AND m.data_do >= DATE '2024-02-
        count(*) FILTER (WHERE m.data_do >= DATE '2024-02-01') AS od_2024_02,
        (SELECT count(*) FROM retencja_decyzje) AS w_retencji
 FROM migawki_najemcy AS m LEFT JOIN retencja_decyzje AS r USING (id_umowy);
+
+-- Oferty 2024-02 – 2025-06: udział, przedłużenia według grupy, linii i score
+SELECT count(*) AS umowy, count(*) FILTER (WHERE r.grupa = 'oferta') AS z_oferta,
+       round(100.0 * count(*) FILTER (WHERE r.grupa = 'oferta') / count(*), 2) AS pct_oferta
+FROM migawki_najemcy AS m LEFT JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30';
+SELECT r.grupa, count(*), sum(1 - odejdzie), round(100 * avg(1 - odejdzie), 2), round(100 * avg(odejdzie), 2)
+FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30' GROUP BY ROLLUP (r.grupa) ORDER BY 1;
+SELECT m.linia, r.grupa, count(*), round(100 * avg(1 - odejdzie), 2)
+FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30' GROUP BY ALL ORDER BY ALL;
+SELECT floor(score_polityki * 10) / 10 AS przedzial_score, count(*),
+       round(100 * avg((r.grupa = 'oferta')::INT), 1) AS pct_z_oferta, round(100 * avg(1 - odejdzie), 1)
+FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30' GROUP BY 1 ORDER BY 1;
+-- Próg: score oferty i braku oferty, pas wspólny, umowy od 0,5455 w górę
+SELECT r.kwalifikuje, r.grupa, count(*), min(score_polityki), max(score_polityki)
+FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30' GROUP BY ALL;
+SELECT r.grupa, count(*), round(100 * avg(1 - odejdzie), 1)
+FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30' AND r.score_polityki BETWEEN 0.5011 AND 0.5455
+GROUP BY 1;
+SELECT count(*) FILTER (WHERE score_polityki >= 0.5455),
+       count(*) FILTER (WHERE score_polityki >= 0.5455 AND r.grupa = 'oferta')
+FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30';
+-- Rabat w przedłużeniach z ofertą
+SELECT r.grupa, u.rabat_mies, count(*)
+FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
+JOIN pms_umowy AS u ON u.id_umowy = m.id_umowy_nastepnej
+WHERE m.data_do BETWEEN DATE '2024-02-01' AND DATE '2025-06-30' GROUP BY ALL;
+-- Skład treningu v1_ryzyko według polityki ofert
+SELECT coalesce(r.okres, 'przed programem') AS okres, coalesce(r.grupa, '-') AS grupa, count(*)
+FROM migawki_najemcy AS m LEFT JOIN retencja_decyzje AS r USING (id_umowy)
+WHERE m.miesiac_konca <= DATE '2025-12-01' GROUP BY ALL ORDER BY ALL;
 
 -- Oferty retencyjne i losowy test 2025
 SELECT r.okres, r.grupa, count(*), round(100 * avg(m.odejdzie), 2)
