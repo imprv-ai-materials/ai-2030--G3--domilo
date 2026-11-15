@@ -1,0 +1,522 @@
+{
+  "A_zrodla": [
+    {
+      "zbior": "okno_migracji",
+      "zrodlo": "domteraz",
+      "zapytania": 1453,
+      "nieobsluzone": 0,
+      "umowy": 119.0,
+      "obsluzone": 1.0,
+      "konwersja_wszystkich": 0.08189951823812801,
+      "konwersja_obsluzonych": 0.08189951823812801,
+      "konwersja_nieobsluzonych": NaN,
+      "konwersja_nieobsluzone_0": 0.08189951823812801
+    },
+    {
+      "zbior": "okno_migracji",
+      "zrodlo": "lokum24",
+      "zapytania": 2040,
+      "nieobsluzone": 0,
+      "umowy": 133.0,
+      "obsluzone": 1.0,
+      "konwersja_wszystkich": 0.06519607843137255,
+      "konwersja_obsluzonych": 0.06519607843137255,
+      "konwersja_nieobsluzonych": NaN,
+      "konwersja_nieobsluzone_0": 0.06519607843137255
+    },
+    {
+      "zbior": "okno_migracji",
+      "zrodlo": "polecenie",
+      "zapytania": 249,
+      "nieobsluzone": 0,
+      "umowy": 46.0,
+      "obsluzone": 1.0,
+      "konwersja_wszystkich": 0.18473895582329317,
+      "konwersja_obsluzonych": 0.18473895582329317,
+      "konwersja_nieobsluzonych": NaN,
+      "konwersja_nieobsluzone_0": 0.18473895582329317
+    },
+    {
+      "zbior": "okno_migracji",
+      "zrodlo": "relokacja_b2b",
+      "zapytania": 359,
+      "nieobsluzone": 0,
+      "umowy": 79.0,
+      "obsluzone": 1.0,
+      "konwersja_wszystkich": 0.2200557103064067,
+      "konwersja_obsluzonych": 0.2200557103064067,
+      "konwersja_nieobsluzonych": NaN,
+      "konwersja_nieobsluzone_0": 0.2200557103064067
+    },
+    {
+      "zbior": "okno_migracji",
+      "zrodlo": "social",
+      "zapytania": 248,
+      "nieobsluzone": 0,
+      "umowy": 12.0,
+      "obsluzone": 1.0,
+      "konwersja_wszystkich": 0.04838709677419355,
+      "konwersja_obsluzonych": 0.04838709677419355,
+      "konwersja_nieobsluzonych": NaN,
+      "konwersja_nieobsluzone_0": 0.04838709677419355
+    },
+    {
+      "zbior": "okno_migracji",
+      "zrodlo": "www",
+      "zapytania": 971,
+      "nieobsluzone": 0,
+      "umowy": 170.0,
+      "obsluzone": 1.0,
+      "konwersja_wszystkich": 0.17507723995880536,
+      "konwersja_obsluzonych": 0.17507723995880536,
+      "konwersja_nieobsluzonych": NaN,
+      "konwersja_nieobsluzone_0": 0.17507723995880536
+    },
+    {
+      "zbior": "test",
+      "zrodlo": "domteraz",
+      "zapytania": 3849,
+      "nieobsluzone": 2288,
+      "umowy": 139.0,
+      "obsluzone": 0.4055598856845934,
+      "konwersja_wszystkich": 0.03611327617563003,
+      "konwersja_obsluzonych": 0.0723894939141576,
+      "konwersja_nieobsluzonych": 0.011363636363636364,
+      "konwersja_nieobsluzone_0": 0.029358274876591324
+    },
+    {
+      "zbior": "test",
+      "zrodlo": "lokum24",
+      "zapytania": 5506,
+      "nieobsluzone": 234,
+      "umowy": 268.0,
+      "obsluzone": 0.9575009081002542,
+      "konwersja_wszystkich": 0.048674173628768615,
+      "konwersja_obsluzonych": 0.05083459787556904,
+      "konwersja_nieobsluzonych": 0.0,
+      "konwersja_nieobsluzone_0": 0.048674173628768615
+    },
+    {
+      "zbior": "test",
+      "zrodlo": "polecenie",
+      "zapytania": 778,
+      "nieobsluzone": 8,
+      "umowy": 113.0,
+      "obsluzone": 0.9897172236503856,
+      "konwersja_wszystkich": 0.14524421593830333,
+      "konwersja_obsluzonych": 0.14415584415584415,
+      "konwersja_nieobsluzonych": 0.25,
+      "konwersja_nieobsluzone_0": 0.14267352185089974
+    },
+    {
+      "zbior": "test",
+      "zrodlo": "relokacja_b2b",
+      "zapytania": 1710,
+      "nieobsluzone": 12,
+      "umowy": 303.0,
+      "obsluzone": 0.9929824561403509,
+      "konwersja_wszystkich": 0.17719298245614035,
+      "konwersja_obsluzonych": 0.1784452296819788,
+      "konwersja_nieobsluzonych": 0.0,
+      "konwersja_nieobsluzone_0": 0.17719298245614035
+    },
+    {
+      "zbior": "test",
+      "zrodlo": "social",
+      "zapytania": 722,
+      "nieobsluzone": 79,
+      "umowy": 23.0,
+      "obsluzone": 0.8905817174515236,
+      "konwersja_wszystkich": 0.03185595567867036,
+      "konwersja_obsluzonych": 0.03265940902021773,
+      "konwersja_nieobsluzonych": 0.02531645569620253,
+      "konwersja_nieobsluzone_0": 0.029085872576177285
+    },
+    {
+      "zbior": "test",
+      "zrodlo": "www",
+      "zapytania": 2652,
+      "nieobsluzone": 26,
+      "umowy": 321.0,
+      "obsluzone": 0.9901960784313726,
+      "konwersja_wszystkich": 0.12104072398190045,
+      "konwersja_obsluzonych": 0.12223914699162224,
+      "konwersja_nieobsluzonych": 0.0,
+      "konwersja_nieobsluzone_0": 0.12104072398190045
+    },
+    {
+      "zbior": "trening",
+      "zrodlo": "domteraz",
+      "zapytania": 33916,
+      "nieobsluzone": 19992,
+      "umowy": 1194.0,
+      "obsluzone": 0.4105436961905885,
+      "konwersja_wszystkich": 0.035204623186696545,
+      "konwersja_obsluzonych": 0.06980752657282391,
+      "konwersja_nieobsluzonych": 0.011104441776710685,
+      "konwersja_nieobsluzone_0": 0.02865903998112985
+    },
+    {
+      "zbior": "trening",
+      "zrodlo": "lokum24",
+      "zapytania": 48156,
+      "nieobsluzone": 2094,
+      "umowy": 2312.0,
+      "obsluzone": 0.9565163219536507,
+      "konwersja_wszystkich": 0.048010632112301686,
+      "konwersja_obsluzonych": 0.04986756979722982,
+      "konwersja_nieobsluzonych": 0.0071633237822349575,
+      "konwersja_nieobsluzone_0": 0.047699144447213224
+    },
+    {
+      "zbior": "trening",
+      "zrodlo": "polecenie",
+      "zapytania": 6219,
+      "nieobsluzone": 68,
+      "umowy": 983.0,
+      "obsluzone": 0.9890657662003538,
+      "konwersja_wszystkich": 0.15806399742723912,
+      "konwersja_obsluzonych": 0.15964883758738416,
+      "konwersja_nieobsluzonych": 0.014705882352941176,
+      "konwersja_nieobsluzone_0": 0.15790319987136195
+    },
+    {
+      "zbior": "trening",
+      "zrodlo": "relokacja_b2b",
+      "zapytania": 10061,
+      "nieobsluzone": 51,
+      "umowy": 2009.0,
+      "obsluzone": 0.9949309213795845,
+      "konwersja_wszystkich": 0.19968194016499355,
+      "konwersja_obsluzonych": 0.2004995004995005,
+      "konwersja_nieobsluzonych": 0.0392156862745098,
+      "konwersja_nieobsluzone_0": 0.1994831527681145
+    },
+    {
+      "zbior": "trening",
+      "zrodlo": "social",
+      "zapytania": 6492,
+      "nieobsluzone": 614,
+      "umowy": 203.0,
+      "obsluzone": 0.9054220579174368,
+      "konwersja_wszystkich": 0.03126925446703635,
+      "konwersja_obsluzonych": 0.03385505273902688,
+      "konwersja_nieobsluzonych": 0.006514657980456026,
+      "konwersja_nieobsluzone_0": 0.030653111521873076
+    },
+    {
+      "zbior": "trening",
+      "zrodlo": "www",
+      "zapytania": 22683,
+      "nieobsluzone": 229,
+      "umowy": 2953.0,
+      "obsluzone": 0.9899043336419345,
+      "konwersja_wszystkich": 0.13018560155182296,
+      "konwersja_obsluzonych": 0.13137970962857398,
+      "konwersja_nieobsluzonych": 0.013100436681222707,
+      "konwersja_nieobsluzone_0": 0.13005334391394435
+    }
+  ],
+  "B_miary": {
+    "test": {
+      "ogolem": {
+        "n": 15217,
+        "umowy": 1167,
+        "konwersja": 0.07669054347111783,
+        "auc": 0.7932226684597488,
+        "lift_10": 3.752473575224049,
+        "k": 125,
+        "precision_k": 0.432,
+        "sredni_wynik": 0.08088868095728625
+      },
+      "auc_wewnatrz_zrodla": {
+        "domteraz": 0.7630611413833892,
+        "lokum24": 0.7446815179543292,
+        "polecenie": 0.7509614744826668,
+        "relokacja_b2b": 0.7047365717381973,
+        "social": 0.7214032468744169,
+        "www": 0.7596067362422503
+      },
+      "auc_obsluzonych": 0.7708719940064562,
+      "auc_dla_obsluzenia": 0.7655316401179462,
+      "auc_dla_obsluzenia_wewnatrz_zrodla": {
+        "domteraz": 0.6292650734915309,
+        "lokum24": 0.5198225101487621,
+        "polecenie": 0.5568181818181818,
+        "relokacja_b2b": 0.4994846878680801,
+        "social": 0.5348347343347049,
+        "www": 0.5594645263342902
+      }
+    },
+    "okno_migracji": {
+      "ogolem": {
+        "n": 5320,
+        "umowy": 559,
+        "konwersja": 0.10507518796992481,
+        "auc": 0.7635151662715737,
+        "lift_10": 3.32737030411449,
+        "k": 127,
+        "precision_k": 0.49606299212598426,
+        "sredni_wynik": 0.07260074878428119
+      },
+      "auc_wewnatrz_zrodla": {
+        "domteraz": 0.7367272246229827,
+        "lokum24": 0.7411436299190556,
+        "polecenie": 0.7561576354679803,
+        "relokacja_b2b": 0.7301537070524412,
+        "social": 0.7051553672316384,
+        "www": 0.7609972828082543
+      },
+      "auc_obsluzonych": 0.7635151662715737,
+      "auc_dla_obsluzenia": null,
+      "auc_dla_obsluzenia_wewnatrz_zrodla": {
+        "domteraz": null,
+        "lokum24": null,
+        "polecenie": null,
+        "relokacja_b2b": null,
+        "social": null,
+        "www": null
+      }
+    }
+  },
+  "C_cechy": [
+    {
+      "cecha": "zrodlo",
+      "udzial_gain": 0.34821876193510615,
+      "sredni_abs_wklad_test": 0.579622955166022,
+      "sredni_abs_wklad_okno_migracji": 0.5429706364350321
+    },
+    {
+      "cecha": "budzet_do_mediany",
+      "udzial_gain": 0.19701115968830935,
+      "sredni_abs_wklad_test": 0.43930704121365455,
+      "sredni_abs_wklad_okno_migracji": 0.4419630261692039
+    },
+    {
+      "cecha": "termin_dni",
+      "udzial_gain": 0.148317822721121,
+      "sredni_abs_wklad_test": 0.3933656790766611,
+      "sredni_abs_wklad_okno_migracji": 0.39614744450542005
+    },
+    {
+      "cecha": "dlugosc_wiadomosci",
+      "udzial_gain": 0.03988243980502698,
+      "sredni_abs_wklad_test": 0.07932854970288718,
+      "sredni_abs_wklad_okno_migracji": 0.08063448785273654
+    },
+    {
+      "cecha": "www_liczba_sesji",
+      "udzial_gain": 0.03560964418269084,
+      "sredni_abs_wklad_test": 0.12576230257484744,
+      "sredni_abs_wklad_okno_migracji": 0.12848516257029624
+    },
+    {
+      "cecha": "www_spacer_3d",
+      "udzial_gain": 0.035047062956302284,
+      "sredni_abs_wklad_test": 0.1406964059988553,
+      "sredni_abs_wklad_okno_migracji": 0.1414965979601473
+    },
+    {
+      "cecha": "linia",
+      "udzial_gain": 0.03281767254237966,
+      "sredni_abs_wklad_test": 0.1832479375448673,
+      "sredni_abs_wklad_okno_migracji": 0.1864333589675189
+    },
+    {
+      "cecha": "syg_niedopasowanie_oferty",
+      "udzial_gain": 0.029327166127041455,
+      "sredni_abs_wklad_test": 0.11147064800661392,
+      "sredni_abs_wklad_okno_migracji": 0.11595625655181571
+    },
+    {
+      "cecha": "liczba_lokali",
+      "udzial_gain": 0.026191658750613658,
+      "sredni_abs_wklad_test": 0.03798051843150692,
+      "sredni_abs_wklad_okno_migracji": 0.03047889060645672
+    },
+    {
+      "cecha": "syg_konkretne_pytania",
+      "udzial_gain": 0.026121320405640785,
+      "sredni_abs_wklad_test": 0.11954355066348013,
+      "sredni_abs_wklad_okno_migracji": 0.11988530920750691
+    },
+    {
+      "cecha": "www_kalkulator",
+      "udzial_gain": 0.01903649249225392,
+      "sredni_abs_wklad_test": 0.09829212400071381,
+      "sredni_abs_wklad_okno_migracji": 0.09799746527020108
+    },
+    {
+      "cecha": "miasto",
+      "udzial_gain": 0.017693847953536457,
+      "sredni_abs_wklad_test": 0.054111608088208904,
+      "sredni_abs_wklad_okno_migracji": 0.04974594556637652
+    },
+    {
+      "cecha": "liczba_osob",
+      "udzial_gain": 0.015458710980941164,
+      "sredni_abs_wklad_test": 0.0468893894040266,
+      "sredni_abs_wklad_okno_migracji": 0.04258332278380491
+    },
+    {
+      "cecha": "syg_pilny_termin",
+      "udzial_gain": 0.010663828828650296,
+      "sredni_abs_wklad_test": 0.02180644909789962,
+      "sredni_abs_wklad_okno_migracji": 0.02191782033547515
+    },
+    {
+      "cecha": "zwierze",
+      "udzial_gain": 0.005257555012230615,
+      "sredni_abs_wklad_test": 0.014536785447828967,
+      "sredni_abs_wklad_okno_migracji": 0.01444164587068151
+    },
+    {
+      "cecha": "syg_budzet_niski",
+      "udzial_gain": 0.004170720804809811,
+      "sredni_abs_wklad_test": 0.01934874343879537,
+      "sredni_abs_wklad_okno_migracji": 0.019537652559628606
+    },
+    {
+      "cecha": "syg_relokacja",
+      "udzial_gain": 0.004064275414675054,
+      "sredni_abs_wklad_test": 0.005503041402375964,
+      "sredni_abs_wklad_okno_migracji": 0.004922090217147416
+    },
+    {
+      "cecha": "umowa_ramowa",
+      "udzial_gain": 0.003983059509542687,
+      "sredni_abs_wklad_test": 0.012813752298016606,
+      "sredni_abs_wklad_okno_migracji": 0.003430975297567166
+    },
+    {
+      "cecha": "syg_brak_informacji",
+      "udzial_gain": 0.001126799889127843,
+      "sredni_abs_wklad_test": 0.002779111350620869,
+      "sredni_abs_wklad_okno_migracji": 0.0027978011575762246
+    }
+  ],
+  "D_okno": [
+    {
+      "zrodlo": "domteraz",
+      "zapytania": 1453,
+      "konwersja": 0.08189951823812801,
+      "obsluzone": 1.0,
+      "sredni_wynik_v2": 0.029224018261201752,
+      "sredni_wklad_zrodla": -0.7234902752717389,
+      "konwersja_obsluzonych": 0.08189951823812801,
+      "sredni_wynik_obsluzonych": 0.029224018261201752
+    },
+    {
+      "zrodlo": "lokum24",
+      "zapytania": 2040,
+      "konwersja": 0.06519607843137255,
+      "obsluzone": 1.0,
+      "sredni_wynik_v2": 0.045986934024682555,
+      "sredni_wklad_zrodla": -0.1138545243141871,
+      "konwersja_obsluzonych": 0.06519607843137255,
+      "sredni_wynik_obsluzonych": 0.045986934024682555
+    },
+    {
+      "zrodlo": "polecenie",
+      "zapytania": 249,
+      "konwersja": 0.18473895582329317,
+      "obsluzone": 1.0,
+      "sredni_wynik_v2": 0.15813190609842429,
+      "sredni_wklad_zrodla": 1.2275381538103771,
+      "konwersja_obsluzonych": 0.18473895582329317,
+      "sredni_wynik_obsluzonych": 0.15813190609842429
+    },
+    {
+      "zrodlo": "relokacja_b2b",
+      "zapytania": 359,
+      "konwersja": 0.2200557103064067,
+      "obsluzone": 1.0,
+      "sredni_wynik_v2": 0.19080771595707088,
+      "sredni_wklad_zrodla": 1.14220029924555,
+      "konwersja_obsluzonych": 0.2200557103064067,
+      "sredni_wynik_obsluzonych": 0.19080771595707088
+    },
+    {
+      "zrodlo": "social",
+      "zapytania": 248,
+      "konwersja": 0.04838709677419355,
+      "obsluzone": 1.0,
+      "sredni_wynik_v2": 0.03675821610012903,
+      "sredni_wklad_zrodla": -0.7396735632805542,
+      "konwersja_obsluzonych": 0.04838709677419355,
+      "sredni_wynik_obsluzonych": 0.03675821610012903
+    },
+    {
+      "zrodlo": "www",
+      "zapytania": 971,
+      "konwersja": 0.17507723995880536,
+      "obsluzone": 1.0,
+      "sredni_wynik_v2": 0.13694056369574592,
+      "sredni_wklad_zrodla": 0.7246222559238581,
+      "konwersja_obsluzonych": 0.17507723995880536,
+      "sredni_wynik_obsluzonych": 0.13694056369574592
+    }
+  ],
+  "E_test": [
+    {
+      "zrodlo": "domteraz",
+      "zapytania": 3849,
+      "konwersja": 0.03611327617563003,
+      "obsluzone": 0.4055598856845934,
+      "sredni_wynik_v2": 0.029781460942720578,
+      "sredni_wklad_zrodla": -0.7218411468565504,
+      "konwersja_obsluzonych": 0.0723894939141576,
+      "sredni_wynik_obsluzonych": 0.03756148644424499
+    },
+    {
+      "zrodlo": "lokum24",
+      "zapytania": 5506,
+      "konwersja": 0.048674173628768615,
+      "obsluzone": 0.9575009081002542,
+      "sredni_wynik_v2": 0.04826628670276038,
+      "sredni_wklad_zrodla": -0.11478549801223355,
+      "konwersja_obsluzonych": 0.05083459787556904,
+      "sredni_wynik_obsluzonych": 0.04847597001648654
+    },
+    {
+      "zrodlo": "polecenie",
+      "zapytania": 778,
+      "konwersja": 0.14524421593830333,
+      "obsluzone": 0.9897172236503856,
+      "sredni_wynik_v2": 0.15495765957307303,
+      "sredni_wklad_zrodla": 1.233229209681623,
+      "konwersja_obsluzonych": 0.14415584415584415,
+      "sredni_wynik_obsluzonych": 0.15513760969640572
+    },
+    {
+      "zrodlo": "relokacja_b2b",
+      "zapytania": 1710,
+      "konwersja": 0.17719298245614035,
+      "obsluzone": 0.9929824561403509,
+      "sredni_wynik_v2": 0.21151531755975134,
+      "sredni_wklad_zrodla": 1.159998748055985,
+      "konwersja_obsluzonych": 0.1784452296819788,
+      "sredni_wynik_obsluzonych": 0.21152454484488983
+    },
+    {
+      "zrodlo": "social",
+      "zapytania": 722,
+      "konwersja": 0.03185595567867036,
+      "obsluzone": 0.8905817174515236,
+      "sredni_wynik_v2": 0.03445867830697542,
+      "sredni_wklad_zrodla": -0.7573718395252187,
+      "konwersja_obsluzonych": 0.03265940902021773,
+      "sredni_wynik_obsluzonych": 0.034932578503511474
+    },
+    {
+      "zrodlo": "www",
+      "zapytania": 2652,
+      "konwersja": 0.12104072398190045,
+      "obsluzone": 0.9901960784313726,
+      "sredni_wynik_v2": 0.12947685613138502,
+      "sredni_wklad_zrodla": 0.7223454103235631,
+      "konwersja_obsluzonych": 0.12223914699162224,
+      "sredni_wynik_obsluzonych": 0.12971487621541875
+    }
+  ]
+}
