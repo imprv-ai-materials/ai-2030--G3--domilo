@@ -1,0 +1,24 @@
+# Pola wykluczone z cech listy retencyjnej najemców (features/najemcy, churn_model).
+#
+# Decyzja użytkownika z 2026-11-16: „Nie używaj rok_urodzenia ani jezyk_kontaktu”.
+# Odczyt: api.ai.features.najemcy.wykluczone. Strażnicy: cechy.py (KOLUMNY_CECH, zbuduj_cechy) i test
+# api/tests/test_cechy_najemcy.py (kolumny wyniku oraz tekst plików sql/*.sql). Rodziny cech w ogóle nie czytają
+# pms_najemcy.
+#
+# Pola każdej pozycji: zrodlo (tabela.kolumna), uzasadnienie, dozwolone_uzycie.
+#
+# Pozostałe pola zakazane w SQL cech (stan na dzień eksportu albo wynik po migawce) są w ZAKAZANE_W_SQL
+# w wykluczone.py, a uzasadnienie w docs/przecieki_najemcy.md.
+
+rok_urodzenia:
+  zrodlo: pms_najemcy.rok_urodzenia
+  uzasadnienie: >
+    Wiek jest cechą chronioną. To, komu Domilo zaproponuje ofertę retencyjną, nie może zależeć od wieku najemcy.
+  dozwolone_uzycie: brak (cechy najemców nie czytają pms_najemcy)
+
+jezyk_kontaktu:
+  zrodlo: pms_najemcy.jezyk_kontaktu
+  uzasadnienie: >
+    Język kontaktu jest bliski pochodzeniu i narodowości. Oferta retencyjna nie może zależeć od języka, w którym
+    najemca się komunikuje.
+  dozwolone_uzycie: brak (cechy najemców nie czytają pms_najemcy)
