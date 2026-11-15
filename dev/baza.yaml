@@ -12,6 +12,12 @@ steps:
         run: poetry run python -m api.ai.features.leady.leady_cel
         cwd: api
   - name: pypyr.steps.cmd
+    description: Tabela migawki_najemcy (target listy retencyjnej, api/api/ai/features/najemcy/migawki.sql)
+    in:
+      cmd:
+        run: poetry run python -m api.ai.features.najemcy.migawki
+        cwd: api
+  - name: pypyr.steps.cmd
     description: Modele dbt metryk (schemat metryki; api/api/data_platform/dbt, docs/kolejka_metryki.md) z testami
     in:
       cmd:

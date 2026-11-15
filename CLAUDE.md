@@ -129,7 +129,9 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   `metadane` ze `zdjecia/metadane.parquet` oraz `telemetra_firmware` i `telemetra_urzadzenia_ciepla`). Zdjęć JPEG
   nie wczytujemy.
 - **Tabele pochodne** (drugi krok `pypyr baza`, po przebudowie): `leady_cel` — target kolejki zapytań `umowa_45d`
-  (`api/api/ai/features/leady/leady_cel.sql`, opis i liczby w `docs/kolejka_target.md`).
+  (`api/api/ai/features/leady/leady_cel.sql`, opis i liczby w `docs/kolejka_target.md`); `migawki_najemcy` —
+  target listy retencyjnej `odejdzie`: umowa roczna B2C/B2B z `data_do` 2023-03-01 – 2026-09-30, migawka 60 dni
+  przed `data_do` (`api/api/ai/features/najemcy/migawki.sql`, opis i liczby w `docs/target_najemcy.md`).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
