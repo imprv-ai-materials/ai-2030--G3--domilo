@@ -1,0 +1,7 @@
+steps:
+  - name: pypyr.steps.cmd
+    description: Budowa domilo.duckdb z plików Parquet w data/ (data/ tylko do odczytu)
+    in:
+      cmd:
+        run: poetry run python -m api.adapters.duckdb_baza
+        cwd: api

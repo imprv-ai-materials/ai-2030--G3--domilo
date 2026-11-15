@@ -19,3 +19,8 @@ node_modules/
 
 # Edytor
 .vscode
+
+# Baza DuckDB budowana z data/ (pypyr baza)
+domilo.duckdb
+domilo.duckdb.tmp
+domilo.duckdb.wal

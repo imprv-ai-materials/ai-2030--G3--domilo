@@ -67,9 +67,13 @@ operaty, zdjęcia), FK (koszty), dane zewnętrzne (POI, dzielnice GUS). Opis tab
 
 ```
 data/                         # dane źródłowe Domilo — TYLKO DO ODCZYTU
+domilo.duckdb                 # baza budowana z data/ (pypyr baza), w .gitignore
 docs/                         # raporty (wnioski → tabele → SQL i kod)
 evals/porownanie.md           # model vs baseline, wszystkie cztery modele
+dev/                          # pipeline'y pypyr (m.in. baza.yaml)
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
+├── adapters/                 # połączenia z systemami zewnętrznymi
+│   └── duckdb_baza.py        # polacz() i zbuduj_baze() dla domilo.duckdb
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
 │   ├── leasing_bc/           # zapytania i doradcy (najem)
@@ -99,11 +103,33 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasing_bc` ↔ `features/leady` ↔ `lead_model`;
 `retention_bc` ↔ `features/najemcy` ↔ `churn_model`; `maintenance_bc` ↔ `features/windy` ↔ `failure_model`.
 
+## Baza domilo.duckdb
+
+- Budowa: `pypyr baza`, czyli `api.adapters.duckdb_baza.zbuduj_baze()`. Trwa kilka sekund, a bazę zawsze buduje
+  od zera z `data/`. W kodzie łącz się przez `polacz()`, nie przez `duckdb.connect()` bezpośrednio.
+- **Tabele:** po jednej na każdy plik Parquet z `data/`, nazwa = nazwa pliku bez rozszerzenia (39 tabel, w tym
+  `metadane` ze `zdjecia/metadane.parquet` oraz `telemetra_firmware` i `telemetra_urzadzenia_ciepla`). Zdjęć JPEG
+  nie wczytujemy.
+- **Widoki:** `telemetra_windy` i `telemetra_cieplo` czytają partycje `rok=/miesiac=` (kolumny `rok`, `miesiac`
+  jako INTEGER). Mają ścieżki względne `data/...`: `polacz()` ustawia `file_search_path` na katalog repozytorium,
+  a w CLI uruchamiaj zapytania z katalogu głównego.
+- **Czas:** `polacz()` ustawia `TimeZone = 'Europe/Warsaw'`.
+  - CRM (`crm_*.utworzono|data_statusu|data_czas`, `www_sesje.data_czas`): TIMESTAMPTZ, czyli dokładny moment.
+  - Serwisownik (`serwis_*`): TIMESTAMP bez strefy = czas lokalny Warszawy, bez zmian względem źródła. Godziny
+    2025-10-26 02:00–03:00 baza nie rozstrzyga.
+  - Telemetra (`ts_utc`): TIMESTAMPTZ, tak jak w Parquecie.
+  - Porównanie TIMESTAMP z TIMESTAMPTZ traktuje TIMESTAMP jako czas warszawski, co jest poprawne dla Serwisownika,
+    PMS i portalu. Bez `polacz()` (np. w CLI) najpierw wykonaj `SET TimeZone = 'Europe/Warsaw'`.
+- `serwis_czesci.koszt_netto` jest w bazie liczbą DECIMAL(12,2) (w źródle tekst `1 234,50`).
+- Testy: `api/tests/test_duckdb_baza.py` sprawdza liczby wierszy względem Parquetów, typy czasu i widoki.
+
 ## Narzędzia
 
 - Python 3.12 + Poetry (`poetry install`, `poetry run pypyr install`); zadania: `pypyr format|lint|test`.
-- Biblioteki: duckdb 2.0, pandas 3.1, pyarrow 26, scikit-learn 1.9, lightgbm 4.7 (`pyproject.toml`).
-- Dane czytamy DuckDB (`SELECT * FROM 'data/crm/crm_leady.parquet'`) lub pandas (`read_parquet`); CLI `duckdb`
-  jest też na hoście. **DuckDB 2.0:** relacja z `duckdb.sql(...)` nie ma `fetchone()` — używaj `.fetchall()`
-  albo `con.execute(...).fetchone()`.
+- Biblioteki: duckdb 2.0, pandas 3.1, pyarrow 26, scikit-learn 1.9, lightgbm 4.7, pytz (`pyproject.toml`).
+  `pytz` jest potrzebny, bo bez niego DuckDB nie zwraca do Pythona kolumn TIMESTAMPTZ.
+- Dane czytamy przez `polacz()` (baza) albo DuckDB/pandas wprost z Parquetu.
+  **DuckDB 2.0:** relacja z `duckdb.sql(...)` nie ma `fetchone()` — używaj `.fetchall()` albo
+  `con.execute(...).fetchone()`. CLI `duckdb` 1.5 na hoście **nie otworzy** `domilo.duckdb` (format pliku 2.0),
+  ale wciąż czyta pliki Parquet.
 - Skille procesu pracy: `.claude/skills/` (m.in. `use-sw-development-workflow`, `sw-test-driven-development`).
