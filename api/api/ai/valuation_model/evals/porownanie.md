@@ -11,10 +11,11 @@ Te same runy (parametry, metryki, model) są w MLflow, eksperyment `wycena` (`ml
 v2: [`ewaluacja_v2.py`](ewaluacja_v2.py)).
 Podział losowy 85/15 dla porównania: [docs/b1_v1.md](../../../../../docs/b1_v1.md).
 
-Warunek banku: MAPE ≤ 8% na operatach kontrolnych (jeszcze nie liczone, tu MAPE na transakcjach RCN).
+Warunek banku: MAPE ≤ 8% na operatach kontrolnych (tabela niżej; tu MAPE na transakcjach RCN).
 Pokrycie: % cen transakcyjnych w [P10; P90] (warunek banku 77–83%). Szerokość: mediana (P90 − P10) / P50 w %.
 Odmowy: % transakcji, dla których wersja odpowiada „nie wiem”. Dla wersji z odmowami MAE, MAPE, MdAPE, pokrycie i
-szerokość liczymy na przyjętych. „—” = wersja bez przedziału. v3: [`ewaluacja_v3.py`](ewaluacja_v3.py).
+szerokość liczymy na przyjętych. „—” = wersja bez przedziału. v3: [`ewaluacja_v3.py`](ewaluacja_v3.py);
+v4: [`ewaluacja_v4.py`](ewaluacja_v4.py).
 
 | Wersja | Zbiór | MAE | MAPE | MdAPE | Pokrycie | Szerokość | Odmowy | Uwagi |
 |---|---|---:|---:|---:|---:|---:|---:|---|
@@ -34,6 +35,26 @@ szerokość liczymy na przyjętych. „—” = wersja bez przedziału. v3: [`ew
 | **v3_przedzialy** | **test** | **49 018** | **8,5** | **6,4** | **77,9** | **23,7** | **5,6** | Katowice: 100% odmów, Domilo: 7,9%; MAPE > 8%; `fit()` od zera odtwarza zapisany model; [b1_v3.md](../../../../../docs/b1_v3.md) |
 | v3 + odmowa przy szerokości > 34,3% (wariant B) | walidacja | 46 364 | 7,9 | 5,6 | 79,7 | 22,7 | 17,1 | próg szerokości wybrany na tej walidacji (największy odsetek przyjętych z MAPE ≤ 8%) |
 | v3 + odmowa przy szerokości > 34,3% (wariant B) | test | 50 447 | 7,7 | 6,0 | 77,0 | 22,6 | 18,3 | MAPE ≤ 8%, ale pokrycie 77,00% na samej granicy normy; Domilo 13,0% odmów; nie jest domyślny (`max_szerokosc=None`) |
+| v4_llm_cechy bez odmów | test | 48 974 | 8,3 | 6,3 | 77,8 | 23,6 | 0,0 | v3 + cechy LLM z opisu dopasowanej oferty (bez kwot): standard, ekspozycja, widok, balkon, stan budynku; walidacja użyta do wczesnego zatrzymania P50 i kalibracji CQR |
+| **v4_llm_cechy** | **test** | **47 634** | **8,3** | **6,2** | **77,9** | **23,5** | **5,6** | **obecna (current.yaml)**; detektor = ood.joblib v3; testowe dopasowania (2 882): MAPE 8,33 (v3 8,97), pokrycie 76,5; bez dopasowania (4 605): 8,25 (v3 8,21); [b1_v4_llm_cechy.md](../../../../../docs/b1_v4_llm_cechy.md) |
+
+## Operaty kontrolne (300 lokali Domilo, wrzesień 2026)
+
+Wartość odniesienia: `operaty.wartosc_pln` (typ `kontrolny`). Cechy lokalu z PMS, otoczenie i sąsiedzi budynku na
+2026-10-01 (`ood_v3.wczytaj_lokale_domilo`), cechy LLM z `lokale_domilo_opisy` bez czynszu. Warunek banku:
+MAPE ≤ 8%, pokrycie 77–83%. Raporty: [b1_przeciek_opisu.md](../../../../../docs/b1_przeciek_opisu.md),
+[b1_v4_llm_cechy.md](../../../../../docs/b1_v4_llm_cechy.md).
+
+| Wersja | MAE | MAPE | MdAPE | Mediana błędu | Pokrycie | Szerokość | Odmowy |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| v0_mediana_dzielnicy (baseline) | 115 192 | 13,4 | 13,3 | −13,3 | — | — | 0,0 |
+| v1_liniowa | 63 542 | 7,1 | 6,3 | −5,4 | — | — | 0,0 |
+| v2_lightgbm | 67 634 | 7,5 | 6,5 | −5,9 | — | — | 0,0 |
+| v2_lgbm_geo (= P50 v3) | 51 994 | 5,9 | 5,0 | −3,2 | — | — | 0,0 |
+| v3_przedzialy | 51 935 | 5,9 | 5,0 | −3,2 | 82,2 | 21,8 | 1,0 |
+| v4_llm_cechy bez odmów | 47 843 | 5,4 | 4,5 | −2,8 | 79,0 | 17,9 | 0,0 |
+| **v4_llm_cechy** | **47 815** | **5,4** | **4,5** | **−2,8** | **78,8** | **17,9** | **1,0** |
+| v4 + standard ze zdjęć (sprawdzian) | 56 350 | 6,3 | 5,6 | −5,0 | 74,4 | 18,4 | 1,0 |
 
 ## Ablacja rodzin cech v2_lgbm_geo
 

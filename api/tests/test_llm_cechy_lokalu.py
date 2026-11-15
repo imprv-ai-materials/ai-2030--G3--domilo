@@ -1,24 +1,15 @@
+import base64
 import json
 
 import duckdb
-import httpx
-import openai
 import pytest
 from api.adapters.llm_client import BrakKluczaAPI, KlientLLM, PromptZmienionyBezNowejWersji, klucz_cache
 from api.ai.llm.evals.stabilnosc_cechy_lokalu import losuj_opisy, zgodnosc_przebiegow
 from api.ai.llm.prompty import Prompt, wczytaj_prompt
 from api.ai.llm.schemas.cechy_lokalu import CechyLokalu
+from pomocnicze_llm import CECHY_OK, SerwerOpenAI
+from pomocnicze_llm import klient as _klient
 from pydantic import ValidationError
-
-CECHY_OK = {
-    "standard_1_5": 4,
-    "ekspozycja": "poludnie",
-    "widok": "park",
-    "balkon": "tak",
-    "stan_budynku": "zadbany",
-    "pewnosc": "wysoka",
-}
-
 
 # --- schemat ---------------------------------------------------------------------------------------------------
 
@@ -53,66 +44,6 @@ def test_prompt_v1_wczytuje_wersje_i_wstawia_opis_do_wiadomosci():
 
 
 # --- klient LLM ------------------------------------------------------------------------------------------------
-
-
-def _odpowiedz_api(dane: dict) -> dict:
-    return {
-        "id": "resp_1",
-        "object": "response",
-        "created_at": 0,
-        "model": "gpt-6-luna",
-        "status": "completed",
-        "parallel_tool_calls": False,
-        "tool_choice": "auto",
-        "tools": [],
-        "output": [
-            {
-                "type": "message",
-                "id": "msg_1",
-                "role": "assistant",
-                "status": "completed",
-                "content": [{"type": "output_text", "text": json.dumps(dane), "annotations": []}],
-            }
-        ],
-        "usage": {
-            "input_tokens": 10,
-            "output_tokens": 5,
-            "total_tokens": 15,
-            "input_tokens_details": {"cached_tokens": 0},
-            "output_tokens_details": {"reasoning_tokens": 0},
-        },
-    }
-
-
-class SerwerOpenAI:
-    """Udaje endpoint /v1/responses; zapisuje każde żądanie. Opcjonalnie odrzuca parametr temperature."""
-
-    def __init__(self, dane: dict = CECHY_OK, odrzuca_temperature: bool = False):
-        self.dane = dane
-        self.odrzuca_temperature = odrzuca_temperature
-        self.zadania: list[dict] = []
-
-    def __call__(self, request: httpx.Request) -> httpx.Response:
-        tresc = json.loads(request.content)
-        self.zadania.append(tresc)
-        if self.odrzuca_temperature and "temperature" in tresc:
-            blad = {
-                "error": {
-                    "message": "Unsupported parameter: 'temperature' is not supported with this model.",
-                    "type": "invalid_request_error",
-                    "param": "temperature",
-                    "code": "unsupported_parameter",
-                }
-            }
-            return httpx.Response(400, json=blad)
-        return httpx.Response(200, json=_odpowiedz_api(self.dane))
-
-
-def _klient(serwer: SerwerOpenAI, katalog_cache) -> KlientLLM:
-    openai_klient = openai.OpenAI(
-        api_key="test", max_retries=0, http_client=httpx.Client(transport=httpx.MockTransport(serwer))
-    )
-    return KlientLLM(katalog_cache=katalog_cache, klient_openai=openai_klient)
 
 
 PROMPT = Prompt(wersja="test_v1", instrukcja="Wyciągnij cechy.", szablon="Opis: {opis}")
@@ -195,6 +126,78 @@ def test_model_bez_temperatury_dostaje_zapytanie_bez_niej_i_cache_to_odnotowuje(
     assert "temperature" not in serwer.zadania[-1]
     [plik] = tmp_path.iterdir()
     assert json.loads(plik.read_text(encoding="utf-8"))["temperatura"] is None
+
+
+# --- zdjęcia i tokeny ------------------------------------------------------------------------------------------
+
+
+def _jpg(katalog, nazwa: str, tresc: bytes):
+    plik = katalog / nazwa
+    plik.write_bytes(tresc)
+    return plik
+
+
+def test_zapytanie_ze_zdjeciami_wysyla_tekst_i_kazde_zdjecie_jako_data_url_w_wysokiej_rozdzielczosci(tmp_path):
+    serwer = SerwerOpenAI()
+    zdj = [_jpg(tmp_path, "1.jpg", b"\xff\xd8jeden"), _jpg(tmp_path, "2.jpg", b"\xff\xd8dwa")]
+    _klient(serwer, tmp_path / "cache").zapytaj("Zdjęcia lokalu.", PROMPT, CechyLokalu, obrazy=zdj)
+
+    [zadanie] = serwer.zadania
+    assert zadanie["input"] == [
+        {
+            "role": "user",
+            "content": [
+                {"type": "input_text", "text": "Opis: Zdjęcia lokalu."},
+                {
+                    "type": "input_image",
+                    "image_url": "data:image/jpeg;base64," + base64.b64encode(b"\xff\xd8jeden").decode(),
+                    "detail": "high",
+                },
+                {
+                    "type": "input_image",
+                    "image_url": "data:image/jpeg;base64," + base64.b64encode(b"\xff\xd8dwa").decode(),
+                    "detail": "high",
+                },
+            ],
+        }
+    ]
+
+
+def test_klucz_cache_bez_zdjec_jest_taki_jak_dotad_a_ze_zdjeciami_zalezy_od_ich_skrotow():
+    assert klucz_cache("opis A", "v1", ()) == klucz_cache("opis A", "v1")
+    assert klucz_cache("opis A", "v1", ("aa",)) != klucz_cache("opis A", "v1")
+    assert klucz_cache("opis A", "v1", ("aa",)) != klucz_cache("opis A", "v1", ("bb",))
+
+
+def test_inna_tresc_zdjecia_przy_tym_samym_tekscie_to_nowe_zapytanie_do_api(tmp_path):
+    serwer = SerwerOpenAI()
+    k = _klient(serwer, tmp_path / "cache")
+    zdj = _jpg(tmp_path, "1.jpg", b"\xff\xd8a")
+    k.zapytaj("Zdjęcia lokalu.", PROMPT, CechyLokalu, obrazy=[zdj])
+    k.zapytaj("Zdjęcia lokalu.", PROMPT, CechyLokalu, obrazy=[zdj])
+    zdj.write_bytes(b"\xff\xd8b")
+    k.zapytaj("Zdjęcia lokalu.", PROMPT, CechyLokalu, obrazy=[zdj])
+    assert len(serwer.zadania) == 2
+
+
+def test_wynik_i_cache_podaja_tokeny_wejscia_odczytane_z_cache_promptu(tmp_path):
+    k = _klient(SerwerOpenAI(tokeny_z_cache=7), tmp_path)
+    wynik = k.zapytaj("Balkon 8 m².", PROMPT, CechyLokalu)
+    [plik] = tmp_path.iterdir()
+    assert wynik.tokeny_wejscia_z_cache == 7
+    assert json.loads(plik.read_text(encoding="utf-8"))["tokeny_wejscia_z_cache"] == 7
+
+
+def test_odczyt_z_cache_oddaje_tokeny_pierwszego_wywolania(tmp_path):
+    k = _klient(SerwerOpenAI(tokeny_z_cache=7), tmp_path)
+    k.zapytaj("Balkon 8 m².", PROMPT, CechyLokalu)
+    z_cache = k.zapytaj("Balkon 8 m².", PROMPT, CechyLokalu)
+    assert (z_cache.z_cache, z_cache.tokeny_wejscia, z_cache.tokeny_wyjscia, z_cache.tokeny_wejscia_z_cache) == (
+        True,
+        10,
+        5,
+        7,
+    )
 
 
 # --- eksperyment stabilności -----------------------------------------------------------------------------------

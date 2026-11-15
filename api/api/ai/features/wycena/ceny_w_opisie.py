@@ -68,3 +68,28 @@ def czynsz_najmu_z_opisu(opis: str) -> int | None:
     """Miesięczny czynsz najmu w PLN z opisu marketingowego lokalu Domilo albo None."""
     m = _CZYNSZ.search(opis)
     return _liczba(m.group(1)) if m else None
+
+
+# Całe zdania z kwotą (szablony z radar_oferty.opis i z opisów Domilo). Usuwamy je przed wysłaniem opisu do LLM,
+# żeby cena ani czynsz nie wpływały na odczyt cech lokalu (docs/b1_v4_llm_cechy.md).
+_ZDANIA_Z_KWOTA = re.compile(
+    r"\s*(?:"
+    + "|".join(
+        [
+            rf"Cena: (?:{_LICZBA}) zł\.",
+            rf"Cena (?:{_LICZBA}) tys\.(?: zł\.)?",
+            rf"Cena do negocjacji: (?:{_LICZBA})\.",
+            rf"Tylko (?:{_LICZBA}) zł/m²\.",
+            rf"Rata od (?:{_LICZBA}) zł miesięcznie\.",
+            rf"Obniżka z (?:{_LICZBA}) do (?:{_LICZBA}) tys\.",
+            rf"Miesięcznie (?:{_LICZBA}) zł \(plus media wg zużycia\)\.",
+            rf"Czynsz:? (?:{_LICZBA}) zł(?:/mies\.)? \+ media\.",
+        ]
+    )
+    + ")"
+)
+
+
+def bez_kwot(opis: str) -> str:
+    """Opis bez zdań z ceną, ceną za m², ratą, obniżką i czynszem najmu (zdania bez kwoty zostają)."""
+    return _ZDANIA_Z_KWOTA.sub("", opis).strip()

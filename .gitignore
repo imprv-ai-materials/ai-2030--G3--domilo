@@ -33,3 +33,7 @@ domilo.duckdb.wal
 mlflow.db
 mlartifacts/
 mlruns/
+
+# Cache odpowiedzi LLM (api/adapters/llm_client.py): dziesiątki tysięcy plików JSON. Wyniki ekstrakcji są
+# w api/api/ai/features/wycena/cechy_llm/*.parquet (docs/b1_v4_llm_cechy.md).
+api/api/ai/llm/cache/

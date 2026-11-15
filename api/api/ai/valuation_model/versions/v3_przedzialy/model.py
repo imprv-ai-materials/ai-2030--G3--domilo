@@ -71,8 +71,12 @@ class ModelWycenyV3(ModelWyceny):
         else:
             przedzial.fit(X, y)
         self.przedzial = przedzial.kalibruj(X_wal, y_wal)
-        self.detektor = DetektorOOD(**self.parametry_detektora).fit(X)
+        self.detektor = self._detektor_do_wersji(X)
         return self
+
+    def _detektor_do_wersji(self, X: pd.DataFrame) -> DetektorOOD:
+        """Detektor uczony na treningu (v3). Wersje pochodne mogą użyć gotowego detektora."""
+        return DetektorOOD(**self.parametry_detektora).fit(X)
 
     # --- kontrakt --------------------------------------------------------------------------------------------
 

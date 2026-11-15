@@ -1,26 +1,27 @@
 # Wersja modelu wyceny używana obecnie (katalog w versions/).
-wersja: v1_liniowa
-model: versions/v1_liniowa/model.joblib
-klasa: api.ai.valuation_model.versions.v1_liniowa.model.ModelLiniowy
+wersja: v4_llm_cechy
+model: versions/v4_llm_cechy/model.joblib
+klasa: api.ai.valuation_model.versions.v4_llm_cechy.model.ModelWycenyV4
 ustalono: 2026-11-15
+regula_wyboru: >
+  Ustalona przed uczeniem v4 (docs/b1_v4_llm_cechy.md): v4 trafia tu, jeśli MAPE jej P50 (bez odmów) na 300 operatach
+  kontrolnych jest niższe niż MAPE wersji stąd (v1_liniowa) na tych samych 300 lokalach.
 uzasadnienie: >
-  Na zbiorze testowym RCN (akty 2026-01 – 2026-06, 7 487 transakcji) v1 ma MAPE 10,2% i MdAPE 8,3%,
-  a baseline v0_mediana_dzielnicy ma MAPE 13,4% i MdAPE 11,3% (evals/porownanie.md, docs/b2_wycena_v0_v1.md).
+  300 operatów kontrolnych (2026-09, lokale Domilo): v4 P50 MAPE 5,40% (z odmowami 5,39%, odmowy 1,0%),
+  v1_liniowa 7,14%, v3_przedzialy 5,90%, baseline v0 13,39%. Różnica v4 − v1: −1,74 pp (bootstrap par, 95% CI
+  −2,22 … −1,29); v4 − v2_lgbm_geo: −0,50 pp (CI −0,75 … −0,23). Pokrycie przedziału 80% na operatach 79,0%
+  (norma banku 77–83%). Test RCN (7 487): v4 MAPE 8,30% / z odmowami 8,28%, v3 8,50%, v1 10,17%; testowe
+  dopasowania (2 882): v4 8,26%, v2_lgbm_geo 8,97% (evals/porownanie.md, docs/b1_v4_llm_cechy.md).
 ograniczenia: >
-  Nie spełnia jeszcze warunków banku: MAPE 10,2% > 8% (na transakcjach RCN, operatów kontrolnych jeszcze nie
-  liczyliśmy), brak przedziału P10/P90 (predict_interval rzuca NotImplementedError) i brak odpowiedzi „nie wiem”.
-  Model nie uwzględnia czasu transakcji: na teście zaniża wycenę (mediana błędu ze znakiem −6,3%).
+  Wymaga cech z LLM (gpt-6-luna, prompt cechy_lokalu_v1) dla każdego wycenianego lokalu: opis bez kwot
+  (ceny_w_opisie.bez_kwot) -> features/wycena/cechy_llm/*.parquet; nowy lokal = nowe wywołanie LLM.
+  Opisy Domilo różnią się od ogłoszeń: brak standardu 1–2, widok zawsze brak_info, lokale bez balkonu dostają
+  brak_info zamiast „nie” (docs/b1_v4_llm_cechy.md, tabela 2). Na testowych dopasowaniach pokrycie przedziału
+  76,4% (poniżej 77%); na całym teście 77,8%. Zaniża wycenę (mediana błędu na operatach −2,8%, na teście −4,3%).
+  Standard ze zdjęć pogarsza wynik i nie jest używany. Poza znanymi miastami odmowa (detektor v3, Katowice 100%).
+poprzednia: >
+  v1_liniowa (do 2026-11-15): test MAPE 10,2% / MdAPE 8,3%, operaty kontrolne 7,14%; bez przedziału i bez odmowy.
 sprawdzone_niewybrane: >
-  v2_lightgbm (2026-11-15): LightGBM na tych samych cechach, test MAPE 10,2% / MdAPE 8,3% / MAE 63 095 zł /
-  RMSE 95 538 zł, czyli bez poprawy względem v1 (docs/b3_wycena_v2_geo.md); v1 zostaje jako prostsza.
-kandydat: >
-  v3_przedzialy (2026-11-15, docs/b1_v3.md): P50 v2_lgbm_geo + przedział CQR + odmowa z powodem (detektor OOD).
-  Test: odmowy 5,6%, na przyjętych MAPE 8,50% i pokrycie 77,9% (norma 77–83%); Katowice 100% odmów, Domilo 7,9%.
-  Nadal MAPE > 8% i brak sprawdzianu na 300 operatach kontrolnych. Wcześniejsze składniki:
-  v2_lgbm_geo (2026-11-15): test MAPE 8,55% / MdAPE 6,5% / MAE 50 540 zł (v1: 10,17% / 8,3% / 63 252 zł),
-  docs/b4_wycena_v2_lgbm_geo.md. Jeszcze nie używana: brak cech otoczenia i sąsiedztwa dla lokali Domilo
-  (liczone na dzień wyceny) i MAPE > 8%. Przedział P10/P90: v2_lgbm_geo_cqr (2026-11-15, docs/b1_przedzialy.md),
-  test: pokrycie 77,6% (norma banku 77–83%, przed kalibracją 71,3%), ale poza normą w 9 z 20 segmentów
-  (m.in. apartamentowce 53,7%, wyceny od 600 tys. zł).
-  Poza znanymi miastami wycenia bez ostrzeżenia: Katowice, 40 operatów due diligence, mediana błędu +24,9%
-  (docs/b1_bledy.md); przed użyciem potrzebny bezpiecznik dla nieznanego miasta (v1 go ma: ValueError).
+  v2_lightgbm (2026-11-15): LightGBM na cechach v1, test MAPE 10,2% (bez poprawy względem v1).
+  v3_przedzialy (2026-11-15, docs/b1_v3.md): operaty kontrolne MAPE 5,90%, test 8,50% na przyjętych; v4 jest
+  lepsza na operatach i na teście (bootstrap powyżej).

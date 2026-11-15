@@ -4,13 +4,20 @@
   (błąd 400 z `param == "temperature"`), klient ponawia zapytanie bez niego i zapisuje w cache `temperatura: null`.
 - Klucz API tylko ze zmiennej środowiskowej `OPENAI_API_KEY`. Klient nie czyta pliku `.env`. Przed uruchomieniem
   załaduj go do środowiska, np. `set -a && . ./.env && set +a`.
-- Cache: `ai/llm/cache/<sha256(wersja promptu + opis)>.json`. W pliku zapisany jest też skrót treści promptu.
+- Cache: `ai/llm/cache/<sha256(wersja promptu + opis [+ skróty sha256 zdjęć])>.json`. W pliku zapisany jest też
+  skrót treści promptu.
   Jeśli treść promptu zmieniła się bez zmiany wersji, klient zgłasza błąd zamiast oddać starą odpowiedź.
+- Zdjęcia (`obrazy`): pliki JPEG wysyłane razem z tekstem jako data URL, `detail = "high"`.
+- Tokeny: wejście, wyjście i wejście odczytane z cache promptu po stronie OpenAI (`tokeny_wejscia_z_cache`);
+  przy odczycie z naszego cache wynik oddaje tokeny pierwszego wywołania (do liczenia kosztu).
 """
 
+import base64
 import hashlib
 import json
 import os
+import tempfile
+from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +29,7 @@ from pydantic import BaseModel
 MODEL = "gpt-6-luna"
 REASONING_EFFORT = "none"
 TEMPERATURA = 0
+SZCZEGOLOWOSC_ZDJEC = "high"
 KATALOG_CACHE = Path(__file__).resolve().parents[1] / "ai" / "llm" / "cache"
 
 
@@ -40,10 +48,16 @@ class WynikLLM:
     z_cache: bool
     tokeny_wejscia: int | None = None
     tokeny_wyjscia: int | None = None
+    tokeny_wejscia_z_cache: int | None = None
 
 
-def klucz_cache(opis: str, wersja_promptu: str) -> str:
-    return hashlib.sha256(f"{wersja_promptu}\n{opis}".encode("utf-8")).hexdigest()
+def klucz_cache(opis: str, wersja_promptu: str, skroty_obrazow: Sequence[str] = ()) -> str:
+    tekst = f"{wersja_promptu}\n{opis}" + "".join(f"\n{s}" for s in skroty_obrazow)
+    return hashlib.sha256(tekst.encode("utf-8")).hexdigest()
+
+
+def _skrot_pliku(plik: Path) -> str:
+    return hashlib.sha256(Path(plik).read_bytes()).hexdigest()
 
 
 def _odrzucona_temperatura(blad: openai.BadRequestError) -> bool:
@@ -74,17 +88,26 @@ class KlientLLM:
         schemat: type[BaseModel],
         czytaj_cache: bool = True,
         zapisuj_cache: bool = True,
+        obrazy: Sequence[Path] = (),
     ) -> WynikLLM:
-        plik = self.katalog_cache / f"{klucz_cache(opis, prompt.wersja)}.json"
+        klucz = klucz_cache(opis, prompt.wersja, [_skrot_pliku(o) for o in obrazy])
+        plik = self.katalog_cache / f"{klucz}.json"
         if czytaj_cache and plik.exists():
             wpis = json.loads(plik.read_text(encoding="utf-8"))
             if wpis["skrot_promptu"] != prompt.skrot_tresci:
                 raise PromptZmienionyBezNowejWersji(
                     f"Treść promptu {prompt.wersja} różni się od tej z cache ({plik.name}); nadaj nową wersję."
                 )
-            return WynikLLM(dane=wpis["odpowiedz"], surowy_tekst=wpis["surowy_tekst"], z_cache=True)
+            return WynikLLM(
+                dane=wpis["odpowiedz"],
+                surowy_tekst=wpis["surowy_tekst"],
+                z_cache=True,
+                tokeny_wejscia=wpis.get("tokeny_wejscia"),
+                tokeny_wyjscia=wpis.get("tokeny_wyjscia"),
+                tokeny_wejscia_z_cache=wpis.get("tokeny_wejscia_z_cache"),
+            )
 
-        odpowiedz = self._wywolaj(opis, prompt, schemat)
+        odpowiedz = self._wywolaj(opis, prompt, schemat, obrazy)
         dane = schemat.model_validate_json(odpowiedz.output_text).model_dump(mode="json")
         uzycie = odpowiedz.usage
         wynik = WynikLLM(
@@ -93,16 +116,31 @@ class KlientLLM:
             z_cache=False,
             tokeny_wejscia=uzycie.input_tokens if uzycie else None,
             tokeny_wyjscia=uzycie.output_tokens if uzycie else None,
+            tokeny_wejscia_z_cache=(
+                uzycie.input_tokens_details.cached_tokens if uzycie and uzycie.input_tokens_details else None
+            ),
         )
         if zapisuj_cache:
             self._zapisz(plik, prompt, wynik)
         return wynik
 
-    def _wywolaj(self, opis: str, prompt: Prompt, schemat: type[BaseModel]):
+    @staticmethod
+    def _wejscie(tekst: str, obrazy: Sequence[Path]):
+        if not obrazy:
+            return tekst
+        tresc = [{"type": "input_text", "text": tekst}]
+        for o in obrazy:
+            dane = base64.b64encode(Path(o).read_bytes()).decode()
+            tresc.append(
+                {"type": "input_image", "image_url": f"data:image/jpeg;base64,{dane}", "detail": SZCZEGOLOWOSC_ZDJEC}
+            )
+        return [{"role": "user", "content": tresc}]
+
+    def _wywolaj(self, opis: str, prompt: Prompt, schemat: type[BaseModel], obrazy: Sequence[Path] = ()):
         parametry = dict(
             model=self.model,
             instructions=prompt.instrukcja,
-            input=prompt.wiadomosc(opis),
+            input=self._wejscie(prompt.wiadomosc(opis), obrazy),
             reasoning={"effort": REASONING_EFFORT},
             text_format=schemat,
             store=False,
@@ -126,10 +164,14 @@ class KlientLLM:
             "utworzono_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
             "tokeny_wejscia": wynik.tokeny_wejscia,
             "tokeny_wyjscia": wynik.tokeny_wyjscia,
+            "tokeny_wejscia_z_cache": wynik.tokeny_wejscia_z_cache,
             "odpowiedz": wynik.dane,
             "surowy_tekst": wynik.surowy_tekst,
         }
         self.katalog_cache.mkdir(parents=True, exist_ok=True)
-        tymczasowy = plik.with_suffix(".tmp")
-        tymczasowy.write_text(json.dumps(wpis, ensure_ascii=False, indent=2), encoding="utf-8")
-        tymczasowy.replace(plik)
+        # Osobny plik tymczasowy na każdy zapis: dwa wątki z tym samym kluczem (identyczny opis) nie zderzą się.
+        with tempfile.NamedTemporaryFile(
+            "w", encoding="utf-8", dir=self.katalog_cache, suffix=".tmp", delete=False
+        ) as tymczasowy:
+            tymczasowy.write(json.dumps(wpis, ensure_ascii=False, indent=2))
+        Path(tymczasowy.name).replace(plik)
