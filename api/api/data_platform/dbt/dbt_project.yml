@@ -1,0 +1,27 @@
+# Definicje metryk Domilo jako modele dbt: ten sam kod dla raportów (docs/) i dla eksperymentów.
+# Modele zapisują się w domilo.duckdb w schemacie `metryki` (np. metryki.przychod_na_godzine_doradcy).
+# Uruchomienie: `pypyr baza` (krok 3) albo `cd api && poetry run python -m api.data_platform.dbt_uruchom build`.
+# Opis i liczby: docs/kolejka_metryki.md.
+name: domilo
+version: "1.0.0"
+config-version: 2
+profile: domilo
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "logs"]
+
+vars:
+  # Koniec eksportu danych (CLAUDE.md): 2026-09-30 23:59 Europe/Warsaw.
+  ostatni_dzien_danych: "2026-09-30"
+  # Okno migracji CRM: zapytania obsługiwało zewnętrzne call center, którego godzin nie ma w crm_grafik.
+  okno_migracji_od: "2025-03-03"
+  okno_migracji_do: "2025-04-13"
+
+models:
+  domilo:
+    +materialized: table
+    kolejka:
+      +schema: metryki

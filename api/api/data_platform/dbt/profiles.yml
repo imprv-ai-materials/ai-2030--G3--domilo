@@ -1,0 +1,12 @@
+# Profil dbt dla domilo.duckdb. Ścieżkę bazy ustawia api.data_platform.dbt_uruchom (zmienna DOMILO_DUCKDB,
+# ścieżka bezwzględna z api.adapters.duckdb_baza.SCIEZKA_BAZY). Domyślnie: domilo.duckdb w katalogu bieżącym.
+domilo:
+  target: lokalnie
+  outputs:
+    lokalnie:
+      type: duckdb
+      path: "{{ env_var('DOMILO_DUCKDB', 'domilo.duckdb') }}"
+      threads: 1
+      settings:
+        # Czas biznesowy jak w polacz(): obcięcie TIMESTAMPTZ do dnia/tygodnia liczy się w czasie warszawskim.
+        TimeZone: Europe/Warsaw

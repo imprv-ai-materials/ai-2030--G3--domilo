@@ -1,0 +1,169 @@
+version: 2
+
+# Metryki kolejki zapytań (docs/kolejka_metryki.md). Testy: `dbt build` / `dbt test`.
+models:
+  - name: umowa_45d
+    description: Zapytanie z crm_leady; umowa w 45 dni od utworzenia (z leady_cel). NULL = cenzurowane.
+    columns:
+      - name: id_leada
+        data_tests: [unique, not_null]
+      - name: utworzono
+        data_tests: [not_null]
+      - name: cenzurowany
+        data_tests: [not_null]
+      - name: okno_migracji
+        data_tests: [not_null]
+      - name: umowa_45d
+        data_tests:
+          - not_null:
+              config:
+                where: "not cenzurowany"
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+                quote: false
+      - name: dni_do_umowy
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 45}
+              config:
+                where: "umowa_45d = 1"
+      - name: id_umowy
+        data_tests:
+          - unique
+          - relationships:
+              arguments:
+                to: source('domilo', 'pms_umowy')
+                field: id_umowy
+
+  - name: obsluzony
+    description: Zapytanie z crm_leady; kontakt doradcy lub call center w 45 dni od utworzenia (z leady_cel).
+    columns:
+      - name: id_leada
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('umowa_45d')
+                field: id_leada
+      - name: obsluzony
+        data_tests: [not_null]
+      - name: obsluzony_cc
+        data_tests: [not_null]
+      - name: liczba_kontaktow_45d
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 0}
+      - name: godz_do_pierwszego_kontaktu
+        data_tests:
+          - not_null:
+              config:
+                where: "obsluzony"
+          - zakres:
+              arguments: {min: 0, max: 1080}  # 45 dni × 24 h
+
+  - name: wartosc_umowy
+    description: >
+      Podpisanie (umowa albo cała umowa ramowa) z wartością czynsz × miesiące umowy × liczba lokali.
+    columns:
+      - name: id_podpisania
+        data_tests: [unique, not_null]
+      - name: id_umowy
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: source('domilo', 'pms_umowy')
+                field: id_umowy
+      - name: id_leada
+        data_tests: [unique]
+      - name: typ
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["pierwsza", "przedłużenie", "średnioterminowa"]
+      - name: linia
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["B2B", "B2C", "MID"]
+      - name: data_podpisania
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: "date '2023-01-01'", max: "date '{{ var(\"ostatni_dzien_danych\") }}'"}
+      - name: liczba_dni_podpisania
+        description: Wszystkie umowy ramowej podpisano tego samego dnia.
+        data_tests:
+          - zakres:
+              arguments: {min: 1, max: 1}
+      - name: liczba_zapytan
+        description: Podpisanie ma najwyżej jedno zapytanie CRM.
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 1}
+      - name: liczba_lokali
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 1}
+      - name: czynsz
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 1}
+      - name: miesiace_umowy
+        description: Najkrótsza umowa w danych ma 27 dni, najdłuższa 2 lata (docs/kolejka_metryki.md, Q1).
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 0.5, max: 24}
+      - name: wartosc_umowy
+        data_tests:
+          - not_null
+          - zakres:
+              arguments: {min: 1}
+
+  - name: przychod_na_godzine_doradcy
+    description: Wartość umów z zapytań podpisanych w tygodniu / kwartale na godzinę pracy doradców.
+    data_tests:
+      - unikalna_kombinacja:
+          arguments:
+            kolumny: [okres, poczatek_okresu]
+    columns:
+      - name: okres
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["tydzien", "kwartal"]
+      - name: poczatek_okresu
+        data_tests: [not_null]
+      - name: dni_pracy
+        data_tests:
+          - zakres:
+              arguments: {min: 0, max: 7}
+              config:
+                where: "okres = 'tydzien'"
+      - name: godziny_doradcow
+        data_tests:
+          - zakres:
+              arguments: {min: 1}
+              config:
+                where: "pelny_okres"
+      - name: przychod_na_godzine_doradcy
+        data_tests:
+          - not_null:
+              config:
+                where: "pelny_okres"
+          - zakres:
+              arguments: {min: 0}
+      - name: przychod_na_godzine_nowe_wszystkie
+        data_tests:
+          - zakres:
+              arguments: {min: 0}

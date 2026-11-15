@@ -1,0 +1,146 @@
+{
+  "kwartal_wyjsciowy": {
+    "okres": "kwartal",
+    "poczatek_okresu": "2026-04-01",
+    "koniec_okresu": "2026-06-30",
+    "pelny_okres": true,
+    "zawiera_okno_migracji": false,
+    "dni_pracy": 75,
+    "liczba_doradcow": 11,
+    "godziny_doradcow": 4949.0,
+    "podpisania_z_zapytan": 867,
+    "lokale_z_zapytan": 931.0,
+    "wartosc_umow_z_zapytan": 27202460.0,
+    "przychod_na_godzine_doradcy": 5496.556880177814,
+    "podpisania_nowe_wszystkie": 913,
+    "wartosc_umow_nowe_wszystkie": 28092700.0,
+    "przychod_na_godzine_nowe_wszystkie": 5676.439684784805
+  },
+  "kwartaly": [
+    {
+      "poczatek_okresu": "2025-07-01",
+      "koniec_okresu": "2025-09-30",
+      "liczba_doradcow": 12,
+      "godziny_doradcow": 5376.0,
+      "podpisania_z_zapytan": 985,
+      "lokale_z_zapytan": 1063.0,
+      "wartosc_umow_z_zapytan": 28633360.0,
+      "przychod_na_godzine_doradcy": 5326.145833333333,
+      "przychod_na_godzine_nowe_wszystkie": 5326.145833333333
+    },
+    {
+      "poczatek_okresu": "2025-10-01",
+      "koniec_okresu": "2025-12-31",
+      "liczba_doradcow": 11,
+      "godziny_doradcow": 4928.0,
+      "podpisania_z_zapytan": 816,
+      "lokale_z_zapytan": 881.0,
+      "wartosc_umow_z_zapytan": 25237690.0,
+      "przychod_na_godzine_doradcy": 5121.2844967532465,
+      "przychod_na_godzine_nowe_wszystkie": 5224.123376623376
+    },
+    {
+      "poczatek_okresu": "2026-01-01",
+      "koniec_okresu": "2026-03-31",
+      "liczba_doradcow": 11,
+      "godziny_doradcow": 5089.0,
+      "podpisania_z_zapytan": 840,
+      "lokale_z_zapytan": 914.0,
+      "wartosc_umow_z_zapytan": 25917490.0,
+      "przychod_na_godzine_doradcy": 5092.845352721556,
+      "przychod_na_godzine_nowe_wszystkie": 5371.491452151699
+    },
+    {
+      "poczatek_okresu": "2026-04-01",
+      "koniec_okresu": "2026-06-30",
+      "liczba_doradcow": 11,
+      "godziny_doradcow": 4949.0,
+      "podpisania_z_zapytan": 867,
+      "lokale_z_zapytan": 931.0,
+      "wartosc_umow_z_zapytan": 27202460.0,
+      "przychod_na_godzine_doradcy": 5496.556880177814,
+      "przychod_na_godzine_nowe_wszystkie": 5676.439684784805
+    }
+  ],
+  "okres_zmiennosci": {
+    "od": "2025-07-01",
+    "do": "2026-06-30",
+    "pierwszy_tydzien": "2025-07-07",
+    "ostatni_tydzien": "2026-06-22"
+  },
+  "zmiennosc_tygodniowa": {
+    "przychod_na_godzine_doradcy": {
+      "tygodnie": 51,
+      "srednia": 5316.270849340026,
+      "odchylenie_std": 994.2142666190646,
+      "odchylenie_proc_sredniej": 18.70134714341141,
+      "mediana": 5150.736607142857,
+      "min": 3836.6483516483518,
+      "max": 9092.123552123552,
+      "autokorelacja_lag1": -0.08931836806354139,
+      "odchylenie_proc_95ci": [
+        13.036407213820391,
+        23.264850213358063
+      ]
+    },
+    "przychod_na_godzine_nowe_wszystkie": {
+      "tygodnie": 51,
+      "srednia": 5472.573179054876,
+      "odchylenie_std": 1057.8280860548273,
+      "odchylenie_proc_sredniej": 19.3296288865253,
+      "mediana": 5280.257611241218,
+      "min": 3958.8208616780043,
+      "max": 9374.057142857142,
+      "autokorelacja_lag1": -0.08687575688880159,
+      "odchylenie_proc_95ci": [
+        12.436966989561448,
+        24.463116971991965
+      ]
+    },
+    "wartosc_umow_z_zapytan": {
+      "tygodnie": 51,
+      "srednia": 2042545.294117647,
+      "odchylenie_std": 307584.9541596789,
+      "odchylenie_proc_sredniej": 15.058904938142465,
+      "mediana": 2049720.0,
+      "min": 1396540.0,
+      "max": 2723440.0,
+      "autokorelacja_lag1": 0.13047582729378823,
+      "odchylenie_proc_95ci": [
+        12.039525282880787,
+        17.699697209997236
+      ]
+    },
+    "godziny_doradcow": {
+      "tygodnie": 51,
+      "srednia": 389.6666666666667,
+      "odchylenie_std": 50.257205121919256,
+      "odchylenie_proc_sredniej": 12.8974863443762,
+      "mediana": 406.0,
+      "min": 175.0,
+      "max": 448.0,
+      "autokorelacja_lag1": 0.27624111272052587,
+      "odchylenie_proc_95ci": [
+        8.15525617663137,
+        17.784535626917688
+      ]
+    }
+  },
+  "zmiennosc_tygodniowa_2026q2": {
+    "tygodnie": 12,
+    "srednia": 5626.144248227029,
+    "odchylenie_std": 1292.0129265258265,
+    "odchylenie_proc_sredniej": 22.964447222144713,
+    "mediana": 5378.801909634976,
+    "min": 4419.622641509434,
+    "max": 9092.123552123552,
+    "autokorelacja_lag1": -0.14782647959003242
+  },
+  "kontrola_wzoru_2026q2": {
+    "podpisania": 867,
+    "ramowe": 42,
+    "ramowe_rozny_czynsz": 42,
+    "wartosc_umowy": 27202460.0,
+    "wartosc_wg_wzoru": 26970680.0
+  }
+}

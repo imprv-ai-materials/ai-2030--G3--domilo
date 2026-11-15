@@ -84,6 +84,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   ├── retention_bc/         # retencja najemców
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
+├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
+│   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)
+│   └── dbt_uruchom.py        # dbt build/test na domilo.duckdb (3. krok pypyr baza)
 └── ai/
     ├── features/             # budowa cech per model
     │   ├── wycena/
@@ -117,6 +120,10 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   nie wczytujemy.
 - **Tabele pochodne** (drugi krok `pypyr baza`, po przebudowie): `leady_cel` — target kolejki zapytań `umowa_45d`
   (`api/api/ai/features/leady/leady_cel.sql`, opis i liczby w `docs/kolejka_target.md`).
+- **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
+  (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
+  (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
+  (`api/api/data_platform/dbt/`, opis i liczby w `docs/kolejka_metryki.md`).
 - **Widoki:** `telemetra_windy` i `telemetra_cieplo` czytają partycje `rok=/miesiac=` (kolumny `rok`, `miesiac`
   jako INTEGER). Mają ścieżki względne `data/...`: `polacz()` ustawia `file_search_path` na katalog repozytorium,
   a w CLI uruchamiaj zapytania z katalogu głównego.
@@ -135,6 +142,9 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
 - Python 3.12 + Poetry (`poetry install`, `poetry run pypyr install`); zadania: `pypyr format|lint|test`.
 - Biblioteki: duckdb 2.0, pandas 3.1, pyarrow 26, scikit-learn 1.9, lightgbm 4.7, pytz (`pyproject.toml`).
   `pytz` jest potrzebny, bo bez niego DuckDB nie zwraca do Pythona kolumn TIMESTAMPTZ.
+  dbt-core 1.12 + dbt-duckdb 1.11 (grupa dev); profil w `api/api/data_platform/dbt/profiles.yml` ustawia
+  `TimeZone = 'Europe/Warsaw'`, ścieżkę bazy podaje `dbt_uruchom.py`. dbt otwiera bazę do zapisu, więc nie uda się,
+  gdy inny proces ma ją w tej chwili otwartą (blokada pliku DuckDB).
 - Dane czytamy przez `polacz()` (baza) albo DuckDB/pandas wprost z Parquetu.
   **DuckDB 2.0:** relacja z `duckdb.sql(...)` nie ma `fetchone()` — używaj `.fetchall()` albo
   `con.execute(...).fetchone()`. CLI `duckdb` 1.5 na hoście **nie otworzy** `domilo.duckdb` (format pliku 2.0),

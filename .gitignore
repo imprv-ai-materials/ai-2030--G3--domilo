@@ -37,3 +37,7 @@ mlruns/
 # Cache odpowiedzi LLM (api/adapters/llm_client.py): dziesiątki tysięcy plików JSON. Wyniki ekstrakcji są
 # w api/api/ai/features/wycena/cechy_llm/*.parquet (docs/b1_v4_llm_cechy.md).
 api/api/ai/llm/cache/
+
+# dbt (api/api/data_platform/dbt): skompilowane SQL, manifest i logi z każdego uruchomienia
+api/api/data_platform/dbt/target/
+api/api/data_platform/dbt/logs/

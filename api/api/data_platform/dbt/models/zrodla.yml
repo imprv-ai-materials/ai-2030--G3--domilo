@@ -1,0 +1,48 @@
+version: 2
+
+# Tabele domilo.duckdb budowane przez `pypyr baza` (krok 1: Parquety z data/, krok 2: leady_cel).
+sources:
+  - name: domilo
+    schema: main
+    tables:
+      - name: leady_cel
+        description: >
+          Target kolejki zapytań (api/api/ai/features/leady/leady_cel.sql, docs/kolejka_target.md).
+          Jedyna definicja umowa_45d i obsluzony; modele dbt tylko ją wystawiają.
+        columns:
+          - name: id_leada
+            data_tests: [unique, not_null]
+      - name: pms_umowy
+        columns:
+          - name: id_umowy
+            data_tests: [unique, not_null]
+          - name: czynsz
+            data_tests:
+              - not_null
+              - zakres:
+                  arguments: {min: 1}
+          - name: liczba_lokali
+            data_tests:
+              - not_null
+              - zakres:
+                  arguments: {min: 1}
+      - name: pms_najmy
+        columns:
+          - name: id_najmu
+            data_tests: [unique, not_null]
+      - name: crm_grafik
+        description: Doradca × dzień pracy. Bez wierszy call center (CC).
+        data_tests:
+          - unikalna_kombinacja:
+              arguments:
+                kolumny: [id_doradcy, data]
+        columns:
+          - name: godziny_pracy
+            data_tests:
+              - not_null
+              - zakres:
+                  arguments: {min: 0, max: 24}
+      - name: crm_doradcy
+        columns:
+          - name: id_doradcy
+            data_tests: [unique, not_null]
