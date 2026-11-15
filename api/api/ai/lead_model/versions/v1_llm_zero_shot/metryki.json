@@ -1,0 +1,48 @@
+{
+  "wersja": "v1_llm_zero_shot",
+  "zbior_oceny": "okno_migracji (2025-03-03 – 2025-04-13)",
+  "uczony_na": "brak (zero-shot); prompt ocena_leada_v1, model gpt-6-luna, reasoning none, temperatura 0",
+  "okno_migracji": {
+    "n": 5320,
+    "umowy": 559,
+    "konwersja": 0.10507518796992481,
+    "auc": 0.6198020289329034,
+    "lift_10": 1.4011702861254636,
+    "k": 127,
+    "precision_k": 0.15064935064935064,
+    "auc_ci95": [
+      0.5969434537173431,
+      0.6417084203147627
+    ],
+    "lift_10_ci95": [
+      1.1718886672332698,
+      1.6383454502506891
+    ],
+    "precision_k_ci95": [
+      0.11466458333333333,
+      0.1881797838203006
+    ]
+  },
+  "koszt_na_1000": {
+    "tokeny_wejscia": 1190957.7067669171,
+    "tokeny_wejscia_z_cache": 1058000.0,
+    "tokeny_wyjscia": 70111.84210526316,
+    "koszt": null,
+    "waluta": null
+  },
+  "odpowiedzi_z_cache": 29,
+  "roznica_v1_minus_v0_ci95": {
+    "auc": [
+      -0.052953770734302005,
+      0.01697044235408849
+    ],
+    "lift_10": [
+      -0.8331801379040136,
+      -0.12450073707753835
+    ],
+    "precision_k": [
+      -0.12008582806967313,
+      -0.016622645174842562
+    ]
+  }
+}

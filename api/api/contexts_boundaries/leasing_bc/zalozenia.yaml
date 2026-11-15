@@ -1,0 +1,22 @@
+# Stałe ekonomiczne dla najmu i kolejki zapytań (leasing_bc).
+#
+# Zasada (CLAUDE.md): liczby tylko od użytkownika, każda z opisem źródła, datą i osobą odpowiedzialną.
+# Każda pozycja: wartosc, jednostka, opis, zrodlo (kto i kiedy podał), data (od kiedy obowiązuje), odpowiedzialny.
+# null = wartości nie podano (ani w czacie, ani w danych) — DO UZUPEŁNIENIA; kod liczy wtedy koszt jako „brak”.
+# Odczyt: api.contexts_boundaries.leasing_bc.zalozenia.wczytaj_zalozenia().
+
+cennik_llm:
+  wartosc:
+    model: gpt-6-luna
+    waluta: null
+    wejscie_za_1m_tokenow: null
+    wejscie_z_cache_za_1m_tokenow: null
+    wyjscie_za_1m_tokenow: null
+  jednostka: waluta za 1 mln tokenów (wejście bez cache, wejście odczytane z cache promptu OpenAI, wyjście)
+  opis: >
+    Cennik API OpenAI dla modelu używanego w kolejce zapytań (v1_llm_zero_shot). Koszt na 1 000 zapytań =
+    tokeny z rzeczywistych wywołań (cache odpowiedzi ai/llm/cache/ zachowuje tokeny pierwszego wywołania)
+    × ceny stąd. Tokeny wejścia odczytane z cache promptu po stronie OpenAI są częścią tokenów wejścia.
+  zrodlo: null  # 2026-11-15: polecenie wskazało ten plik jako miejsce cennika, ale cen nie podano
+  data: null
+  odpowiedzialny: null

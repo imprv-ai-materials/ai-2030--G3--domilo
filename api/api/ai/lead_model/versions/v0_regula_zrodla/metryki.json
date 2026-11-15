@@ -1,0 +1,56 @@
+{
+  "wersja": "v0_regula_zrodla",
+  "zbior_oceny": "okno_migracji (2025-03-03 – 2025-04-13)",
+  "uczony_na": "leady_cel: niecenzurowane zapytania poza oknem migracji (2023-01-01 – 2026-08-16)",
+  "zapytan_w_historii": 149423,
+  "okno_migracji": {
+    "n": 5320,
+    "umowy": 559,
+    "konwersja": 0.10507518796992481,
+    "auc": 0.637171465082838,
+    "lift_10": 1.8890115327522554,
+    "k": 127,
+    "precision_k": 0.2200557103064067,
+    "auc_ci95": [
+      0.611881354826844,
+      0.6618136107944288
+    ],
+    "lift_10_ci95": [
+      1.5955012547923433,
+      2.176757914025416
+    ],
+    "precision_k_ci95": [
+      0.17800936196645664,
+      0.2626943265324752
+    ]
+  },
+  "koszt_na_1000": {
+    "tokeny_wejscia": 0,
+    "tokeny_wejscia_z_cache": 0,
+    "tokeny_wyjscia": 0,
+    "koszt": 0.0,
+    "waluta": null
+  },
+  "wrazliwosc": {
+    "historia_przed_oknem": {
+      "zapytan_w_historii": 88432,
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.6303074059921117,
+      "lift_10": 1.8890115327522554,
+      "k": 127,
+      "precision_k": 0.2165902660496129
+    },
+    "historia_przed_oknem_tylko_obsluzone": {
+      "zapytan_w_historii": 72232,
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.6507605586385206,
+      "lift_10": 1.8890115327522554,
+      "k": 127,
+      "precision_k": 0.2165902660496129
+    }
+  }
+}
