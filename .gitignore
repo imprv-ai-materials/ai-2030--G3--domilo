@@ -24,3 +24,8 @@ node_modules/
 domilo.duckdb
 domilo.duckdb.tmp
 domilo.duckdb.wal
+
+# MLflow (api/adapters/mlflow_rejestr.py): baza runów i artefakty lokalne
+mlflow.db
+mlartifacts/
+mlruns/

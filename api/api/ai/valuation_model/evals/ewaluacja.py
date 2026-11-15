@@ -4,15 +4,18 @@ Uruchomienie (wymaga domilo.duckdb: `pypyr baza`):
     cd api && poetry run python -m api.ai.valuation_model.evals.ewaluacja
 Oba modele uczą się wyłącznie na zbiorze `trening`. Postać metrażu w v1 (ln albo m²) wybieramy na `walidacja`;
 `test` służy tylko do raportu. Zapisuje versions/<wersja>/model.joblib i versions/<wersja>/metryki.json oraz
-wypisuje tabele Markdown.
+wypisuje tabele Markdown. Każda wersja trafia też jako run do eksperymentu MLflow `wycena`
+(api.adapters.mlflow_rejestr; wyłączenie: argument --bez-mlflow).
 """
 
 import json
+import sys
 from pathlib import Path
 
 import pandas as pd
 from api.adapters.duckdb_baza import polacz
-from api.ai.features.wycena.podzial import ZBIORY
+from api.adapters.mlflow_rejestr import ustaw_eksperyment, zapisz_run
+from api.ai.features.wycena.podzial import SCIEZKA_PODZIALU, ZBIORY
 from api.ai.features.wycena.zbior import wczytaj_transakcje
 from api.ai.valuation_model.base import KOLUMNY_CECH, ModelWyceny
 from api.ai.valuation_model.evals.metryki import metryki
@@ -20,6 +23,25 @@ from api.ai.valuation_model.versions.v0_mediana_dzielnicy.model import ModelMedi
 from api.ai.valuation_model.versions.v1_liniowa.model import ModelLiniowy
 
 KATALOG_WERSJI = Path(__file__).resolve().parents[1] / "versions"
+EKSPERYMENT_MLFLOW = "wycena"
+OPIS_PODZIALU = "trening 2023-01-01 – 2025-06-30, walidacja 2025-07-01 – 2025-12-31, test 2026-01-01 – 2026-06-30"
+
+
+def zapisz_w_mlflow(model: ModelWyceny, parametry: dict, wyniki: dict[str, dict], katalog: Path) -> str:
+    """Run w eksperymencie `wycena`: parametry, metryki <zbior>_<metryka>, model i metryki jako artefakty."""
+    metryki_runu = {f"{zbior}_{k}": v for zbior, m in wyniki.items() for k, v in m.items()}
+    return zapisz_run(
+        model.wersja,
+        parametry={"wersja": model.wersja, **parametry},
+        metryki=metryki_runu,
+        tagi={
+            "podzial": "czasowy (podzial.sql, data_aktu)",
+            "podzial_opis": OPIS_PODZIALU,
+            "target": "rcn_transakcje.cena_pln (cena transakcyjna)",
+            "raport": "docs/b2_wycena_v0_v1.md",
+        },
+        artefakty=[katalog / "model.joblib", katalog / "metryki.json", katalog / "model.py", SCIEZKA_PODZIALU],
+    )
 
 
 def _md(df: pd.DataFrame) -> str:
@@ -49,7 +71,9 @@ def _wiersz(wersja: str, zbior: str, grupa: str, m: dict) -> dict:
     }
 
 
-def main() -> None:
+def main(mlflow_wlaczony: bool = True) -> None:
+    if mlflow_wlaczony:
+        ustaw_eksperyment(EKSPERYMENT_MLFLOW)
     con = polacz()
     df = wczytaj_transakcje(con)
     zbiory = {z: df[df["zbior"] == z] for z in ZBIORY}
@@ -109,6 +133,9 @@ def main() -> None:
             + "\n",
             encoding="utf-8",
         )
+        if mlflow_wlaczony:
+            run_id = zapisz_w_mlflow(model, parametry, wyniki_wersji, katalog)
+            print(f"MLflow: eksperyment {EKSPERYMENT_MLFLOW}, run {model.wersja} = {run_id}\n")
 
     print(f"### Metryki: wszystkie transakcje\n\n{_md(pd.DataFrame(wiersze))}\n")
     print(f"### Metryki na teście: miasta i rynek\n\n{_md(pd.DataFrame(wiersze_grup))}\n")
@@ -144,4 +171,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(mlflow_wlaczony="--bez-mlflow" not in sys.argv[1:])

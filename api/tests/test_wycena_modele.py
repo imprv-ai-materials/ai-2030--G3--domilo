@@ -181,3 +181,21 @@ def test_wczytaj_transakcje_daje_cechy_target_i_zbior_tylko_dla_transakcji_z_pod
     assert list(df["zbior"]) == ["trening"]
     assert set(KOLUMNY_CECH) <= set(df.columns)
     assert {"cena_pln", "cena_m2", "rynek", "data_aktu"} <= set(df.columns)
+
+
+# --- v1: efekty w procentach ceny ------------------------------------------------------------------------------
+
+
+def test_efekty_procentowe_dzielnic_sa_wzgledem_sredniej_wazonej_miasta_a_ciagle_na_jednostke():
+    X, y = _syntetyczne(n_duza=200, n_mala=10)  # a1: +0,2 ln vs a2; a3 (10) -> reszta miasta (poziom jak a2)
+    model = ModelLiniowy().fit(X, y)
+    ef = model.efekty_procentowe().set_index("cecha")
+    srednia = (200 * 0.2 + 200 * 0 + 10 * 0) / 410
+    assert ef.loc["dzielnica: A | a1", "b"] == pytest.approx(0.2 - srednia, abs=1e-6)
+    assert ef.loc["dzielnica: A | a1", "efekt_proc"] == pytest.approx(100 * (math.exp(0.2 - srednia) - 1), abs=1e-4)
+    assert ef.loc["dzielnica: A | a1", "transakcje_trening"] == 200
+    assert ef.loc["piętro (+1)", "efekt_proc"] == pytest.approx(100 * (math.exp(0.05) - 1), abs=1e-4)
+    assert ef.loc["rok budowy: od 2020", "odniesienie"] == "1970–1989"
+    # ln(metraż): efekt dla +10% metrażu, nie e^b − 1
+    assert ef.loc["metraż (+10%)", "efekt_proc"] == pytest.approx(100 * (1.1**1.0 - 1), abs=1e-4)
+    assert {"typ", "odniesienie", "efekt_proc", "b"} <= set(ef.columns)

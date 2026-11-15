@@ -7,6 +7,9 @@ MAE w PLN, MAPE i MdAPE w %. Wyniki liczy [`ewaluacja.py`](ewaluacja.py) i zapis
 `versions/<wersja>/metryki.json`. Raport z RMSE, podziałem na miasta i rynek oraz kodem:
 [docs/b2_wycena_v0_v1.md](../../../../../docs/b2_wycena_v0_v1.md).
 
+Te same runy (parametry, metryki, model) są w MLflow, eksperyment `wycena` (`mlflow.db`, zapis: `ewaluacja.py`).
+Podział losowy 85/15 dla porównania: [docs/b1_v1.md](../../../../../docs/b1_v1.md).
+
 Warunek banku: MAPE ≤ 8% na operatach kontrolnych (jeszcze nie liczone, tu MAPE na transakcjach RCN).
 
 | Wersja | Zbiór | MAE | MAPE | MdAPE | Uwagi |

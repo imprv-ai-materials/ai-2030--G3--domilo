@@ -137,3 +137,48 @@ class ModelLiniowy(ModelWyceny):
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
         return self.explain(X)["wycena_pln"].to_numpy()
+
+    def efekty_procentowe(self) -> pd.DataFrame:
+        """Współczynniki jako zmiana ceny w % (100·(e^b − 1)) przy pozostałych cechach bez zmian.
+
+        - dzielnica: b = poziom dzielnicy − średni poziom dzielnic jej miasta (ważony liczbą transakcji treningowych);
+        - rok budowy: b względem przedziału 1970–1989;
+        - pokoje, piętro: b na +1 pokój / +1 piętro;
+        - metraż: przy ln(metraż) efekt +10% metrażu, czyli 100·(1,1^b − 1) (e^b − 1 dotyczyłoby metrażu × e).
+        """
+        w = self.wspolczynniki_
+        wiersze = []
+        for kat in self.kategorie_dzielnic_:
+            miasto = kat.split(" | ")[0]
+            b = w[f"dzielnica={kat}"] - self.srednia_miasta_[_klucz(miasto, SREDNIA_MIASTA)]
+            wiersze.append(
+                (
+                    "dzielnica: " + kat,
+                    "dzielnica",
+                    b,
+                    f"średnia dzielnic: {miasto}",
+                    self.liczba_transakcji_kategorii_[kat],
+                )
+            )
+        for etykieta, _, _ in PRZEDZIALY_ROKU:
+            if etykieta != PRZEDZIAL_ODNIESIENIA:
+                wiersze.append(
+                    (f"rok budowy: {etykieta}", "rok_budowy", w[f"rok_budowy={etykieta}"], PRZEDZIAL_ODNIESIENIA, None)
+                )
+        wiersze.append(("pokoje (+1)", "pokoje", w["pokoje"], "o 1 pokój mniej", None))
+        wiersze.append(("piętro (+1)", "pietro", w["pietro"], "o 1 piętro niżej", None))
+        ef = pd.DataFrame(wiersze, columns=["cecha", "typ", "b", "odniesienie", "transakcje_trening"])
+        ef["efekt_proc"] = 100 * (np.exp(ef["b"]) - 1)
+        if self.metraz_log:
+            metraz = (
+                "metraż (+10%)",
+                "metraz",
+                w["metraz"],
+                "metraż o 10% mniejszy",
+                None,
+                100 * (1.1 ** w["metraz"] - 1),
+            )
+        else:
+            metraz = ("metraż (+1 m²)", "metraz", w["metraz"], "o 1 m² mniej", None, 100 * (np.exp(w["metraz"]) - 1))
+        ef.loc[len(ef)] = metraz
+        return ef

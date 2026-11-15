@@ -132,4 +132,7 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   **DuckDB 2.0:** relacja z `duckdb.sql(...)` nie ma `fetchone()` — używaj `.fetchall()` albo
   `con.execute(...).fetchone()`. CLI `duckdb` 1.5 na hoście **nie otworzy** `domilo.duckdb` (format pliku 2.0),
   ale wciąż czyta pliki Parquet.
+- MLflow 3.18: eksperymenty w `mlflow.db` + `mlartifacts/` (katalog główny, w .gitignore), połączenie przez
+  `api.adapters.mlflow_rejestr.ustaw_eksperyment()`; wycena loguje się do eksperymentu `wycena`
+  (`valuation_model/evals/ewaluacja.py`). Podgląd: `poetry run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
 - Skille procesu pracy: `.claude/skills/` (m.in. `use-sw-development-workflow`, `sw-test-driven-development`).
