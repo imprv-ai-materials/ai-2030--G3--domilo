@@ -141,5 +141,5 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   ale wciąż czyta pliki Parquet.
 - MLflow 3.18: eksperymenty w `mlflow.db` + `mlartifacts/` (katalog główny, w .gitignore), połączenie przez
   `api.adapters.mlflow_rejestr.ustaw_eksperyment()`; wycena loguje się do eksperymentu `wycena`
-  (`valuation_model/evals/ewaluacja.py`), kolejka zapytań do eksperymentu `leady` (`lead_model/evals/ewaluacja.py`: v0/v1 w oknie migracji; `ewaluacja_v2.py`: v2 na teście i w oknie). Podgląd: `poetry run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
+  (`valuation_model/evals/ewaluacja.py`), kolejka zapytań do eksperymentu `leady` (`lead_model/evals/ewaluacja.py`: v0/v1 w oknie migracji; `ewaluacja_v2.py`: v2 na teście i w oknie; `ewaluacja_v2b.py`: v2b z wagami IPW). Podgląd: `poetry run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
 - Skille procesu pracy: `.claude/skills/` (m.in. `use-sw-development-workflow`, `sw-test-driven-development`).

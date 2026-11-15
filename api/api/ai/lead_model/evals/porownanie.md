@@ -66,3 +66,41 @@ powyżej zera (raport, T2–T3). Bez sygnałów LLM: test AUC 0,783, okno 0,751.
 Wada wersji naiwnej: w oknie migracji `domteraz` dało 21,3% umów, a w czołówce 10% v2 jest 0,2% zapytań
 z `domteraz` (raport, T5). Koszt: odpowiedź v1 dla każdego zapytania, ok. 1,19 mln tokenów wejścia i 70 tys. wyjścia
 na 1 000 zapytań; kwota: brak cennika. `current.yaml` nadal pusty.
+
+## v2b_lgbm_ipw: uczenie tylko na obsłużonych z wagą IPW (2026-11-15)
+
+- **Model skłonności `P(obsłużony | cechy zapytania)`:** regresja logistyczna na cechach v2, uczona na
+  127 527 zapytaniach treningu (dane spoza okna migracji). AUC dla obsłużenia na teście: 0,913.
+- **LightGBM:** te same parametry co v2, tylko 104 479 obsłużonych zapytań, target `umowa_45d`, waga
+  `min(1 / P, 10)`.
+- **Gdzie wyniki:** liczy je [`ewaluacja_v2b.py`](ewaluacja_v2b.py); zapis w `versions/v2b_lgbm_ipw/metryki.json`
+  i w MLflow (`leady`, run `v2b_lgbm_ipw`). Raport: [docs/kolejka_bias.md](../../../../../docs/kolejka_bias.md),
+  B5–B9.
+
+| Wersja | Zbiór | AUC | lift@10% | precision@k |
+|---|---|---:|---:|---:|
+| v0_regula_zrodla (baseline) | okno migracji (5 320; k = 127) | 0,633 (0,608–0,659) | 1,89 (1,60–2,18) | 22,0% (17,8–26,3) |
+| v2_lgbm_naiwny | okno migracji | 0,764 (0,743–0,784) | 3,33 (3,00–3,68) | 49,6% (40,9–57,5) |
+| **v2b_lgbm_ipw** | okno migracji | **0,785** (0,765–0,804) | **3,52** (3,19–3,86) | 48,0% (39,4–56,7) |
+| v2b bez wag (kontrola) | okno migracji | 0,784 | 3,47 | 49,6% |
+| v0_regula_zrodla (baseline) | test 2026-03 – 2026-06 (15 217; k = 125) | 0,684 (0,668–0,700) | 2,31 (2,11–2,52) | 17,7% (16,0–19,5) |
+| v2_lgbm_naiwny | test | 0,793 (0,780–0,806) | 3,75 (3,50–4,00) | 43,2% (34,4–52,0) |
+| **v2b_lgbm_ipw** | test | 0,790 (0,776–0,802) | 3,69 (3,44–3,94) | 40,8% (33,6–50,4) |
+| v2b bez wag (kontrola) | test | 0,790 | 3,73 | 40,0% |
+
+Różnice (95% CI):
+
+| Para i zbiór | AUC | lift@10% | precision@k |
+|---|---|---|---|
+| v2b − v2, okno | +0,013 … +0,030 | +0,02 … +0,37 | −5,5 … +3,1 pp (nierozstrzygnięte) |
+| v2b − v2, test | −0,008 … +0,001 | −0,17 … +0,05 | −5,6 … +4,0 pp |
+| v2b − v0, okno | +0,126 … +0,175 | +1,25 … +2,00 | +18,0 … +34,2 pp |
+| v2b − v0, test | +0,090 … +0,120 | +1,12 … +1,64 | +15,8 … +32,5 pp |
+
+v1 na tych samych zbiorach: tabela v2 wyżej (v2b − v1: wszystkie przedziały powyżej zera).
+
+- **`domteraz` w oknie:** średni wynik v2b 6,32% wobec konwersji 8,19% (v2: 2,92%). Udział w czołówce 10%: 7,1%
+  (v2: 0,2%).
+- **Wagi:** mediana 1,03, maksimum 6,77, przyciętych 0, efektywna liczebność 86 239.
+
+`current.yaml` nadal pusty.

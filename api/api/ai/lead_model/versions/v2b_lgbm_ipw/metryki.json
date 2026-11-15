@@ -1,0 +1,935 @@
+{
+  "wersja": "v2b_lgbm_ipw",
+  "zbiory": {
+    "trening": "zamknięte, niecenzurowane zapytania 2023-01-01 – 2026-02-28 bez okna migracji",
+    "test": "wszystkie niecenzurowane zapytania 2026-03-01 – 2026-06-30",
+    "okno_migracji": "wszystkie zapytania z okna migracji 2025-03-03 – 2025-04-13"
+  },
+  "uczony_na": "skłonność: regresja logistyczna na wszystkich zapytaniach treningu (zamknięte, niecenzurowane zapytania 2023-01-01 – 2026-02-28 bez okna migracji); LightGBM: tylko obsłużone z treningu, target umowa_45d, waga min(1/P(obsłużony), 10)",
+  "trening": {
+    "n_wszystkich": 127527,
+    "n_obsluzonych": 104479,
+    "umowy_obsluzonych": 9407,
+    "liczba_drzew": 182,
+    "auc_walidacji_w_czasie_wazone": 0.7864039787555763,
+    "walidacja_od": "2025-08-28 22:14:40+00:00",
+    "liczba_drzew_v2b_bez_wag": 171
+  },
+  "cechy": [
+    "zrodlo",
+    "miasto",
+    "linia",
+    "termin_dni",
+    "liczba_osob",
+    "zwierze",
+    "liczba_lokali",
+    "budzet_do_mediany",
+    "www_liczba_sesji",
+    "www_spacer_3d",
+    "www_kalkulator",
+    "umowa_ramowa",
+    "dlugosc_wiadomosci",
+    "syg_konkretne_pytania",
+    "syg_niedopasowanie_oferty",
+    "syg_pilny_termin",
+    "syg_relokacja",
+    "syg_budzet_niski",
+    "syg_brak_informacji"
+  ],
+  "parametry": {
+    "objective": "binary",
+    "metric": "auc",
+    "learning_rate": 0.03,
+    "num_leaves": 31,
+    "min_child_samples": 200,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "seed": 42,
+    "deterministic": true,
+    "force_row_wise": true,
+    "num_threads": 4,
+    "verbose": -1,
+    "maks_waga": 10.0
+  },
+  "sklonnosc": {
+    "model": "LogisticRegression (one-hot kategorii; mediana + wskaźnik braku, standaryzacja liczb)",
+    "auc_trening": 0.9085923587264368,
+    "auc_test": 0.9128021725860681,
+    "po_zrodle_trening": [
+      {
+        "zrodlo": "domteraz",
+        "zapytania": 33916,
+        "obsluzone": 0.4105436961905885,
+        "srednia_sklonnosc": 0.41051816330875057
+      },
+      {
+        "zrodlo": "lokum24",
+        "zapytania": 48156,
+        "obsluzone": 0.9565163219536507,
+        "srednia_sklonnosc": 0.9565054996722084
+      },
+      {
+        "zrodlo": "polecenie",
+        "zapytania": 6219,
+        "obsluzone": 0.9890657662003538,
+        "srednia_sklonnosc": 0.989313092661398
+      },
+      {
+        "zrodlo": "relokacja_b2b",
+        "zapytania": 10061,
+        "obsluzone": 0.9949309213795845,
+        "srednia_sklonnosc": 0.994628209860885
+      },
+      {
+        "zrodlo": "social",
+        "zapytania": 6492,
+        "obsluzone": 0.9054220579174368,
+        "srednia_sklonnosc": 0.9050915305628296
+      },
+      {
+        "zrodlo": "www",
+        "zapytania": 22683,
+        "obsluzone": 0.9899043336419345,
+        "srednia_sklonnosc": 0.990243503885458
+      }
+    ],
+    "po_zrodle_test": [
+      {
+        "zrodlo": "domteraz",
+        "zapytania": 3849,
+        "obsluzone": 0.4055598856845934,
+        "srednia_sklonnosc": 0.4091293116426735
+      },
+      {
+        "zrodlo": "lokum24",
+        "zapytania": 5506,
+        "obsluzone": 0.9575009081002542,
+        "srednia_sklonnosc": 0.956878496919296
+      },
+      {
+        "zrodlo": "polecenie",
+        "zapytania": 778,
+        "obsluzone": 0.9897172236503856,
+        "srednia_sklonnosc": 0.9894632591665498
+      },
+      {
+        "zrodlo": "relokacja_b2b",
+        "zapytania": 1710,
+        "obsluzone": 0.9929824561403509,
+        "srednia_sklonnosc": 0.9946185622863729
+      },
+      {
+        "zrodlo": "social",
+        "zapytania": 722,
+        "obsluzone": 0.8905817174515236,
+        "srednia_sklonnosc": 0.9037561122401869
+      },
+      {
+        "zrodlo": "www",
+        "zapytania": 2652,
+        "obsluzone": 0.9901960784313726,
+        "srednia_sklonnosc": 0.9902464520780486
+      }
+    ],
+    "srednia_okno_migracji": 0.8146953487570747
+  },
+  "wagi": {
+    "kwantyle": {
+      "q00": 1.0000996315388224,
+      "q10": 1.005554223492303,
+      "q25": 1.0096693030266919,
+      "q50": 1.0329057728986932,
+      "q75": 1.0711656058429235,
+      "q90": 1.7858502427637095,
+      "q95": 2.546071564043194,
+      "q99": 3.881525488876871,
+      "q100": 6.772715076781799
+    },
+    "srednia": 1.2199280254219802,
+    "histogram": {
+      "[1.0, 1.25)": 90812,
+      "[1.25, 1.5)": 1076,
+      "[1.5, 2.0)": 3796,
+      "[2.0, 3.0)": 5778,
+      "[3.0, 5.0)": 2984,
+      "[5.0, 10.0)": 33,
+      "[10.0, inf)": 0
+    },
+    "po_zrodle": [
+      {
+        "zrodlo": "domteraz",
+        "obsluzone": 13924,
+        "srednia_waga": 2.4294372331617917,
+        "mediana_wagi": 2.3235707413102817,
+        "maks_waga": 6.772715076781799,
+        "suma_wag": 33827.48403454479,
+        "przyciete": 0,
+        "umowy": 972,
+        "udzial_w_sumie_wag": 0.26540339994206885,
+        "udzial_w_obsluzonych": 0.13327080083078896
+      },
+      {
+        "zrodlo": "lokum24",
+        "obsluzone": 46062,
+        "srednia_waga": 1.0457782504605855,
+        "mediana_wagi": 1.0424373208217639,
+        "maks_waga": 1.1911550986286752,
+        "suma_wag": 48170.63777271549,
+        "przyciete": 0,
+        "umowy": 2297,
+        "udzial_w_sumie_wag": 0.37793679923699885,
+        "udzial_w_obsluzonych": 0.440873285540635
+      },
+      {
+        "zrodlo": "polecenie",
+        "obsluzone": 6151,
+        "srednia_waga": 1.0108257492023607,
+        "mediana_wagi": 1.010067781876097,
+        "maks_waga": 1.037200904180825,
+        "suma_wag": 6217.589183343721,
+        "przyciete": 0,
+        "umowy": 982,
+        "udzial_w_sumie_wag": 0.04878191079825192,
+        "udzial_w_obsluzonych": 0.05887307497200394
+      },
+      {
+        "zrodlo": "relokacja_b2b",
+        "obsluzone": 10010,
+        "srednia_waga": 1.0054039092406675,
+        "mediana_wagi": 1.0054057949918258,
+        "maks_waga": 1.0197620729749142,
+        "suma_wag": 10064.093131499081,
+        "przyciete": 0,
+        "umowy": 2007,
+        "udzial_w_sumie_wag": 0.07896078028462877,
+        "udzial_w_obsluzonych": 0.0958087271126255
+      },
+      {
+        "zrodlo": "social",
+        "obsluzone": 5878,
+        "srednia_waga": 1.1060635692710425,
+        "mediana_wagi": 1.098803943449297,
+        "maks_waga": 1.353770252735778,
+        "suma_wag": 6501.441660175188,
+        "przyciete": 0,
+        "umowy": 199,
+        "udzial_w_sumie_wag": 0.05100895825930802,
+        "udzial_w_obsluzonych": 0.05626010968711416
+      },
+      {
+        "zrodlo": "www",
+        "obsluzone": 22454,
+        "srednia_waga": 1.0098697063233635,
+        "mediana_wagi": 1.0091698079671065,
+        "maks_waga": 1.039076236393783,
+        "suma_wag": 22675.614385784804,
+        "przyciete": 0,
+        "umowy": 2950,
+        "udzial_w_sumie_wag": 0.1779081514787436,
+        "udzial_w_obsluzonych": 0.2149140018568325
+      }
+    ],
+    "n_uczacych": 104479,
+    "przyciete": 0,
+    "suma_wag": 127456.86016806307,
+    "efektywna_liczebnosc": 86239.3174926789
+  },
+  "top5_wag": [
+    {
+      "id_leada": "L058679",
+      "utworzono": "2024-06-20 18:10:06+02:00",
+      "zrodlo": "domteraz",
+      "miasto": "Poznań",
+      "linia": "MID",
+      "budzet_do_mediany": 0.6097560975609756,
+      "termin_dni": 46.0,
+      "liczba_osob": 2.0,
+      "dlugosc_wiadomosci": 106.0,
+      "www_liczba_sesji": 1.0,
+      "sklonnosc": 0.14765127259349753,
+      "waga_przed_przycieciem": 6.772715076781799,
+      "waga": 6.772715076781799,
+      "umowa_45d": 0,
+      "sygnaly": "budzet_niski",
+      "wiadomosc_fragment": "jestem zainteresowany ofertą najmu w Poznaniu Pracuję zdalnie, nie palę. Dziękuję i pozdrawiam, [imię]"
+    },
+    {
+      "id_leada": "L126586",
+      "utworzono": "2026-01-03 19:32:36+01:00",
+      "zrodlo": "domteraz",
+      "miasto": "Wrocław",
+      "linia": "MID",
+      "budzet_do_mediany": 0.6739130434782609,
+      "termin_dni": 21.0,
+      "liczba_osob": 2.0,
+      "dlugosc_wiadomosci": 179.0,
+      "www_liczba_sesji": 1.0,
+      "sklonnosc": 0.16307773047526558,
+      "waga_przed_przycieciem": 6.132045111773692,
+      "waga": 6.132045111773692,
+      "umowa_45d": 0,
+      "sygnaly": "konkretne_pytania,pilny_termin,budzet_niski",
+      "wiadomosc_fragment": "Cześć, interesuje mnie najem długoterminowy we Wrocławiu Proszę o przesłanie dostępnych lokali. Pracuję zdalnie, nie pal"
+    },
+    {
+      "id_leada": "L071464",
+      "utworzono": "2024-09-21 17:37:34+02:00",
+      "zrodlo": "domteraz",
+      "miasto": "Gdańsk",
+      "linia": "MID",
+      "budzet_do_mediany": 0.6769825918762089,
+      "termin_dni": 21.0,
+      "liczba_osob": 2.0,
+      "dlugosc_wiadomosci": 114.0,
+      "www_liczba_sesji": 2.0,
+      "sklonnosc": 0.16360797572074423,
+      "waga_przed_przycieciem": 6.112171461046979,
+      "waga": 6.112171461046979,
+      "umowa_45d": 0,
+      "sygnaly": "pilny_termin,relokacja,budzet_niski",
+      "wiadomosc_fragment": "Доброго дня! переїжджаю до міста Gdańsk через роботу і шукаю житло. Працюю в польській компанії. З повагою, [imię]"
+    },
+    {
+      "id_leada": "L066064",
+      "utworzono": "2024-08-14 18:36:47+02:00",
+      "zrodlo": "domteraz",
+      "miasto": "Gdańsk",
+      "linia": "MID",
+      "budzet_do_mediany": 0.6576402321083172,
+      "termin_dni": NaN,
+      "liczba_osob": 5.0,
+      "dlugosc_wiadomosci": 0.0,
+      "www_liczba_sesji": 1.0,
+      "sklonnosc": 0.169906381578288,
+      "waga_przed_przycieciem": 5.885594117836172,
+      "waga": 5.885594117836172,
+      "umowa_45d": 0,
+      "sygnaly": "budzet_niski,brak_informacji",
+      "wiadomosc_fragment": null
+    },
+    {
+      "id_leada": "L037275",
+      "utworzono": "2023-11-29 22:48:39+01:00",
+      "zrodlo": "domteraz",
+      "miasto": "Wrocław",
+      "linia": "MID",
+      "budzet_do_mediany": 0.6956521739130435,
+      "termin_dni": NaN,
+      "liczba_osob": 2.0,
+      "dlugosc_wiadomosci": 23.0,
+      "www_liczba_sesji": 2.0,
+      "sklonnosc": 0.170379261995674,
+      "waga_przed_przycieciem": 5.869258900918297,
+      "waga": 5.869258900918297,
+      "umowa_45d": 0,
+      "sygnaly": "budzet_niski,brak_informacji",
+      "wiadomosc_fragment": "Interesuje mnie oferta."
+    }
+  ],
+  "waznosc_cech": [
+    {
+      "cecha": "zrodlo",
+      "gain": 45835.590371608734,
+      "udzial": 0.25495213242675197
+    },
+    {
+      "cecha": "budzet_do_mediany",
+      "gain": 39209.816612005234,
+      "udzial": 0.21809747133713545
+    },
+    {
+      "cecha": "termin_dni",
+      "gain": 33224.0609190464,
+      "udzial": 0.18480279430269927
+    },
+    {
+      "cecha": "dlugosc_wiadomosci",
+      "gain": 9194.43381524086,
+      "udzial": 0.05114236532457299
+    },
+    {
+      "cecha": "www_liczba_sesji",
+      "gain": 6827.854854822159,
+      "udzial": 0.03797870041651135
+    },
+    {
+      "cecha": "www_spacer_3d",
+      "gain": 6704.381849765778,
+      "udzial": 0.03729190428972332
+    },
+    {
+      "cecha": "linia",
+      "gain": 6388.5827531814575,
+      "udzial": 0.03553532926931112
+    },
+    {
+      "cecha": "syg_konkretne_pytania",
+      "gain": 6300.885138988495,
+      "udzial": 0.03504752724546975
+    },
+    {
+      "cecha": "syg_niedopasowanie_oferty",
+      "gain": 6205.339722156525,
+      "udzial": 0.03451607324722471
+    },
+    {
+      "cecha": "www_kalkulator",
+      "gain": 3841.5902066230774,
+      "udzial": 0.02136814661156735
+    },
+    {
+      "cecha": "miasto",
+      "gain": 3564.9011335372925,
+      "udzial": 0.01982911398145428
+    },
+    {
+      "cecha": "liczba_osob",
+      "gain": 3474.1616673469543,
+      "udzial": 0.019324392209291365
+    },
+    {
+      "cecha": "liczba_lokali",
+      "gain": 3209.8347401618958,
+      "udzial": 0.017854121766666405
+    },
+    {
+      "cecha": "syg_pilny_termin",
+      "gain": 2291.004116296768,
+      "udzial": 0.012743293587206106
+    },
+    {
+      "cecha": "zwierze",
+      "gain": 1076.452332496643,
+      "udzial": 0.005987570257102326
+    },
+    {
+      "cecha": "umowa_ramowa",
+      "gain": 775.7061729431152,
+      "udzial": 0.004314724460294997
+    },
+    {
+      "cecha": "syg_budzet_niski",
+      "gain": 717.3605132102966,
+      "udzial": 0.003990187343043383
+    },
+    {
+      "cecha": "syg_relokacja",
+      "gain": 710.0598464012146,
+      "udzial": 0.003949578712151489
+    },
+    {
+      "cecha": "syg_brak_informacji",
+      "gain": 229.1442518234253,
+      "udzial": 0.00127457321182235
+    }
+  ],
+  "test": {
+    "v2b_lgbm_ipw": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.7895838708005135,
+      "lift_10": 3.6925025363506054,
+      "k": 125,
+      "precision_k": 0.408,
+      "auc_ci95": [
+        0.7763427203949913,
+        0.802314241590283
+      ],
+      "lift_10_ci95": [
+        3.4381902465627276,
+        3.9360435429584437
+      ],
+      "precision_k_ci95": [
+        0.336,
+        0.504
+      ],
+      "sredni_wynik": 0.09060739545622126
+    },
+    "v0_regula_zrodla": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.6843268776282526,
+      "lift_10": 2.310493242532209,
+      "k": 125,
+      "precision_k": 0.17719298245614035,
+      "auc_ci95": [
+        0.6679714272244386,
+        0.7002994371498994
+      ],
+      "lift_10_ci95": [
+        2.107864934995674,
+        2.515510466689407
+      ],
+      "precision_k_ci95": [
+        0.15997392581435566,
+        0.19455709524554704
+      ]
+    },
+    "v1_llm_zero_shot": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.6168029774919418,
+      "lift_10": 1.4880511979750708,
+      "k": 125,
+      "precision_k": 0.11542012927054478,
+      "auc_ci95": [
+        0.6014770774242536,
+        0.6323916355238591
+      ],
+      "lift_10_ci95": [
+        1.3280543199974673,
+        1.6505343997183874
+      ],
+      "precision_k_ci95": [
+        0.0967152402264609,
+        0.1347631916122279
+      ]
+    },
+    "v2_lgbm_naiwny": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.7932226684597488,
+      "lift_10": 3.752473575224049,
+      "k": 125,
+      "precision_k": 0.432,
+      "auc_ci95": [
+        0.7799237950106344,
+        0.8059178233714651
+      ],
+      "lift_10_ci95": [
+        3.5013435328021916,
+        4.000964120917719
+      ],
+      "precision_k_ci95": [
+        0.344,
+        0.52
+      ],
+      "sredni_wynik": 0.08088868095728625
+    },
+    "v2b_bez_wag": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "auc": 0.7895248332708195,
+      "lift_10": 3.726771701421145,
+      "k": 125,
+      "precision_k": 0.4,
+      "sredni_wynik": 0.09092788645846221
+    },
+    "roznica_v2b_minus_v0_ci95": {
+      "auc": [
+        0.09042488691117045,
+        0.1203268291029976
+      ],
+      "lift": [
+        1.1240104682823122,
+        1.6403802781197334
+      ],
+      "prec": [
+        0.1579221972571912,
+        0.32498415405417036
+      ]
+    },
+    "roznica_v2b_minus_v2_ci95": {
+      "auc": [
+        -0.008130212691450103,
+        0.0008360328495022312
+      ],
+      "lift": [
+        -0.16960184748651133,
+        0.049621095172688486
+      ],
+      "prec": [
+        -0.055999999999999994,
+        0.03999999999999998
+      ]
+    },
+    "roznica_v2b_minus_v1_ci95": {
+      "auc": [
+        0.15678795749410257,
+        0.19059369961328668
+      ],
+      "lift": [
+        1.918064299600858,
+        2.4799654709433705
+      ],
+      "prec": [
+        0.21807150349955493,
+        0.3915758150448778
+      ]
+    },
+    "konwersja_obsluzonych": 0.09045346062052506,
+    "obsluzone": 0.8260498127094696,
+    "auc_tylko_obsluzone": {
+      "v2b": 0.7773988349083771,
+      "v2": 0.7708719940064562,
+      "v0": 0.6445010858644078
+    },
+    "auc_wyniku_dla_obsluzenia": {
+      "v2b": 0.6147772849827141,
+      "v2": 0.7655316401179462
+    },
+    "po_zrodle": [
+      {
+        "zrodlo": "domteraz",
+        "n": 3849,
+        "umowy": 139,
+        "konwersja": 0.03611327617563003,
+        "udzial_w_umowach": 0.11910882604970009,
+        "konwersja_treningu": 0.02865903998112985,
+        "obsluzone_treningu": 0.4105436961905885,
+        "sredni_wynik_v2b": 0.06321896330194676,
+        "udzial_czolowki_v2b": 0.03613666228646518,
+        "sredni_wynik_v0": 0.02871334598619209,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.49662249935048064,
+        "udzial_czolowki_v1": 0.2923784494086728,
+        "sredni_wynik_v2": 0.029781460942720578,
+        "udzial_czolowki_v2": 0.000657030223390276
+      },
+      {
+        "zrodlo": "lokum24",
+        "n": 5506,
+        "umowy": 268,
+        "konwersja": 0.048674173628768615,
+        "udzial_w_umowach": 0.22964867180805484,
+        "konwersja_treningu": 0.047699144447213224,
+        "obsluzone_treningu": 0.9565163219536507,
+        "sredni_wynik_v2b": 0.05083910978872896,
+        "udzial_czolowki_v2b": 0.03942181340341656,
+        "sredni_wynik_v0": 0.047705615479615895,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.47284780239738466,
+        "udzial_czolowki_v1": 0.31537450722733246,
+        "sredni_wynik_v2": 0.04826628670276038,
+        "udzial_czolowki_v2": 0.04139290407358739
+      },
+      {
+        "zrodlo": "polecenie",
+        "n": 778,
+        "umowy": 113,
+        "konwersja": 0.14524421593830333,
+        "udzial_w_umowach": 0.09682947729220223,
+        "konwersja_treningu": 0.15790319987136195,
+        "obsluzone_treningu": 0.9890657662003538,
+        "sredni_wynik_v2b": 0.154812706556408,
+        "udzial_czolowki_v2b": 0.12746386333771353,
+        "sredni_wynik_v0": 0.15907144592365163,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.46735218508997434,
+        "udzial_czolowki_v1": 0.04730617608409987,
+        "sredni_wynik_v2": 0.154957659573073,
+        "udzial_czolowki_v2": 0.13731931668856767
+      },
+      {
+        "zrodlo": "relokacja_b2b",
+        "n": 1710,
+        "umowy": 303,
+        "konwersja": 0.17719298245614035,
+        "udzial_w_umowach": 0.2596401028277635,
+        "konwersja_treningu": 0.1994831527681145,
+        "obsluzone_treningu": 0.9949309213795845,
+        "sredni_wynik_v2b": 0.20996028754392645,
+        "udzial_czolowki_v2b": 0.4743758212877792,
+        "sredni_wynik_v0": 0.19948315276811449,
+        "udzial_czolowki_v0": 1.0,
+        "sredni_wynik_v1": 0.5473099415204679,
+        "udzial_czolowki_v1": 0.14914586070959265,
+        "sredni_wynik_v2": 0.21151531755975134,
+        "udzial_czolowki_v2": 0.4940867279894875
+      },
+      {
+        "zrodlo": "social",
+        "n": 722,
+        "umowy": 23,
+        "konwersja": 0.03185595567867036,
+        "udzial_w_umowach": 0.01970865467009426,
+        "konwersja_treningu": 0.030653111521873076,
+        "obsluzone_treningu": 0.9054220579174368,
+        "sredni_wynik_v2b": 0.03972803299506323,
+        "udzial_czolowki_v2b": 0.0,
+        "sredni_wynik_v0": 0.030666974102848646,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.47313019390581723,
+        "udzial_czolowki_v1": 0.03942181340341656,
+        "sredni_wynik_v2": 0.03445867830697542,
+        "udzial_czolowki_v2": 0.0
+      },
+      {
+        "zrodlo": "www",
+        "n": 2652,
+        "umowy": 321,
+        "konwersja": 0.12104072398190045,
+        "udzial_w_umowach": 0.2750642673521851,
+        "konwersja_treningu": 0.13005334391394435,
+        "obsluzone_treningu": 0.9899043336419345,
+        "sredni_wynik_v2b": 0.1309814446410063,
+        "udzial_czolowki_v2b": 0.32260183968462547,
+        "sredni_wynik_v0": 0.13007445709858678,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.47179487179487173,
+        "udzial_czolowki_v1": 0.15637319316688567,
+        "sredni_wynik_v2": 0.12947685613138502,
+        "udzial_czolowki_v2": 0.32654402102496716
+      }
+    ]
+  },
+  "okno_migracji": {
+    "v2b_lgbm_ipw": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.7845815302402985,
+      "lift_10": 3.524150268336315,
+      "k": 127,
+      "precision_k": 0.48031496062992124,
+      "auc_ci95": [
+        0.7646354258669135,
+        0.8037742036179676
+      ],
+      "lift_10_ci95": [
+        3.1888955868686106,
+        3.864157188932269
+      ],
+      "precision_k_ci95": [
+        0.3937007874015748,
+        0.5669291338582677
+      ],
+      "sredni_wynik": 0.0832102345745251
+    },
+    "v0_regula_zrodla": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.6334666466771799,
+      "lift_10": 1.8890115327522554,
+      "k": 127,
+      "precision_k": 0.2200557103064067,
+      "auc_ci95": [
+        0.6078911224888427,
+        0.6587998040130063
+      ],
+      "lift_10_ci95": [
+        1.5955012547923433,
+        2.176757914025416
+      ],
+      "precision_k_ci95": [
+        0.17800936196645664,
+        0.2626943265324752
+      ]
+    },
+    "v1_llm_zero_shot": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.6198020289329034,
+      "lift_10": 1.4011702861254636,
+      "k": 127,
+      "precision_k": 0.15064935064935064,
+      "auc_ci95": [
+        0.5969434537173431,
+        0.6417084203147627
+      ],
+      "lift_10_ci95": [
+        1.1718886672332698,
+        1.6383454502506891
+      ],
+      "precision_k_ci95": [
+        0.11466458333333333,
+        0.1881797838203006
+      ]
+    },
+    "v2_lgbm_naiwny": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.7635151662715737,
+      "lift_10": 3.32737030411449,
+      "k": 127,
+      "precision_k": 0.49606299212598426,
+      "auc_ci95": [
+        0.7432822674289566,
+        0.7836332707136084
+      ],
+      "lift_10_ci95": [
+        2.996681270471227,
+        3.678592570908145
+      ],
+      "precision_k_ci95": [
+        0.4094488188976378,
+        0.5748031496062992
+      ],
+      "sredni_wynik": 0.07260074878428119
+    },
+    "v2b_bez_wag": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "auc": 0.7838608566396845,
+      "lift_10": 3.4704830053667264,
+      "k": 127,
+      "precision_k": 0.49606299212598426,
+      "sredni_wynik": 0.08341432494057106
+    },
+    "roznica_v2b_minus_v0_ci95": {
+      "auc": [
+        0.12644113879889782,
+        0.1754447194669719
+      ],
+      "lift": [
+        1.2497585943641287,
+        1.997737017438745
+      ],
+      "prec": [
+        0.18018437959596692,
+        0.341775550334193
+      ]
+    },
+    "roznica_v2b_minus_v2_ci95": {
+      "auc": [
+        0.01258951616463593,
+        0.02981514965716882
+      ],
+      "lift": [
+        0.017420845326465338,
+        0.3676980265303901
+      ],
+      "prec": [
+        -0.055118110236220486,
+        0.03149606299212604
+      ]
+    },
+    "roznica_v2b_minus_v1_ci95": {
+      "auc": [
+        0.13906557862709193,
+        0.19019311928838287
+      ],
+      "lift": [
+        1.7334986692053085,
+        2.5193646160879375
+      ],
+      "prec": [
+        0.241157259945795,
+        0.4165569592854248
+      ]
+    },
+    "konwersja_obsluzonych": 0.10507518796992481,
+    "obsluzone": 1.0,
+    "auc_tylko_obsluzone": {
+      "v2b": 0.7845815302402985,
+      "v2": 0.7635151662715737,
+      "v0": 0.6334666466771799
+    },
+    "auc_wyniku_dla_obsluzenia": null,
+    "po_zrodle": [
+      {
+        "zrodlo": "domteraz",
+        "n": 1453,
+        "umowy": 119,
+        "konwersja": 0.08189951823812801,
+        "udzial_w_umowach": 0.21288014311270126,
+        "konwersja_treningu": 0.02865903998112985,
+        "obsluzone_treningu": 0.4105436961905885,
+        "sredni_wynik_v2b": 0.06321571313660705,
+        "udzial_czolowki_v2b": 0.07142857142857142,
+        "sredni_wynik_v0": 0.028683460109348084,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.4970406056434962,
+        "udzial_czolowki_v1": 0.37030075187969924,
+        "sredni_wynik_v2": 0.029224018261201745,
+        "udzial_czolowki_v2": 0.0018796992481203006
+      },
+      {
+        "zrodlo": "lokum24",
+        "n": 2040,
+        "umowy": 133,
+        "konwersja": 0.06519607843137255,
+        "udzial_w_umowach": 0.23792486583184258,
+        "konwersja_treningu": 0.047699144447213224,
+        "obsluzone_treningu": 0.9565163219536507,
+        "sredni_wynik_v2b": 0.04879181119136652,
+        "udzial_czolowki_v2b": 0.05263157894736842,
+        "sredni_wynik_v0": 0.047669615554175475,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.4658333333333333,
+        "udzial_czolowki_v1": 0.3176691729323308,
+        "sredni_wynik_v2": 0.045986934024682555,
+        "udzial_czolowki_v2": 0.05263157894736842
+      },
+      {
+        "zrodlo": "polecenie",
+        "n": 249,
+        "umowy": 46,
+        "konwersja": 0.18473895582329317,
+        "udzial_w_umowach": 0.08228980322003578,
+        "konwersja_treningu": 0.15790319987136195,
+        "obsluzone_treningu": 0.9890657662003538,
+        "sredni_wynik_v2b": 0.15825501424360788,
+        "udzial_czolowki_v2b": 0.14473684210526316,
+        "sredni_wynik_v0": 0.15758944430646699,
+        "udzial_czolowki_v0": 0.325187969924812,
+        "sredni_wynik_v1": 0.4726907630522088,
+        "udzial_czolowki_v1": 0.03571428571428571,
+        "sredni_wynik_v2": 0.15813190609842429,
+        "udzial_czolowki_v2": 0.15601503759398497
+      },
+      {
+        "zrodlo": "relokacja_b2b",
+        "n": 359,
+        "umowy": 79,
+        "konwersja": 0.2200557103064067,
+        "udzial_w_umowach": 0.1413237924865832,
+        "konwersja_treningu": 0.1994831527681145,
+        "obsluzone_treningu": 0.9949309213795845,
+        "sredni_wynik_v2b": 0.1895317097978309,
+        "udzial_czolowki_v2b": 0.2781954887218045,
+        "sredni_wynik_v0": 0.19948315276811449,
+        "udzial_czolowki_v0": 0.674812030075188,
+        "sredni_wynik_v1": 0.5548746518105849,
+        "udzial_czolowki_v1": 0.09586466165413533,
+        "sredni_wynik_v2": 0.19080771595707088,
+        "udzial_czolowki_v2": 0.2932330827067669
+      },
+      {
+        "zrodlo": "social",
+        "n": 248,
+        "umowy": 12,
+        "konwersja": 0.04838709677419355,
+        "udzial_w_umowach": 0.02146690518783542,
+        "konwersja_treningu": 0.030653111521873076,
+        "obsluzone_treningu": 0.9054220579174368,
+        "sredni_wynik_v2b": 0.03939043454039125,
+        "udzial_czolowki_v2b": 0.0,
+        "sredni_wynik_v0": 0.030664855293108813,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.4721774193548387,
+        "udzial_czolowki_v1": 0.041353383458646614,
+        "sredni_wynik_v2": 0.03675821610012903,
+        "udzial_czolowki_v2": 0.0
+      },
+      {
+        "zrodlo": "www",
+        "n": 971,
+        "umowy": 170,
+        "konwersja": 0.17507723995880536,
+        "udzial_w_umowach": 0.3041144901610018,
+        "konwersja_treningu": 0.13005334391394435,
+        "obsluzone_treningu": 0.9899043336419345,
+        "sredni_wynik_v2b": 0.13807879689855726,
+        "udzial_czolowki_v2b": 0.45300751879699247,
+        "sredni_wynik_v0": 0.1300887839822092,
+        "udzial_czolowki_v0": 0.0,
+        "sredni_wynik_v1": 0.46570545829042226,
+        "udzial_czolowki_v1": 0.13909774436090225,
+        "sredni_wynik_v2": 0.13694056369574595,
+        "udzial_czolowki_v2": 0.49624060150375937
+      }
+    ]
+  }
+}

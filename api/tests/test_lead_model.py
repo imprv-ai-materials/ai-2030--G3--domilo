@@ -260,3 +260,64 @@ def test_target_treningu_v2_nieobsluzone_to_zero():
 
     tr = pd.DataFrame({"umowa_45d": [1, 1, 0, 0], "obsluzony": [True, False, True, False]})
     assert list(target_treningu(tr)) == [1, 0, 0, 0]
+
+
+# --- v2b_lgbm_ipw ---------------------------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def v2b_wyuczony():
+    from api.ai.lead_model.versions.v2b_lgbm_ipw.model import ModelLGBMIPW
+
+    X, y = _cechy_v2(n=6000, ziarno=1)
+    rng = np.random.default_rng(2)
+    # domteraz obsługiwane rzadko (ok. 30%), inne prawie zawsze; nieobsłużone nie mają umowy
+    p_obsl = np.where(X["zrodlo"] == "domteraz", 0.3, 0.97)
+    obsluzony = rng.random(len(X)) < p_obsl
+    X = X.assign(obsluzony=obsluzony)
+    y = np.where(obsluzony, y, 0)
+    return ModelLGBMIPW(parametry={"num_threads": 1}).fit(X, y), X, y
+
+
+def test_v2b_sklonnosc_odtwarza_czestosc_obslugi_zrodla(v2b_wyuczony):
+    model, X, _ = v2b_wyuczony
+    p = model.sklonnosc(X)
+    assert ((p > 0) & (p < 1)).all()
+    assert p[X["zrodlo"] == "domteraz"].mean() == pytest.approx(0.3, abs=0.05)
+    assert p[X["zrodlo"] != "domteraz"].mean() == pytest.approx(0.97, abs=0.03)
+
+
+def test_v2b_wagi_to_odwrotnosc_sklonnosci_przycieta_do_10(v2b_wyuczony):
+    model, X, _ = v2b_wyuczony
+    w = model.wagi(X)
+    assert (w >= 1).all() and (w <= 10).all()
+    assert np.allclose(w, np.minimum(1 / model.sklonnosc(X), 10))
+    from api.ai.lead_model.versions.v2b_lgbm_ipw.model import ModelLGBMIPW
+
+    przyciety = ModelLGBMIPW(maks_waga=2.0)
+    przyciety.sklonnosc_ = model.sklonnosc_
+    przyciety.cechy = model.cechy
+    assert przyciety.wagi(X).max() == pytest.approx(2.0)
+
+
+def test_v2b_uczy_lgbm_tylko_na_obsluzonych(v2b_wyuczony):
+    model, X, _ = v2b_wyuczony
+    assert model.statystyki_wag_["n_uczacych"] == int(X["obsluzony"].sum())
+    assert model.statystyki_wag_["efektywna_liczebnosc"] <= model.statystyki_wag_["n_uczacych"]
+
+
+def test_v2b_nie_karze_zrodla_za_brak_obslugi(v2b_wyuczony):
+    # W danych umowa zależy od źródła tylko przez `polecenie`; domteraz ma niską konwersję tylko przez brak obsługi.
+    model, X, _ = v2b_wyuczony
+    wynik = model.predict(X)
+    www = X["zrodlo"] == "www"
+    assert wynik[X["zrodlo"] == "domteraz"].mean() == pytest.approx(wynik[www].mean(), rel=0.35)
+
+
+def test_v2_wagi_jedynkowe_daja_ten_sam_model_co_bez_wag():
+    from api.ai.lead_model.versions.v2_lgbm_naiwny.model import ModelLGBMNaiwny
+
+    X, y = _cechy_v2(n=2000, ziarno=3)
+    a = ModelLGBMNaiwny(parametry={"num_threads": 1}).fit(X, y)
+    b = ModelLGBMNaiwny(parametry={"num_threads": 1}).fit(X, y, wagi=np.ones(len(y)))
+    assert np.allclose(a.predict(X), b.predict(X))

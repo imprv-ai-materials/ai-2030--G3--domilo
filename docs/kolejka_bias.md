@@ -1,31 +1,40 @@
-# Kolejka zapytań: co naprawdę przewiduje v2_lgbm_naiwny
+# Kolejka zapytań: co naprawdę przewiduje v2_lgbm_naiwny i co zmienia v2b_lgbm_ipw
 
-Analiza z 2026-11-15 zapisanego modelu `versions/v2_lgbm_naiwny/model.joblib` (bez ponownego uczenia i bez zmian;
-skrypt `lead_model/evals/analiza_biasu_v2.py`, wynik `lead_model/evals/wyniki/bias_v2.json`). Zbiory jak
-w [kolejka_v2_lgbm_naiwny.md](kolejka_v2_lgbm_naiwny.md): trening (zamknięte zapytania 2023-01 – 2026-02 bez okna
-migracji), zwykły test (2026-03 – 2026-06) i okno migracji CRM (2025-03-03 – 2025-04-13). W oknie call center
-obsłużyło każde zapytanie.
+Analiza z 2026-11-15. Pierwsza część dotyczy zapisanego modelu `versions/v2_lgbm_naiwny/model.joblib` (bez
+ponownego uczenia; skrypt `lead_model/evals/analiza_biasu_v2.py`, wynik `lead_model/evals/wyniki/bias_v2.json`).
+Część o v2b (tabele B5–B9) liczy `lead_model/evals/ewaluacja_v2b.py`; run MLflow
+`9b7285f2324c4a83937bd12dd71b73e8` w eksperymencie `leady`. Zbiory jak w
+[kolejka_v2_lgbm_naiwny.md](kolejka_v2_lgbm_naiwny.md):
+- trening: zamknięte zapytania 2023-01 – 2026-02 bez okna migracji;
+- zwykły test: 2026-03 – 2026-06;
+- okno migracji CRM: 2025-03-03 – 2025-04-13; w oknie call center obsłużyło każde zapytanie.
 
 ## Wnioski
 
-1. Model nie przewiduje czystej szansy na umowę. Przewiduje szansę na umowę **przy dzisiejszym sposobie pracy
-   zespołu**, czyli razem: „czy doradca w ogóle się odezwie” i „czy po kontakcie klient podpisze”. Na zwykłym
-   teście wynik modelu przewiduje samo to, czy doradca się odezwie, prawie tak dobrze (AUC 0,766) jak umowę
-   (AUC 0,793).
-2. Najmocniej widać to na `domteraz`. Doradcy odzywają się tylko do 41% tych zapytań. Gdy się odezwą, umową kończy
-   się 7,24% (test), a w oknie migracji, gdy obsłużono wszystkich, 8,19%. Model daje `domteraz` średnio 2,9%,
-   bo nauczył się iloczynu 41,1% × 6,98% = 2,87% z treningu. W oknie zaniża `domteraz` 2,8 raza, a inne źródła
-   1,15–1,42 raza.
-3. Na zwykłym teście ten błąd jest niewidoczny, bo zespół dalej pomija `domteraz`. Model trafnie przewiduje, że
-   te zapytania nie skończą się umową, choć powodem jest brak telefonu, a nie słabe zapytanie. Gdy policzyć AUC
-   tylko na obsłużonych zapytaniach testu, spada z 0,793 do 0,771. W oknie migracji, gdzie wszyscy byli
-   obsłużeni, AUC wynosi 0,764.
-4. W obrębie jednego źródła model rozróżnia zapytania podobnie na teście i w oknie (AUC 0,70–0,76). Cechy
-   formularza (budżet, termin, sesje www, treść) działają. Problemem jest przede wszystkim cecha `zrodlo`,
-   najważniejsza w modelu (34,8% gain), która niesie w sobie decyzję doradców.
-5. Jeśli taki model ustawi kolejkę, `domteraz` trafi na jej koniec, doradcy będą je pomijać jeszcze częściej,
-   a następny model nauczy się tego samego jeszcze mocniej. Na razie niczego nie poprawiamy. Możliwe kierunki
-   są w pytaniach na końcu odpowiedzi w czacie.
+1. Naiwny model (v2) przewiduje szansę na umowę **przy dzisiejszym sposobie pracy zespołu**, czyli razem: „czy
+   doradca w ogóle się odezwie” i „czy po kontakcie klient podpisze”. Na teście jego wynik przewiduje samo
+   „czy doradca się odezwie” z AUC 0,766, prawie tak dobrze jak umowę (0,793). `domteraz` dostaje średnio 2,9%,
+   czyli tyle, ile wynosi 41,1% obsłużonych × 6,98% umów po kontakcie. W oknie migracji, gdy obsłużono wszystkich,
+   `domteraz` miało 8,19%: v2 zaniża je 2,8 raza, inne źródła 1,15–1,42 raza.
+2. v2b uczy się tylko na zapytaniach, do których doradca się odezwał. Każde ma wagę tym większą, im rzadziej
+   doradcy odzywają się do podobnych zapytań. v2b przewiduje więc szansę na umowę **pod warunkiem, że doradca
+   zadzwoni**. Na teście jego średni wynik (9,06%) jest równy konwersji obsłużonych zapytań (9,05%), a samo
+   obsłużenie przewiduje dużo słabiej niż v2 (AUC 0,615 wobec 0,766).
+3. W oknie migracji, jedynym okresie bez wpływu decyzji doradców, v2b układa kolejkę lepiej niż v2:
+   - AUC 0,785 wobec 0,764 (różnica +0,013 … +0,030);
+   - lift@10% 3,52 wobec 3,33 (+0,02 … +0,37);
+   - w pierwszych 127 zapytaniach różnica nierozstrzygnięta (48,0% wobec 49,6%; −5,5 … +3,1 pp).
+
+   Na zwykłym teście v2b i v2 są praktycznie równe (AUC −0,008 … +0,001). Oba modele są wyraźnie lepsze od
+   baseline v0 i od v1 na obu zbiorach.
+4. `domteraz` przestaje być karane za brak telefonu. W oknie v2b daje mu średnio 6,32% wobec rzeczywistych 8,19%,
+   czyli zaniża je 1,30 raza, tak jak inne źródła (1,16–1,34). W czołówce 10% kolejki `domteraz` ma 7,1%
+   zapytań zamiast 0,2%.
+5. Same wagi dokładają niewiele. LightGBM tylko na obsłużonych, bez wag, ma w oknie AUC 0,784 (v2b: 0,785).
+   Poprawa bierze się głównie z tego, że brak telefonu przestał liczyć się jako porażka.
+   - Wagi są łagodne: mediana 1,03, maksimum 6,77; przycięcie do 10 nie zadziałało ani razu.
+   - Największe wagi mają obsłużone zapytania `domteraz` z linii MID z budżetem ok. 0,6–0,7 mediany czynszu.
+   - Do wyboru wersji do `current.yaml` potrzebna jest decyzja (pytania w czacie).
 
 ## Co przewiduje model, prostym językiem
 
@@ -42,6 +51,18 @@ w oknie migracji call center zadzwoniło do wszystkich, `domteraz` dało 21,3% u
 
 Kolejka ma odpowiadać na pytanie: „do kogo warto zadzwonić?”. Model naiwny odpowiada na inne: „do kogo zwykle
 dzwonimy i z kim podpisujemy?”.
+
+v2b robi to w dwóch krokach.
+
+1. **Model skłonności** (regresja logistyczna) uczy się, do jakich zapytań doradcy zwykle się odzywają. Na
+   przykład do `domteraz` w ok. 41% przypadków, do `www` w 99%.
+2. **Właściwy model** uczy się już tylko na zapytaniach, do których ktoś zadzwonił, więc „brak umowy” znaczy
+   w nim tylko „klient nie chciał”. Zapytania obsłużone rzadko (głównie `domteraz`) dostają większą wagę: jedno
+   obsłużone `domteraz` z wagą 2,4 „zastępuje” też te podobne, do których nikt nie zadzwonił.
+
+v2b odpowiada więc na pytanie: „jaka jest szansa na umowę, jeśli zadzwonimy?”. To założenie działa tylko wtedy,
+gdy doradcy wybierają zapytania na podstawie tego, co widać w formularzu. Jeśli kierują się czymś spoza danych
+(np. tonem rozmowy w pierwszym kontakcie), wagi tego nie naprawią.
 
 ## Tabele
 
@@ -152,6 +173,150 @@ Kolejność według gain z zapisanego modelu (`waznosc_cech()`). Średni |wkład
 (`explain`, `pred_contrib`). Pozostałe 9 cech ma łącznie 8,1% gain
 ([kolejka_v2_lgbm_naiwny.md](kolejka_v2_lgbm_naiwny.md), T6).
 
+### B5. v2b_lgbm_ipw: okno migracji i zwykły test
+
+Zbiór uczący jak w v2, czyli tylko dane spoza okna migracji:
+- **model skłonności:** wszystkie 127 527 zapytań treningu;
+- **LightGBM:** 104 479 obsłużonych zapytań, 9 407 umów, target `umowa_45d` bez zmian, waga
+  `min(1 / P(obsłużony), 10)`; 182 drzewa z wczesnego zatrzymania na ostatnich 6 miesiącach treningu (ważone
+  AUC walidacji 0,786).
+
+Okno migracji (5 320 zapytań, 559 umów, k = 127):
+
+| Wersja | AUC | lift@10% | precision@127 |
+|---|---:|---:|---:|
+| v0_regula_zrodla (baseline) | 0,633 (0,608–0,659) | 1,89 (1,60–2,18) | 22,0% (17,8–26,3) |
+| v1_llm_zero_shot | 0,620 (0,597–0,642) | 1,40 (1,17–1,64) | 15,1% (11,5–18,8) |
+| v2_lgbm_naiwny | 0,764 (0,743–0,784) | 3,33 (3,00–3,68) | 49,6% (40,9–57,5) |
+| **v2b_lgbm_ipw** | **0,785** (0,765–0,804) | **3,52** (3,19–3,86) | 48,0% (39,4–56,7) |
+| v2b bez wag (kontrola: tylko obsłużone, wagi = 1) | 0,784 | 3,47 | 49,6% |
+| v2b − v0 (95% CI) | +0,126 … +0,175 | +1,25 … +2,00 | +18,0 … +34,2 pp |
+| v2b − v2 (95% CI) | +0,013 … +0,030 | +0,02 … +0,37 | −5,5 … +3,1 pp |
+| v2b − v1 (95% CI) | +0,139 … +0,190 | +1,73 … +2,52 | +24,1 … +41,7 pp |
+
+Zwykły test 2026-03 – 2026-06 (15 217 zapytań, 1 167 umów, k = 125):
+
+| Wersja | AUC | lift@10% | precision@125 |
+|---|---:|---:|---:|
+| v0_regula_zrodla (baseline) | 0,684 (0,668–0,700) | 2,31 (2,11–2,52) | 17,7% (16,0–19,5) |
+| v1_llm_zero_shot | 0,617 (0,601–0,632) | 1,49 (1,33–1,65) | 11,5% (9,7–13,5) |
+| v2_lgbm_naiwny | **0,793** (0,780–0,806) | **3,75** (3,50–4,00) | **43,2%** (34,4–52,0) |
+| v2b_lgbm_ipw | 0,790 (0,776–0,802) | 3,69 (3,44–3,94) | 40,8% (33,6–50,4) |
+| v2b bez wag (kontrola) | 0,790 | 3,73 | 40,0% |
+| v2b − v0 (95% CI) | +0,090 … +0,120 | +1,12 … +1,64 | +15,8 … +32,5 pp |
+| v2b − v2 (95% CI) | −0,008 … +0,001 | −0,17 … +0,05 | −5,6 … +4,0 pp |
+| v2b − v1 (95% CI) | +0,157 … +0,191 | +1,92 … +2,48 | +21,8 … +39,2 pp |
+
+| Miara dodatkowa | v2 | v2b |
+|---|---:|---:|
+| test: AUC (umowa) tylko na obsłużonych | 0,771 | 0,777 |
+| test: AUC wyniku dla samego obsłużenia | 0,766 | 0,615 |
+| test: średni wynik (konwersja wszystkich 7,67%, obsłużonych 9,05%) | 8,09% | 9,06% |
+| okno: średni wynik (konwersja 10,51%) | 7,26% | 8,32% |
+
+Wariant kontrolny „bez wag” jest wyuczony w tym samym przebiegu, ale bez przedziałów ufności.
+
+### B6. v2b w oknie migracji: średni wynik według źródła i udział w czołówce 10%
+
+| Źródło | Zapytania | Konwersja w oknie | Udział w umowach | Średni wynik v2 | Średni wynik v2b | Konwersja / v2 | Konwersja / v2b | Czołówka 10%: v2 | Czołówka 10%: v2b |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| domteraz | 1 453 | 8,19% | 21,3% | 2,92% | **6,32%** | 2,80 | **1,30** | 0,2% | **7,1%** |
+| lokum24 | 2 040 | 6,52% | 23,8% | 4,60% | 4,88% | 1,42 | 1,34 | 5,3% | 5,3% |
+| polecenie | 249 | 18,47% | 8,2% | 15,81% | 15,83% | 1,17 | 1,17 | 15,6% | 14,5% |
+| relokacja_b2b | 359 | 22,01% | 14,1% | 19,08% | 18,95% | 1,15 | 1,16 | 29,3% | 27,8% |
+| social | 248 | 4,84% | 2,1% | 3,68% | 3,94% | 1,32 | 1,23 | 0,0% | 0,0% |
+| www | 971 | 17,51% | 30,4% | 13,69% | 13,81% | 1,28 | 1,27 | 49,6% | 45,3% |
+
+- **Niedoszacowanie w oknie:** v2b zaniża w oknie wszystkie źródła o podobny czynnik (1,16–1,34). Pozostała
+  różnica to wyższa konwersja w całym oknie: call center odzywało się szybciej
+  ([kolejka_target.md](kolejka_target.md), R3).
+- **`domteraz` w czołówce:** ma nadal mniejszy udział w czołówce (7,1%) niż w umowach (21,3%), bo jego konwersja
+  (8,19%) jest niższa niż `www`, `polecenie` i `relokacja_b2b`.
+- **Test:** v2b daje `domteraz` średnio 6,32% przy konwersji obsłużonych `domteraz` 7,24% (B3). W czołówce 10%
+  testu `domteraz` ma 3,6% zapytań (v2: 0,1%).
+
+### B7. Model skłonności P(obsłużony | cechy zapytania)
+
+Regresja logistyczna (`LogisticRegression`, `max_iter` 2000) na `KOLUMNY_CECH`: one-hot dla `zrodlo`, `miasto`,
+`linia`; liczby z medianą w miejsce braku, wskaźnikiem braku i standaryzacją. AUC dla `obsluzony`: trening 0,909,
+test 0,913. Średnia skłonność w oknie migracji: 81,5% (rzeczywiście obsłużone: 100%).
+
+| Źródło | Obsłużone (trening) | Średnia P (trening) | Obsłużone (test) | Średnia P (test) |
+|---|---:|---:|---:|---:|
+| domteraz | 41,1% | 41,1% | 40,6% | 40,9% |
+| lokum24 | 95,7% | 95,7% | 95,8% | 95,7% |
+| polecenie | 98,9% | 98,9% | 99,0% | 98,9% |
+| relokacja_b2b | 99,5% | 99,5% | 99,3% | 99,5% |
+| social | 90,5% | 90,5% | 89,1% | 90,4% |
+| www | 99,0% | 99,0% | 99,0% | 99,0% |
+
+### B8. Rozkład wag (104 479 obsłużonych zapytań treningu)
+
+| Statystyka | Waga |
+|---|---:|
+| minimum | 1,00 |
+| kwantyl 10% | 1,01 |
+| kwantyl 25% | 1,01 |
+| mediana | 1,03 |
+| kwantyl 75% | 1,07 |
+| kwantyl 90% | 1,79 |
+| kwantyl 95% | 2,55 |
+| kwantyl 99% | 3,88 |
+| maksimum | 6,77 |
+| średnia | 1,22 |
+| przycięte do 10 | 0 |
+| suma wag (≈ liczba wszystkich zapytań treningu, 127 527) | 127 457 |
+| efektywna liczebność (Kish: (Σw)² / Σw²) | 86 239 |
+
+| Przedział wagi | Zapytania |
+|---|---:|
+| [1; 1,25) | 90 812 |
+| [1,25; 1,5) | 1 076 |
+| [1,5; 2) | 3 796 |
+| [2; 3) | 5 778 |
+| [3; 5) | 2 984 |
+| [5; 10) | 33 |
+| ≥ 10 | 0 |
+
+| Źródło | Obsłużone | Średnia waga | Mediana | Maks. | Udział w obsłużonych | Udział w sumie wag |
+|---|---:|---:|---:|---:|---:|---:|
+| domteraz | 13 924 | 2,43 | 2,32 | 6,77 | 13,3% | **26,5%** |
+| lokum24 | 46 062 | 1,05 | 1,04 | 1,19 | 44,1% | 37,8% |
+| polecenie | 6 151 | 1,01 | 1,01 | 1,04 | 5,9% | 4,9% |
+| relokacja_b2b | 10 010 | 1,01 | 1,01 | 1,02 | 9,6% | 7,9% |
+| social | 5 878 | 1,11 | 1,10 | 1,35 | 5,6% | 5,1% |
+| www | 22 454 | 1,01 | 1,01 | 1,04 | 21,5% | 17,8% |
+
+Udział `domteraz` w sumie wag (26,5%) odpowiada jego udziałowi we wszystkich zapytaniach treningu
+(33 916 / 127 527 = 26,6%, tabela B1). Wagi przywracają więc proporcje źródeł sprzed decyzji doradców.
+
+### B9. 5 zapytań z największą wagą
+
+Wszystkie pięć to obsłużone zapytania `domteraz` z linii MID, z budżetem 0,61–0,70 mediany czynszu w mieście.
+Żadne nie skończyło się umową. Imię w treści zastąpiono znacznikiem `[imię]`, a treść skrócono do 120 znaków.
+
+| id_leada | Utworzono | Miasto | Budżet / mediana | Termin (dni) | Osoby | Sesje www | Sygnały v1 | P(obsłużony) | Waga | Umowa 45 dni |
+|---|---|---|---:|---:|---:|---:|---|---:|---:|---:|
+| L058679 | 2024-06-20 18:10 | Poznań | 0,61 | 46 | 2 | 1 | budzet_niski | 14,8% | 6,77 | 0 |
+| L126586 | 2026-01-03 19:32 | Wrocław | 0,67 | 21 | 2 | 1 | konkretne_pytania, pilny_termin, budzet_niski | 16,3% | 6,13 | 0 |
+| L071464 | 2024-09-21 17:37 | Gdańsk | 0,68 | 21 | 2 | 2 | pilny_termin, relokacja, budzet_niski | 16,4% | 6,11 | 0 |
+| L066064 | 2024-08-14 18:36 | Gdańsk | 0,66 | brak | 5 | 1 | budzet_niski, brak_informacji | 17,0% | 5,89 | 0 |
+| L037275 | 2023-11-29 22:48 | Wrocław | 0,70 | brak | 2 | 2 | budzet_niski, brak_informacji | 17,0% | 5,87 | 0 |
+
+Treść wiadomości:
+
+- **L058679:** „jestem zainteresowany ofertą najmu w Poznaniu Pracuję zdalnie, nie palę. Dziękuję i pozdrawiam,
+  [imię]”.
+- **L126586:** „Cześć, interesuje mnie najem długoterminowy we Wrocławiu Proszę o przesłanie dostępnych lokali.
+  Pracuję zdalnie, nie pal…”.
+- **L071464:** „Доброго дня! переїжджаю до міста Gdańsk через роботу і шукаю житло. Працюю в польській компанії.
+  З повагою, [imię]”. Po ukraińsku: przeprowadzka do Gdańska z powodu pracy, praca w polskiej firmie.
+- **L066064:** brak wiadomości.
+- **L037275:** „Interesuje mnie oferta.”.
+
+Te zapytania ważą w uczeniu tyle co ok. 6 zwykłych. Gdyby było ich wiele, kilka przypadkowych umów w tej grupie
+mocno przesunęłoby model. Tu takich zapytań (waga ≥ 5) jest 33 z 104 479.
+
 ## SQL i kod
 
 Źródło × zbiór (tabela B1), na `domilo.duckdb` przez `polacz()` (strefa Europe/Warsaw). Granice zbiorów są takie
@@ -209,3 +374,28 @@ auc_dla_obsluzenia = roc_auc_score(zb["obsluzony"].astype(int), w)     # czy wyn
 po_zrodle = df.groupby("zrodlo").agg(konwersja=("y", "mean"), sredni_wynik_v2=("w", "mean"),
                                      sredni_wklad_zrodla=("wklad_zrodlo", "mean"))
 ```
+
+v2b (tabele B5–B9): model w `api/api/ai/lead_model/versions/v2b_lgbm_ipw/model.py`, ewaluacja
+w `api/api/ai/lead_model/evals/ewaluacja_v2b.py`.
+
+```bash
+set -a && . ./.env && set +a   # klient v1 wymaga klucza; odpowiedzi v1 są w cache, więc API nie jest wołane
+cd api && poetry run python -m api.ai.lead_model.evals.ewaluacja_v2b      # zapis + MLflow (`leady`)
+```
+
+```python
+# rdzeń v2b (fragment model.py)
+sklonnosc = make_pipeline(
+    ColumnTransformer([
+        ("kategorie", OneHotEncoder(handle_unknown="ignore"), ["zrodlo", "miasto", "linia"]),
+        ("liczby", make_pipeline(SimpleImputer(strategy="median", add_indicator=True), StandardScaler()), liczby),
+    ]),
+    LogisticRegression(max_iter=2000),
+).fit(X_trening, obsluzony)                                   # wszystkie zapytania treningu
+wagi = np.minimum(1 / sklonnosc.predict_proba(X_obsluzone)[:, 1], 10)
+lgbm = ModelLGBMNaiwny.fit(X_obsluzone, umowa_45d_obsluzonych, wagi=wagi)  # te same parametry LightGBM co v2
+```
+
+Wynik każdego zapytania testu i okna (v0, v1, v2, v2b, v2b bez wag, skłonność):
+`api/api/ai/lead_model/evals/wyniki/v2b_lgbm_ipw.parquet`. Rozkład wag, 5 zapytań z największą wagą i model
+skłonności: `versions/v2b_lgbm_ipw/metryki.json` (klucze `wagi`, `top5_wag`, `sklonnosc`).

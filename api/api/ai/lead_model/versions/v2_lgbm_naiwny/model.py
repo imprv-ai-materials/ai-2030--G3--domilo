@@ -59,20 +59,22 @@ class ModelLGBMNaiwny(ModelLeadow):
                 X[k] = X[k].astype("float64")
         return X
 
-    def _zbior(self, leady: pd.DataFrame, y) -> lgb.Dataset:
-        return lgb.Dataset(self._macierz(leady), label=np.asarray(y, dtype=float), free_raw_data=False)
+    def _zbior(self, leady: pd.DataFrame, y, wagi=None) -> lgb.Dataset:
+        return lgb.Dataset(self._macierz(leady), label=np.asarray(y, dtype=float), weight=wagi, free_raw_data=False)
 
     # --- uczenie i wynik ---------------------------------------------------------------------------------------
 
-    def fit(self, leady: pd.DataFrame, y: pd.Series) -> "ModelLGBMNaiwny":
+    def fit(self, leady: pd.DataFrame, y: pd.Series, wagi=None) -> "ModelLGBMNaiwny":
+        """`wagi` (opcjonalnie): waga każdego wiersza w uczeniu i w walidacji wczesnego zatrzymania (v2b: IPW)."""
         y = np.asarray(y, dtype=float)
+        wagi = np.ones(len(y)) if wagi is None else np.asarray(wagi, dtype=float)
         self.kategorie_ = {k: sorted(leady[k].dropna().astype(str).unique()) for k in self.cechy if k in KATEGORIE}
         utworzono = pd.to_datetime(leady["utworzono"], utc=True)
         granica = utworzono.max() - pd.DateOffset(months=MIESIECY_WALIDACJI)
         walid = (utworzono > granica).to_numpy()
         self.granica_walidacji_ = str(granica)
-        zbior_uczacy = self._zbior(leady[~walid], y[~walid])
-        zbior_walid = self._zbior(leady[walid], y[walid])
+        zbior_uczacy = self._zbior(leady[~walid], y[~walid], wagi[~walid])
+        zbior_walid = self._zbior(leady[walid], y[walid], wagi[walid])
         proba = lgb.train(
             self.parametry,
             zbior_uczacy,
@@ -82,7 +84,7 @@ class ModelLGBMNaiwny(ModelLeadow):
         )
         self.liczba_drzew_ = int(proba.best_iteration)
         self.auc_walidacji_ = float(proba.best_score["valid_0"]["auc"])
-        self.booster_ = lgb.train(self.parametry, self._zbior(leady, y), num_boost_round=self.liczba_drzew_)
+        self.booster_ = lgb.train(self.parametry, self._zbior(leady, y, wagi), num_boost_round=self.liczba_drzew_)
         return self
 
     def predict(self, leady: pd.DataFrame) -> np.ndarray:
