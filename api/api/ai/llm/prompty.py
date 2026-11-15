@@ -1,4 +1,4 @@
-"""Prompty LLM z plików YAML w ai/llm/prompts/ (pola: wersja, instrukcja, szablon z polem {opis})."""
+"""Prompty LLM z plików YAML w ai/llm/prompts/ (pola: wersja, data, instrukcja, szablon z polem {opis})."""
 
 import hashlib
 from dataclasses import dataclass
@@ -14,6 +14,7 @@ class Prompt:
     wersja: str
     instrukcja: str
     szablon: str
+    data: str | None = None  # dzień utworzenia wersji (RRRR-MM-DD); poza skrótem treści, nie wpływa na cache
 
     def wiadomosc(self, opis: str) -> str:
         return self.szablon.format(opis=opis)
@@ -26,4 +27,10 @@ class Prompt:
 
 def wczytaj_prompt(nazwa: str, katalog: Path = KATALOG_PROMPTOW) -> Prompt:
     dane = yaml.safe_load((katalog / f"{nazwa}.yaml").read_text(encoding="utf-8"))
-    return Prompt(wersja=dane["wersja"], instrukcja=dane["instrukcja"], szablon=dane["szablon"])
+    data = dane.get("data")
+    return Prompt(
+        wersja=dane["wersja"],
+        instrukcja=dane["instrukcja"],
+        szablon=dane["szablon"],
+        data=str(data) if data is not None else None,
+    )
