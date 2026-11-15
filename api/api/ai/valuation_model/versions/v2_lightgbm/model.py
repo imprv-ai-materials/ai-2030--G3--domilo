@@ -44,16 +44,27 @@ class ModelLightGBM(ModelWyceny):
 
     # --- cechy ---------------------------------------------------------------------------------------------------
 
+    # Metody poniżej rozszerzają wersje z dodatkowymi cechami (v2_lgbm_geo). Są metodami klasy, a nie atrybutami
+    # ustawianymi w __init__, żeby zapisany wcześniej model.joblib nadal się wczytywał.
+
+    def _wartosci_kategorii(self, X: pd.DataFrame) -> dict[str, pd.Series]:
+        return {"miasto": X["miasto"], "dzielnica": X["miasto"].astype(str) + " | " + X["dzielnica"].astype(str)}
+
+    def _kolumny_liczbowe(self) -> list[str]:
+        return list(KOLUMNY_LICZBOWE)
+
+    def _sprawdz(self, X: pd.DataFrame) -> None:
+        self.sprawdz_kolumny(X)
+
     def _macierz(self, X: pd.DataFrame) -> pd.DataFrame:
-        wartosci = {"miasto": X["miasto"], "dzielnica": X["miasto"].astype(str) + " | " + X["dzielnica"].astype(str)}
         A = pd.DataFrame(
             {
                 k: pd.Categorical(v.where(v.isin(self.kategorie_[k])), categories=self.kategorie_[k])
-                for k, v in wartosci.items()
+                for k, v in self._wartosci_kategorii(X).items()
             },
             index=X.index,
         )
-        for k in KOLUMNY_LICZBOWE:
+        for k in self._kolumny_liczbowe():
             A[k] = X[k].astype(float)
         return A
 
@@ -66,35 +77,32 @@ class ModelLightGBM(ModelWyceny):
         X_wal: pd.DataFrame | None = None,
         y_wal: pd.Series | None = None,
     ) -> "ModelLightGBM":
-        self.sprawdz_kolumny(X)
-        self.kategorie_ = {
-            "miasto": sorted(X["miasto"].unique()),
-            "dzielnica": sorted((X["miasto"].astype(str) + " | " + X["dzielnica"].astype(str)).unique()),
-        }
+        self._sprawdz(X)
+        self.kategorie_ = {k: sorted(v.dropna().unique()) for k, v in self._wartosci_kategorii(X).items()}
         self.reg_ = lgb.LGBMRegressor(n_estimators=self.max_drzew, **self.parametry)
         ln_y = np.log(np.asarray(y, dtype=float))
         if X_wal is not None and y_wal is not None:
-            self.sprawdz_kolumny(X_wal)
+            self._sprawdz(X_wal)
             self.reg_.fit(
                 self._macierz(X),
                 ln_y,
                 eval_X=(self._macierz(X_wal),),
                 eval_y=(np.log(np.asarray(y_wal, dtype=float)),),
                 eval_names=["walidacja"],
-                categorical_feature=list(KOLUMNY_KATEGORII),
+                categorical_feature=list(self.kategorie_),
                 callbacks=[lgb.early_stopping(self.stopping_rounds, verbose=False)],
             )
             self.najlepsza_iteracja_ = int(self.reg_.best_iteration_)
             self.l2_walidacja_ = float(self.reg_.best_score_["walidacja"]["l2"])
         else:
-            self.reg_.fit(self._macierz(X), ln_y, categorical_feature=list(KOLUMNY_KATEGORII))
+            self.reg_.fit(self._macierz(X), ln_y, categorical_feature=list(self.kategorie_))
             self.najlepsza_iteracja_ = self.max_drzew
             self.l2_walidacja_ = None
         return self
 
     def explain(self, X: pd.DataFrame) -> pd.DataFrame:
         """Wkłady cech do ln(wyceny) (wartości SHAP LightGBM): suma kolumn `wklad_*` = ln(wycena_pln)."""
-        self.sprawdz_kolumny(X)
+        self._sprawdz(X)
         A = self._macierz(X)
         wklady = self.reg_.predict(A, pred_contrib=True, num_iteration=self.najlepsza_iteracja_)
         wyj = pd.DataFrame(wklady, index=X.index, columns=[f"wklad_{k}" for k in A.columns] + ["wklad_bazowy"])
@@ -102,7 +110,7 @@ class ModelLightGBM(ModelWyceny):
         return wyj
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:
-        self.sprawdz_kolumny(X)
+        self._sprawdz(X)
         return np.exp(self.reg_.predict(self._macierz(X), num_iteration=self.najlepsza_iteracja_))
 
     def waznosc_cech(self) -> pd.DataFrame:

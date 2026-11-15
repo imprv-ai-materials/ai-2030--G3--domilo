@@ -6,6 +6,7 @@ trening 2023-01 – 2025-06 (38 522), walidacja 2025-07 – 2025-12 (7 686), tes
 Liczby pochodzą z [`ewaluacja_v2.py`](../api/api/ai/valuation_model/evals/ewaluacja_v2.py),
 [`opis_geo.py`](../api/api/ai/features/wycena/opis_geo.py) i [`geo.sql`](../api/api/ai/features/wycena/geo.sql)
 (sekcja [SQL i kod](#sql-i-kod)).
+Ciąg dalszy (model z cechami otoczenia i sąsiedztwa, ablacja): [b4_wycena_v2_lgbm_geo.md](b4_wycena_v2_lgbm_geo.md).
 
 ## Wnioski
 

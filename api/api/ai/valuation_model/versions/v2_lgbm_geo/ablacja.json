@@ -1,0 +1,248 @@
+{
+  "uczony_na": "trening (rcn_transakcje, data_aktu 2023-01-01 – 2025-06-30, podzial.sql)",
+  "wczesne_zatrzymanie_na": "walidacja (data_aktu 2025-07-01 – 2025-12-31), l2 na ln(ceny)",
+  "sasiedztwo": "sasiedztwo.sql: 20 najbliższych z 12 mies. przed dniem aktu; trening out-of-fold (5 foldów)",
+  "test_otwarty": "2026-11-15",
+  "wybor_geohash6_walidacja": [
+    {
+      "wersja": "pelny",
+      "zbior": "walidacja",
+      "grupa": "wszystkie rodziny, bez geohash6",
+      "n": 7686,
+      "MAE_pln": 46772,
+      "RMSE_pln": 69302,
+      "MAPE_proc": 8.72,
+      "MdAPE_proc": 5.99,
+      "mediana_bledu_proc": -3.01,
+      "drzewa": 261
+    },
+    {
+      "wersja": "pelny_geohash6",
+      "zbior": "walidacja",
+      "grupa": "wszystkie rodziny + geohash6 (kategoria)",
+      "n": 7686,
+      "MAE_pln": 48157,
+      "RMSE_pln": 71724,
+      "MAPE_proc": 8.9,
+      "MdAPE_proc": 6.16,
+      "mediana_bledu_proc": -2.9,
+      "drzewa": 192
+    }
+  ],
+  "warianty": {
+    "pelny": {
+      "opis": "wszystkie rodziny, bez geohash6",
+      "cechy_liczbowe": [
+        "odl_stacja_m",
+        "odl_metro_m",
+        "odl_tramwaj_m",
+        "odl_park_m",
+        "odl_uczelnia_m",
+        "metro_do_700m",
+        "tramwaj_do_300m",
+        "park_do_400m",
+        "odl_centrum_m",
+        "gestosc_os_km2",
+        "wskaznik_dochodu",
+        "sasiedzi_mediana_ceny_m2",
+        "sasiedzi_liczba"
+      ],
+      "cechy_kategorii": [],
+      "sasiedzi_wg_publikacji": false,
+      "najlepsza_iteracja": 261,
+      "metryki": {
+        "trening": {
+          "n": 38522,
+          "mae": 39835.77851533896,
+          "rmse": 57879.49125489741,
+          "mape": 7.641596905936063,
+          "mdape": 5.481797781732847,
+          "mediana_bledu_proc": -0.41986497558717495
+        },
+        "walidacja": {
+          "n": 7686,
+          "mae": 46772.122246587074,
+          "rmse": 69302.44107660413,
+          "mape": 8.718686874731754,
+          "mdape": 5.990258829307603,
+          "mediana_bledu_proc": -3.0089425513061014
+        },
+        "test": {
+          "n": 7487,
+          "mae": 50540.2673842792,
+          "rmse": 78932.58036914814,
+          "mape": 8.547125917045022,
+          "mdape": 6.486624006433534,
+          "mediana_bledu_proc": -4.459205148990641
+        }
+      }
+    },
+    "bez_geo": {
+      "opis": "bez cech z geo.sql (POI, centrum, dzielnica GUS, geohash6)",
+      "cechy_liczbowe": [
+        "sasiedzi_mediana_ceny_m2",
+        "sasiedzi_liczba"
+      ],
+      "cechy_kategorii": [],
+      "sasiedzi_wg_publikacji": false,
+      "najlepsza_iteracja": 218,
+      "metryki": {
+        "trening": {
+          "n": 38522,
+          "mae": 44205.15962406781,
+          "rmse": 63599.77804753738,
+          "mape": 8.422724031299838,
+          "mdape": 6.1151200556827305,
+          "mediana_bledu_proc": -0.4768334573878262
+        },
+        "walidacja": {
+          "n": 7686,
+          "mae": 49950.632513593104,
+          "rmse": 74001.05213085817,
+          "mape": 9.248879597807786,
+          "mdape": 6.482831524755237,
+          "mediana_bledu_proc": -2.2371896645253146
+        },
+        "test": {
+          "n": 7487,
+          "mae": 52518.60616707969,
+          "rmse": 81828.62629064659,
+          "mape": 8.866916176716108,
+          "mdape": 6.687455051059506,
+          "mediana_bledu_proc": -3.529634718284992
+        }
+      }
+    },
+    "bez_sasiedztwa": {
+      "opis": "bez mediany i liczby sąsiadów",
+      "cechy_liczbowe": [
+        "odl_stacja_m",
+        "odl_metro_m",
+        "odl_tramwaj_m",
+        "odl_park_m",
+        "odl_uczelnia_m",
+        "metro_do_700m",
+        "tramwaj_do_300m",
+        "park_do_400m",
+        "odl_centrum_m",
+        "gestosc_os_km2",
+        "wskaznik_dochodu"
+      ],
+      "cechy_kategorii": [],
+      "sasiedzi_wg_publikacji": false,
+      "najlepsza_iteracja": 352,
+      "metryki": {
+        "trening": {
+          "n": 38522,
+          "mae": 40014.186695246884,
+          "rmse": 57854.05970758075,
+          "mape": 7.629324640430147,
+          "mdape": 5.499672688129662,
+          "mediana_bledu_proc": -0.46778191000643315
+        },
+        "walidacja": {
+          "n": 7686,
+          "mae": 50854.09989311605,
+          "rmse": 74722.6809637808,
+          "mape": 9.15636206301222,
+          "mdape": 6.623038652479088,
+          "mediana_bledu_proc": -4.717226663732703
+        },
+        "test": {
+          "n": 7487,
+          "mae": 57016.2947830572,
+          "rmse": 86595.07860285413,
+          "mape": 9.31627379105873,
+          "mdape": 7.491775676686831,
+          "mediana_bledu_proc": -6.326984217447307
+        }
+      }
+    },
+    "bez_poi": {
+      "opis": "bez odległości do POI i flag (zostaje centrum, GUS, geohash6)",
+      "cechy_liczbowe": [
+        "odl_centrum_m",
+        "gestosc_os_km2",
+        "wskaznik_dochodu",
+        "sasiedzi_mediana_ceny_m2",
+        "sasiedzi_liczba"
+      ],
+      "cechy_kategorii": [],
+      "sasiedzi_wg_publikacji": false,
+      "najlepsza_iteracja": 254,
+      "metryki": {
+        "trening": {
+          "n": 38522,
+          "mae": 40986.55092256379,
+          "rmse": 59628.22795260634,
+          "mape": 7.836001707044302,
+          "mdape": 5.620007192784487,
+          "mediana_bledu_proc": -0.47307651999354244
+        },
+        "walidacja": {
+          "n": 7686,
+          "mae": 47571.83122653531,
+          "rmse": 70478.41561304248,
+          "mape": 8.819821585104398,
+          "mdape": 6.109720623766531,
+          "mediana_bledu_proc": -2.8989059120089653
+        },
+        "test": {
+          "n": 7487,
+          "mae": 51131.51472101021,
+          "rmse": 80255.63015439702,
+          "mape": 8.612902424257884,
+          "mdape": 6.609817048565445,
+          "mediana_bledu_proc": -4.300917261670952
+        }
+      }
+    },
+    "sasiedzi_wg_publikacji": {
+      "opis": "jak pełny, sąsiedzi tylko opublikowani przed dniem aktu",
+      "cechy_liczbowe": [
+        "odl_stacja_m",
+        "odl_metro_m",
+        "odl_tramwaj_m",
+        "odl_park_m",
+        "odl_uczelnia_m",
+        "metro_do_700m",
+        "tramwaj_do_300m",
+        "park_do_400m",
+        "odl_centrum_m",
+        "gestosc_os_km2",
+        "wskaznik_dochodu",
+        "sasiedzi_mediana_ceny_m2",
+        "sasiedzi_liczba"
+      ],
+      "cechy_kategorii": [],
+      "sasiedzi_wg_publikacji": true,
+      "najlepsza_iteracja": 255,
+      "metryki": {
+        "trening": {
+          "n": 38522,
+          "mae": 39161.18612216244,
+          "rmse": 57036.0142469957,
+          "mape": 7.531695717791095,
+          "mdape": 5.359267514762099,
+          "mediana_bledu_proc": -0.4039743278183003
+        },
+        "walidacja": {
+          "n": 7686,
+          "mae": 46597.23412224549,
+          "rmse": 69512.69968472958,
+          "mape": 8.688414955224074,
+          "mdape": 6.057622290816183,
+          "mediana_bledu_proc": -2.917760836958047
+        },
+        "test": {
+          "n": 7487,
+          "mae": 50764.951542535964,
+          "rmse": 79257.50195980289,
+          "mape": 8.557203540738435,
+          "mdape": 6.535357689592816,
+          "mediana_bledu_proc": -4.5776542412727075
+        }
+      }
+    }
+  }
+}

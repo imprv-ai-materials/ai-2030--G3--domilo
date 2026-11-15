@@ -1,0 +1,64 @@
+{
+  "wersja": "v2_lgbm_geo",
+  "uczony_na": "trening (rcn_transakcje, data_aktu 2023-01-01 – 2025-06-30, podzial.sql)",
+  "wczesne_zatrzymanie_na": "walidacja (data_aktu 2025-07-01 – 2025-12-31), l2 na ln(ceny)",
+  "sasiedztwo": "sasiedztwo.sql: 20 najbliższych z 12 mies. przed dniem aktu; trening out-of-fold (5 foldów)",
+  "test_otwarty": "2026-11-15",
+  "parametry": {
+    "objective": "regression",
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "min_child_samples": 20,
+    "random_state": 42,
+    "deterministic": true,
+    "force_row_wise": true,
+    "n_jobs": 4,
+    "verbose": -1,
+    "max_drzew": 5000,
+    "stopping_rounds": 200,
+    "najlepsza_iteracja": 261,
+    "cechy_liczbowe": [
+      "odl_stacja_m",
+      "odl_metro_m",
+      "odl_tramwaj_m",
+      "odl_park_m",
+      "odl_uczelnia_m",
+      "metro_do_700m",
+      "tramwaj_do_300m",
+      "park_do_400m",
+      "odl_centrum_m",
+      "gestosc_os_km2",
+      "wskaznik_dochodu",
+      "sasiedzi_mediana_ceny_m2",
+      "sasiedzi_liczba"
+    ],
+    "cechy_kategorii": [],
+    "wariant": "pelny"
+  },
+  "metryki": {
+    "trening": {
+      "n": 38522,
+      "mae": 39835.77851533896,
+      "rmse": 57879.49125489741,
+      "mape": 7.641596905936063,
+      "mdape": 5.481797781732847,
+      "mediana_bledu_proc": -0.41986497558717495
+    },
+    "walidacja": {
+      "n": 7686,
+      "mae": 46772.122246587074,
+      "rmse": 69302.44107660413,
+      "mape": 8.718686874731754,
+      "mdape": 5.990258829307603,
+      "mediana_bledu_proc": -3.0089425513061014
+    },
+    "test": {
+      "n": 7487,
+      "mae": 50540.2673842792,
+      "rmse": 78932.58036914814,
+      "mape": 8.547125917045022,
+      "mdape": 6.486624006433534,
+      "mediana_bledu_proc": -4.459205148990641
+    }
+  }
+}

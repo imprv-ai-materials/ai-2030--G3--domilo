@@ -267,3 +267,56 @@ def test_lightgbm_waznosc_cech_sumuje_sie_do_100():
     w = _v2().fit(X, y).waznosc_cech()
     assert w["udzial_proc"].sum() == pytest.approx(100)
     assert set(w["cecha"]) == {"miasto", "dzielnica", "metraz", "pokoje", "pietro", "rok_budowy"}
+
+
+# --- v2_lgbm_geo: LightGBM z cechami otoczenia i sąsiedztwa ----------------------------------------------------
+
+
+def _z_cecha_otoczenia(seed=0, n_duza=300):
+    """ln(cena) jak w _syntetyczne + 0,3·[blisko metra]; bez tej cechy model jej nie odtworzy."""
+    X, y = _syntetyczne(n_duza=n_duza, n_mala=0, seed=seed)
+    rng = np.random.default_rng(seed + 100)
+    X = X.assign(blisko=rng.integers(0, 2, len(X)), szum=rng.normal(size=len(X)), kod=rng.choice(["u3", "u4"], len(X)))
+    return X, y * np.exp(0.3 * X["blisko"])
+
+
+def test_lgbm_geo_korzysta_z_dodatkowych_cech_liczbowych():
+    from api.ai.valuation_model.versions.v2_lgbm_geo.model import ModelLightGBMGeo
+
+    X, y = _z_cecha_otoczenia(seed=1)
+    X_wal, y_wal = _z_cecha_otoczenia(seed=2, n_duza=100)
+    z = ModelLightGBMGeo(cechy_liczbowe=("blisko",), max_drzew=500, stopping_rounds=20).fit(X, y, X_wal, y_wal)
+    bez = ModelLightGBMGeo(cechy_liczbowe=(), max_drzew=500, stopping_rounds=20).fit(X, y, X_wal, y_wal)
+    assert z.wersja == "v2_lgbm_geo"
+    assert metryki(y_wal, z.predict(X_wal))["mape"] < 0.5 * metryki(y_wal, bez.predict(X_wal))["mape"]
+    assert "blisko" in set(z.waznosc_cech()["cecha"])
+
+
+def test_lgbm_geo_cecha_kategorii_i_explain_sumuje_sie_do_ln_wyceny():
+    from api.ai.valuation_model.versions.v2_lgbm_geo.model import ModelLightGBMGeo
+
+    X, y = _z_cecha_otoczenia()
+    model = ModelLightGBMGeo(cechy_liczbowe=("blisko",), cechy_kategorii=("kod",), max_drzew=50).fit(X, y)
+    assert model.kategorie_["kod"] == ["u3", "u4"]
+    wyj = model.explain(X)
+    assert {"wklad_kod", "wklad_blisko"} <= set(wyj.columns)
+    assert np.allclose(wyj[[k for k in wyj.columns if k.startswith("wklad_")]].sum(axis=1), np.log(model.predict(X)))
+    nieznany = X.head(1).assign(kod="zz")
+    assert np.isfinite(model.predict(nieznany)).all()
+
+
+def test_lgbm_geo_brak_dodatkowej_kolumny_to_czytelny_blad():
+    from api.ai.valuation_model.versions.v2_lgbm_geo.model import ModelLightGBMGeo
+
+    X, y = _syntetyczne()
+    with pytest.raises(ValueError, match="sasiedzi_mediana_ceny_m2"):
+        ModelLightGBMGeo().fit(X, y)
+
+
+def test_lgbm_geo_braki_w_cechach_dodatkowych_nie_przeszkadzaja():
+    from api.ai.valuation_model.versions.v2_lgbm_geo.model import ModelLightGBMGeo
+
+    X, y = _z_cecha_otoczenia()
+    X = X.assign(szum=X["szum"].where(X["blisko"] == 1))  # NaN jak odl_metro_m poza Warszawą
+    model = ModelLightGBMGeo(cechy_liczbowe=("blisko", "szum"), max_drzew=50).fit(X, y)
+    assert np.isfinite(model.predict(X)).all()
