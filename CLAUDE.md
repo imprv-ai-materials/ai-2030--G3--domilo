@@ -69,11 +69,15 @@ operaty, zdjęcia), FK (koszty), dane zewnętrzne (POI, dzielnice GUS). Opis tab
 data/                         # dane źródłowe Domilo — TYLKO DO ODCZYTU
 domilo.duckdb                 # baza budowana z data/ (pypyr baza), w .gitignore
 docs/                         # raporty (wnioski → tabele → SQL i kod)
+├── bank/                     # raporty kwartalne dla banku (zadanie nocne, raport_RRRRQn.md)
 evals/porownanie.md           # model vs baseline, wszystkie cztery modele
 dev/                          # pipeline'y pypyr (m.in. baza.yaml)
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
+├── main.py                   # FastAPI: POST /valuation, odczyty dla panelu, Inngest pod /api/inngest (pypyr api)
+├── inngest_app.py            # funkcja Inngest wyceny-nocne (02:00 Europe/Warsaw; ręcznie: pypyr nocne)
 ├── adapters/                 # połączenia z systemami zewnętrznymi
-│   └── duckdb_baza.py        # polacz() i zbuduj_baze() dla domilo.duckdb
+│   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
+│   └── wyceny_historia.py    # tabela wyceny_historia w domilo.duckdb (przenoszona przy przebudowie bazy)
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
 │   ├── leasing_bc/           # zapytania i doradcy (najem)
@@ -97,7 +101,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     └── llm/
         ├── prompts/          # prompty
         ├── schemas/          # schematy odpowiedzi
-        └── cache/            # cache odpowiedzi LLM
+        └── cache/            # cache odpowiedzi LLM (poza gitem)
+ui/                           # panel rzeczoznawcy (Next.js, port 3100; pnpm --dir ui dev)
 ```
 
 Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasing_bc` ↔ `features/leady` ↔ `lead_model`;

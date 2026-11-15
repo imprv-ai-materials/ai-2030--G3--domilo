@@ -13,6 +13,9 @@ jako czas warszawski: to poprawne dla Serwisownika, PMS i portalu.
 
 import os
 import re
+import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 import duckdb
@@ -36,6 +39,13 @@ KOLUMNY_CZASU_CRM = {
 _NAZWA_TABELI = re.compile(r"^[a-z][a-z0-9_]*$")
 
 
+def _tabele_trwale() -> dict[str, str]:
+    """Tabele spoza data/ (zapisywane przez aplikację), które przebudowa przenosi ze starej bazy: nazwa -> DDL."""
+    from api.adapters.wyceny_historia import SQL_TABELI, TABELA
+
+    return {TABELA: SQL_TABELI}
+
+
 def polacz(sciezka: Path = SCIEZKA_BAZY, tylko_odczyt: bool = True) -> duckdb.DuckDBPyConnection:
     """Otwiera bazę ze strefą Europe/Warsaw i ścieżkami względnymi liczonymi od katalogu repozytorium."""
     if tylko_odczyt and not Path(sciezka).exists():
@@ -45,6 +55,22 @@ def polacz(sciezka: Path = SCIEZKA_BAZY, tylko_odczyt: bool = True) -> duckdb.Du
     # Widoki telemetrii mają ścieżki względne (data/...), żeby baza działała na hoście i w devcontainerze.
     con.execute(f"SET file_search_path = '{KATALOG_REPO.as_posix()}'")
     return con
+
+
+# DuckDB nie pozwala w jednym procesie mieć jednocześnie połączenia tylko do odczytu i do zapisu z tym samym plikiem.
+# API i funkcje Inngest działają w jednym procesie (main.py), więc każde ich połączenie przechodzi przez tę blokadę.
+_BLOKADA_PROCESU = threading.RLock()
+
+
+@contextmanager
+def polaczenie(tylko_odczyt: bool = True, sciezka: Path = SCIEZKA_BAZY) -> Iterator[duckdb.DuckDBPyConnection]:
+    """Krótkie połączenie (polacz) pod blokadą procesu; zamykane po wyjściu z bloku."""
+    with _BLOKADA_PROCESU:
+        con = polacz(sciezka, tylko_odczyt=tylko_odczyt)
+        try:
+            yield con
+        finally:
+            con.close()
 
 
 def pliki_tabel(katalog_danych: Path = KATALOG_DANYCH) -> dict[str, Path]:
@@ -79,7 +105,11 @@ def _select_widoku(nazwa: str) -> str:
 
 
 def zbuduj_baze(sciezka: Path = SCIEZKA_BAZY) -> dict[str, int]:
-    """Buduje bazę od zera (do pliku tymczasowego, potem podmiana). Zwraca liczbę wierszy każdej tabeli."""
+    """Buduje bazę od zera (do pliku tymczasowego, potem podmiana). Zwraca liczbę wierszy każdej tabeli.
+
+    Tabele z data/ powstają od zera. Tabele trwałe aplikacji (`_tabele_trwale`, np. wyceny_historia) przenosimy ze
+    starego pliku bazy, jeśli istnieje, bo nie da się ich odtworzyć z data/.
+    """
     sciezka = Path(sciezka)
     tymczasowa = sciezka.with_name(sciezka.name + ".tmp")
     tymczasowa.unlink(missing_ok=True)
@@ -93,6 +123,7 @@ def zbuduj_baze(sciezka: Path = SCIEZKA_BAZY) -> dict[str, int]:
         for nazwa in WIDOKI_TELEMETRII:
             con.execute(f"CREATE VIEW {nazwa} AS {_select_widoku(nazwa)}")
             liczby[nazwa] = con.execute(f"SELECT count(*) FROM {nazwa}").fetchone()[0]
+        _przenies_tabele_trwale(con, sciezka)
         con.execute("CHECKPOINT")
     except BaseException:
         con.close()
@@ -101,6 +132,22 @@ def zbuduj_baze(sciezka: Path = SCIEZKA_BAZY) -> dict[str, int]:
     con.close()
     os.replace(tymczasowa, sciezka)
     return liczby
+
+
+def _przenies_tabele_trwale(con: duckdb.DuckDBPyConnection, stara: Path) -> None:
+    if not stara.exists():
+        return
+    con.execute(f"ATTACH '{stara.as_posix()}' AS stara (READ_ONLY)")
+    try:
+        istniejace = {
+            r[0] for r in con.execute("SELECT table_name FROM duckdb_tables() WHERE database_name = 'stara'").fetchall()
+        }
+        for nazwa, ddl in _tabele_trwale().items():
+            if nazwa in istniejace:
+                con.execute(ddl)
+                con.execute(f"INSERT INTO {nazwa} SELECT * FROM stara.{nazwa}")
+    finally:
+        con.execute("DETACH stara")
 
 
 if __name__ == "__main__":

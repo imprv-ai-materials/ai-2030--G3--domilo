@@ -1,0 +1,7 @@
+steps:
+  - name: pypyr.steps.cmd
+    description: Zadanie nocne wyceny bez Inngest (lokale Domilo, nowe oferty, raport kwartalny dla banku)
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.valuation_bc.nocne
+        cwd: api

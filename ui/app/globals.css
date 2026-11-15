@@ -1,0 +1,213 @@
+/* Panel rzeczoznawcy Domilo. Kolory wykresu: para rozbieżna z palety referencyjnej skilla dataviz
+   (niebieski = podnosi wycenę, czerwony = obniża), zwalidowana skryptem validate_palette.js dla jasnego i ciemnego
+   tła: ALL CHECKS PASS. Tekst zawsze w kolorach tekstu, nigdy w kolorze słupka. */
+:root {
+  color-scheme: light;
+  --powierzchnia: #fcfcfb;
+  --powierzchnia-2: #f3f2ee;
+  --linia: #e4e3df;
+  --tekst: #0b0b0b;
+  --tekst-2: #52514e;
+  --tekst-3: #75746f;
+  --akcent: #2a78d6;
+  --wzrost: #2a78d6;
+  --spadek: #e34948;
+  --uwaga-tlo: #fdf3e1;
+  --uwaga-ramka: #fab219;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --powierzchnia: #1a1a19;
+    --powierzchnia-2: #242422;
+    --linia: #383835;
+    --tekst: #f0efec;
+    --tekst-2: #c3c2b7;
+    --tekst-3: #9a9990;
+    --akcent: #3987e5;
+    --wzrost: #3987e5;
+    --spadek: #e66767;
+    --uwaga-tlo: #3a2f17;
+    --uwaga-ramka: #fab219;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--powierzchnia);
+  color: var(--tekst);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+a {
+  color: var(--akcent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+header.pasek {
+  display: flex;
+  gap: 24px;
+  align-items: baseline;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--linia);
+}
+header.pasek strong {
+  font-size: 16px;
+}
+header.pasek nav {
+  display: flex;
+  gap: 18px;
+}
+
+main {
+  padding: 24px 28px 48px;
+  max-width: 1200px;
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0 0 4px;
+}
+h2 {
+  font-size: 17px;
+  margin: 28px 0 8px;
+}
+.podtytul {
+  color: var(--tekst-2);
+  margin: 0 0 18px;
+}
+
+.filtry {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+.filtry a {
+  padding: 4px 12px;
+  border: 1px solid var(--linia);
+  border-radius: 999px;
+  color: var(--tekst-2);
+}
+.filtry a[aria-current="page"] {
+  background: var(--powierzchnia-2);
+  color: var(--tekst);
+  border-color: var(--tekst-3);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+th,
+td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--linia);
+  vertical-align: top;
+}
+th {
+  color: var(--tekst-2);
+  font-weight: 600;
+  font-size: 13px;
+}
+td.liczba,
+th.liczba {
+  text-align: right;
+  white-space: nowrap;
+}
+td.id {
+  white-space: nowrap;
+}
+td.powod {
+  color: var(--tekst-2);
+  max-width: 520px;
+}
+
+.kafle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0;
+}
+.kafel {
+  background: var(--powierzchnia-2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  min-width: 180px;
+}
+.kafel .etykieta {
+  color: var(--tekst-2);
+  font-size: 13px;
+}
+.kafel .wartosc {
+  font-size: 22px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.uwaga {
+  background: var(--uwaga-tlo);
+  border-left: 4px solid var(--uwaga-ramka);
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin: 16px 0;
+}
+.uwaga ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+
+.blad {
+  border-left: 4px solid var(--spadek);
+  background: var(--powierzchnia-2);
+  padding: 12px 16px;
+  border-radius: 4px;
+}
+
+.wykres {
+  position: relative;
+  margin: 8px 0 4px;
+}
+.legenda {
+  display: flex;
+  gap: 18px;
+  color: var(--tekst-2);
+  font-size: 13px;
+  margin: 4px 0 8px;
+}
+.legenda span::before {
+  content: "";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 6px;
+  background: var(--kolor);
+}
+.dymek {
+  position: absolute;
+  pointer-events: none;
+  background: var(--powierzchnia);
+  border: 1px solid var(--linia);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+details {
+  margin-top: 8px;
+}
+summary {
+  cursor: pointer;
+  color: var(--tekst-2);
+}
