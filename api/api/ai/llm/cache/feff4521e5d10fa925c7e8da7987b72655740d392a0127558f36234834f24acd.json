@@ -1,0 +1,19 @@
+{
+  "wersja_promptu": "cechy_lokalu_v1",
+  "skrot_promptu": "19f567b716195eff10f3a1e80fa92625e13b4158da9e6b0d6360172f029dad3d",
+  "model": "gpt-6-luna",
+  "reasoning_effort": "none",
+  "temperatura": 0,
+  "utworzono_utc": "2026-11-15T16:15:58+00:00",
+  "tokeny_wejscia": 1675,
+  "tokeny_wyjscia": 58,
+  "odpowiedz": {
+    "standard_1_5": 5,
+    "ekspozycja": "brak_info",
+    "widok": "brak_info",
+    "balkon": "tak",
+    "stan_budynku": "brak_info",
+    "pewnosc": "wysoka"
+  },
+  "surowy_tekst": "{\"standard_1_5\":5,\"ekspozycja\":\"brak_info\",\"widok\":\"brak_info\",\"balkon\":\"tak\",\"stan_budynku\":\"brak_info\",\"pewnosc\":\"wysoka\"}"
+}

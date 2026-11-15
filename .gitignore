@@ -1,3 +1,7 @@
+# Sekrety (klucze API, np. OPENAI_API_KEY) — nigdy do repozytorium
+.env
+.env.*
+
 # macOS
 .DS_Store
 
