@@ -1,8 +1,6 @@
 # ai-2030--G3--domilo
 
-Repozytorium do kursu „Zostań praktykiem modeli predykcyjnych”. Budujemy w nim dla Domilo S.A. (operator najmu
-mieszkań: 7 200 lokali w 38 budynkach w 6 miastach, 140 wind) cztery modele: wycenę lokali z przedziałem, kolejkę
-zapytań dla doradców, listę retencyjną najemców i alerty o awariach wind.
+Repozytorium do kursu „Zostań praktykiem modeli predykcyjnych”. Budujemy w nim dla Domilo S.A. (operator najmu mieszkań: 7 200 lokali w 38 budynkach w 6 miastach, 140 wind) cztery modele: wycenę lokali z przedziałem, kolejkę zapytań dla doradców, listę retencyjną najemców i alerty o awariach wind.
 
 Na start repozytorium ma tylko dane i narzędzia. Kod, bazę i raporty buduje agent, lekcja po lekcji.
 
@@ -30,8 +28,7 @@ git lfs install && git lfs pull
 git switch -c moja-praca start
 ```
 
-Pracujesz i robisz commity na gałęzi `moja-praca`. Gałęzi `main` nie zmieniaj: służy do podglądania, jak ten sam
-krok wyszedł u mnie.
+Pracujesz i robisz commity na gałęzi `moja-praca`. Gałęzi `main` nie zmieniaj: służy do podglądania, jak ten sam krok wyszedł u mnie.
 
 ```bash
 git fetch origin                          # pobierz moje najnowsze zmiany
@@ -47,10 +44,7 @@ Powrót do punktu startowego:
 | wyrzucić zmiany, których nie zapisałem commitem | `git restore . && git clean -fd` |
 | cofnąć swoją gałąź do startu, tracąc jej commity | `git reset --hard start && git clean -fd` |
 
-`git clean -fd` usuwa nowe pliki, których git jeszcze nie śledzi (np. `domilo.duckdb`, wygenerowany kod), ale nie
-rusza plików z `.gitignore` (`.venv`). Najbezpieczniejsza jest pierwsza opcja: nic nie ginie, a do starej próby
-wracasz przez `git switch moja-praca`. Jeśli chcesz trzymać swoją pracę na GitHubie, zrób fork repozytorium
-i wypchnij do niego swoją gałąź.
+`git clean -fd` usuwa nowe pliki, których git jeszcze nie śledzi (np. `domilo.duckdb`, wygenerowany kod), ale nie rusza plików z `.gitignore` (`.venv`). Najbezpieczniejsza jest pierwsza opcja: nic nie ginie, a do starej próby wracasz przez `git switch moja-praca`. Jeśli chcesz trzymać swoją pracę na GitHubie, zrób fork repozytorium i wypchnij do niego swoją gałąź.
 
 ## Uruchomienie
 
@@ -74,13 +68,10 @@ Potem w katalogu repozytorium uruchom `claude`.
 W tej lekcji agent przygotowuje wszystko, na czym pracują cztery projekty kursu:
 
 1. `CLAUDE.md`: opis firmy i zasady pracy z danymi;
-2. struktura repozytorium: cztery konteksty biznesowe, cztery modele, `docs/`, oraz biblioteki do danych
-   i modeli (DuckDB, pandas, pyarrow, scikit-learn, LightGBM);
+2. struktura repozytorium: cztery konteksty biznesowe, cztery modele, `docs/`, oraz biblioteki do danych i modeli (DuckDB, pandas, pyarrow, scikit-learn, LightGBM);
 3. `domilo.duckdb`: jedna baza ze wszystkimi tabelami z `data/` i widokami na telemetrię;
-4. `docs/pierwsze_zapytanie.md`: liczba wierszy i zakres dat każdej tabeli, spójność kluczy, obłożenie
-   i końce umów, porównane z tym, co wiemy o firmie.
+4. `docs/pierwsze_zapytanie.md`: liczba wierszy i zakres dat każdej tabeli, spójność kluczy, obłożenie i końce umów, porównane z tym, co wiemy o firmie.
 
 Po każdym prompcie przejrzyj zmiany i zrób commit.
 
-Jedna zasada obowiązuje od pierwszego promptu: **`data/` jest tylko do odczytu**. Wyniki, bazy i raporty
-zapisujemy poza tym katalogiem.
+Jedna zasada obowiązuje od pierwszego promptu: **`data/` jest tylko do odczytu**. Wyniki, bazy i raporty zapisujemy poza tym katalogiem.
