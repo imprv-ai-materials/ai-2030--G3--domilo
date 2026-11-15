@@ -1,0 +1,320 @@
+{
+  "B10_cenzurowanie": {
+    "okres": "2026-08-16 – 2026-10-01 (bez prawej granicy), eksport 2026-10-01 00:00:00+02",
+    "zapytania": 6907,
+    "umowy_do_eksportu": 259,
+    "naiwna_otwarte_0": 0.0374981902417837,
+    "z_pelnymi_45d": 94,
+    "konwersja_tylko_pelne_45d": 0.0425531914893617,
+    "kaplan_meier": {
+      "p_umowa_45d": 0.04934490578398543,
+      "ci95": [
+        0.04322256820775004,
+        0.05546724336022081
+      ],
+      "w_ryzyku_na_koncu": 90
+    },
+    "tygodnie": [
+      {
+        "tydzien": "2026-08-16",
+        "zapytania": 1058,
+        "umowy_do_eksportu": 73,
+        "naiwna_otwarte_0": 0.06899810964083176,
+        "mediana_dni_obserwacji": 42.456238425925925,
+        "z_pelnymi_45d": 94
+      },
+      {
+        "tydzien": "2026-08-23",
+        "zapytania": 1014,
+        "umowy_do_eksportu": 63,
+        "naiwna_otwarte_0": 0.0621301775147929,
+        "mediana_dni_obserwacji": 35.26994212962963,
+        "z_pelnymi_45d": 0
+      },
+      {
+        "tydzien": "2026-08-30",
+        "zapytania": 1027,
+        "umowy_do_eksportu": 55,
+        "naiwna_otwarte_0": 0.053554040895813046,
+        "mediana_dni_obserwacji": 28.369351851851853,
+        "z_pelnymi_45d": 0
+      },
+      {
+        "tydzien": "2026-09-06",
+        "zapytania": 1070,
+        "umowy_do_eksportu": 38,
+        "naiwna_otwarte_0": 0.03551401869158879,
+        "mediana_dni_obserwacji": 21.236770833333335,
+        "z_pelnymi_45d": 0
+      },
+      {
+        "tydzien": "2026-09-13",
+        "zapytania": 1098,
+        "umowy_do_eksportu": 18,
+        "naiwna_otwarte_0": 0.01639344262295082,
+        "mediana_dni_obserwacji": 14.291064814814815,
+        "z_pelnymi_45d": 0
+      },
+      {
+        "tydzien": "2026-09-20",
+        "zapytania": 1041,
+        "umowy_do_eksportu": 12,
+        "naiwna_otwarte_0": 0.011527377521613832,
+        "mediana_dni_obserwacji": 7.172777777777778,
+        "z_pelnymi_45d": 0
+      },
+      {
+        "tydzien": "2026-09-27",
+        "zapytania": 599,
+        "umowy_do_eksportu": 0,
+        "naiwna_otwarte_0": 0.0,
+        "mediana_dni_obserwacji": 1.6308796296296297,
+        "z_pelnymi_45d": 0
+      }
+    ]
+  },
+  "B10_sprawdzian_km": {
+    "okres": "2026-04-16 – 2026-06-01 (bez prawej granicy), eksport 2026-06-01 00:00:00+02",
+    "zapytania": 5490,
+    "umowy_do_eksportu": 294,
+    "naiwna_otwarte_0": 0.053551912568306013,
+    "z_pelnymi_45d": 135,
+    "konwersja_tylko_pelne_45d": 0.07407407407407407,
+    "kaplan_meier": {
+      "p_umowa_45d": 0.0760950954373597,
+      "ci95": [
+        0.0647804157776671,
+        0.0874097750970523
+      ],
+      "w_ryzyku_na_koncu": 125
+    },
+    "tygodnie": [
+      {
+        "tydzien": "2026-04-12",
+        "zapytania": 389,
+        "umowy_do_eksportu": 29,
+        "naiwna_otwarte_0": 0.07455012853470437,
+        "mediana_dni_obserwacji": 44.50976851851852,
+        "z_pelnymi_45d": 135,
+        "prawdziwa_umowa_45d": 0.07455012853470437
+      },
+      {
+        "tydzien": "2026-04-19",
+        "zapytania": 894,
+        "umowy_do_eksportu": 58,
+        "naiwna_otwarte_0": 0.06487695749440715,
+        "mediana_dni_obserwacji": 39.325260416666666,
+        "z_pelnymi_45d": 0,
+        "prawdziwa_umowa_45d": 0.06599552572706935
+      },
+      {
+        "tydzien": "2026-04-26",
+        "zapytania": 836,
+        "umowy_do_eksportu": 64,
+        "naiwna_otwarte_0": 0.07655502392344497,
+        "mediana_dni_obserwacji": 32.37883680555556,
+        "z_pelnymi_45d": 0,
+        "prawdziwa_umowa_45d": 0.08373205741626795
+      },
+      {
+        "tydzien": "2026-05-03",
+        "zapytania": 805,
+        "umowy_do_eksportu": 39,
+        "naiwna_otwarte_0": 0.0484472049689441,
+        "mediana_dni_obserwacji": 25.464305555555555,
+        "z_pelnymi_45d": 0,
+        "prawdziwa_umowa_45d": 0.06086956521739131
+      },
+      {
+        "tydzien": "2026-05-10",
+        "zapytania": 842,
+        "umowy_do_eksportu": 53,
+        "naiwna_otwarte_0": 0.06294536817102138,
+        "mediana_dni_obserwacji": 18.201637731481483,
+        "z_pelnymi_45d": 0,
+        "prawdziwa_umowa_45d": 0.08669833729216152
+      },
+      {
+        "tydzien": "2026-05-17",
+        "zapytania": 827,
+        "umowy_do_eksportu": 37,
+        "naiwna_otwarte_0": 0.044740024183796856,
+        "mediana_dni_obserwacji": 11.437129629629629,
+        "z_pelnymi_45d": 0,
+        "prawdziwa_umowa_45d": 0.08706166868198308
+      },
+      {
+        "tydzien": "2026-05-24",
+        "zapytania": 826,
+        "umowy_do_eksportu": 14,
+        "naiwna_otwarte_0": 0.01694915254237288,
+        "mediana_dni_obserwacji": 4.360092592592593,
+        "z_pelnymi_45d": 0,
+        "prawdziwa_umowa_45d": 0.06658595641646489
+      },
+      {
+        "tydzien": "2026-05-31",
+        "zapytania": 71,
+        "umowy_do_eksportu": 0,
+        "naiwna_otwarte_0": 0.0,
+        "mediana_dni_obserwacji": 0.3943402777777778,
+        "z_pelnymi_45d": 0,
+        "prawdziwa_umowa_45d": 0.07042253521126761
+      }
+    ],
+    "prawdziwa_umowa_45d": 0.0750455373406193
+  },
+  "B11_kontakt": [
+    {
+      "okres": "w oknie migracji",
+      "pierwszy_kontakt": "1 ≤ 1 dzień",
+      "zapytania": 5170,
+      "umowy": 545.0,
+      "konwersja": 0.10541586073500966
+    },
+    {
+      "okres": "w oknie migracji",
+      "pierwszy_kontakt": "2 1–7 dni",
+      "zapytania": 150,
+      "umowy": 14.0,
+      "konwersja": 0.09333333333333334
+    },
+    {
+      "okres": "poza oknem migracji",
+      "pierwszy_kontakt": "1 ≤ 1 dzień",
+      "zapytania": 8073,
+      "umowy": 997.0,
+      "konwersja": 0.12349808001981916
+    },
+    {
+      "okres": "poza oknem migracji",
+      "pierwszy_kontakt": "2 1–7 dni",
+      "zapytania": 97108,
+      "umowy": 9096.0,
+      "konwersja": 0.09366890472463649
+    },
+    {
+      "okres": "poza oknem migracji",
+      "pierwszy_kontakt": "3 > 7 dni",
+      "zapytania": 17304,
+      "umowy": 920.0,
+      "konwersja": 0.053166897827092004
+    },
+    {
+      "okres": "poza oknem migracji",
+      "pierwszy_kontakt": "4 brak kontaktu w 45 dni",
+      "zapytania": 26938,
+      "umowy": 284.0,
+      "konwersja": 0.010542727745192665
+    }
+  ],
+  "B11_kontakt_zrodlo": [
+    {
+      "zrodlo": "domteraz",
+      "zapytania_le_1d": 676,
+      "konwersja_le_1d": 0.08727810650887574,
+      "zapytania_gt_7d": 3251,
+      "konwersja_gt_7d": 0.04306367271608736
+    },
+    {
+      "zrodlo": "lokum24",
+      "zapytania_le_1d": 3499,
+      "konwersja_le_1d": 0.06830523006573307,
+      "zapytania_gt_7d": 7331,
+      "konwersja_gt_7d": 0.027963442913654345
+    },
+    {
+      "zrodlo": "polecenie",
+      "zapytania_le_1d": 535,
+      "konwersja_le_1d": 0.18130841121495328,
+      "zapytania_gt_7d": 865,
+      "konwersja_gt_7d": 0.09364161849710982
+    },
+    {
+      "zrodlo": "relokacja_b2b",
+      "zapytania_le_1d": 965,
+      "konwersja_le_1d": 0.2559585492227979,
+      "zapytania_gt_7d": 1574,
+      "konwersja_gt_7d": 0.12642947903430748
+    },
+    {
+      "zrodlo": "social",
+      "zapytania_le_1d": 416,
+      "konwersja_le_1d": 0.05048076923076923,
+      "zapytania_gt_7d": 1045,
+      "konwersja_gt_7d": 0.011483253588516746
+    },
+    {
+      "zrodlo": "www",
+      "zapytania_le_1d": 1982,
+      "konwersja_le_1d": 0.16851664984863773,
+      "zapytania_gt_7d": 3238,
+      "konwersja_gt_7d": 0.08739962940086474
+    }
+  ],
+  "B10_miesiace_odniesienia": [
+    {
+      "miesiac": "2026-04",
+      "zapytania": 3733,
+      "konwersja": 0.07795338869541923
+    },
+    {
+      "miesiac": "2026-05",
+      "zapytania": 3603,
+      "konwersja": 0.0768803774632251
+    },
+    {
+      "miesiac": "2026-06",
+      "zapytania": 4181,
+      "konwersja": 0.07653671370485529
+    },
+    {
+      "miesiac": "2026-07",
+      "zapytania": 4401,
+      "konwersja": 0.07452851624630766
+    },
+    {
+      "miesiac": "2026-08",
+      "zapytania": 2278,
+      "konwersja": 0.0649692712906058
+    }
+  ],
+  "B12_wersje": [
+    {
+      "wersja": "v0_regula_zrodla",
+      "auc": 0.6334666466771799,
+      "lift_10": 1.8890115327522554,
+      "tokeny_na_1000": null
+    },
+    {
+      "wersja": "v1_llm_zero_shot",
+      "auc": 0.6198020289329034,
+      "lift_10": 1.4011702861254636,
+      "tokeny_na_1000": {
+        "tokeny_wejscia": 1190957.7067669171,
+        "tokeny_wejscia_z_cache": 1058000.0,
+        "tokeny_wyjscia": 70111.84210526316
+      }
+    },
+    {
+      "wersja": "v2_lgbm_naiwny",
+      "auc": 0.7635151662715737,
+      "lift_10": 3.32737030411449,
+      "tokeny_na_1000": {
+        "tokeny_wejscia": 1190957.7067669171,
+        "tokeny_wejscia_z_cache": 1058000.0,
+        "tokeny_wyjscia": 70111.84210526316
+      }
+    },
+    {
+      "wersja": "v2b_lgbm_ipw",
+      "auc": 0.7845815302402985,
+      "lift_10": 3.524150268336315,
+      "tokeny_na_1000": {
+        "tokeny_wejscia": 1190957.7067669171,
+        "tokeny_wejscia_z_cache": 1058000.0,
+        "tokeny_wyjscia": 70111.84210526316
+      }
+    }
+  ]
+}

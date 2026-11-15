@@ -3,7 +3,9 @@
 Analiza z 2026-11-15. Pierwsza część dotyczy zapisanego modelu `versions/v2_lgbm_naiwny/model.joblib` (bez
 ponownego uczenia; skrypt `lead_model/evals/analiza_biasu_v2.py`, wynik `lead_model/evals/wyniki/bias_v2.json`).
 Część o v2b (tabele B5–B9) liczy `lead_model/evals/ewaluacja_v2b.py`; run MLflow
-`9b7285f2324c4a83937bd12dd71b73e8` w eksperymencie `leady`. Zbiory jak w
+`9b7285f2324c4a83937bd12dd71b73e8` w eksperymencie `leady`. Cenzurowanie, czas do kontaktu i zestawienie wersji
+(tabele B10–B12) liczy `lead_model/evals/analiza_cenzura_kontakt.py`; wynik
+`lead_model/evals/wyniki/cenzura_kontakt.json`. Zbiory jak w
 [kolejka_v2_lgbm_naiwny.md](kolejka_v2_lgbm_naiwny.md):
 - trening: zamknięte zapytania 2023-01 – 2026-02 bez okna migracji;
 - zwykły test: 2026-03 – 2026-06;
@@ -11,30 +13,27 @@ Część o v2b (tabele B5–B9) liczy `lead_model/evals/ewaluacja_v2b.py`; run M
 
 ## Wnioski
 
-1. Naiwny model (v2) przewiduje szansę na umowę **przy dzisiejszym sposobie pracy zespołu**, czyli razem: „czy
-   doradca w ogóle się odezwie” i „czy po kontakcie klient podpisze”. Na teście jego wynik przewiduje samo
-   „czy doradca się odezwie” z AUC 0,766, prawie tak dobrze jak umowę (0,793). `domteraz` dostaje średnio 2,9%,
-   czyli tyle, ile wynosi 41,1% obsłużonych × 6,98% umów po kontakcie. W oknie migracji, gdy obsłużono wszystkich,
-   `domteraz` miało 8,19%: v2 zaniża je 2,8 raza, inne źródła 1,15–1,42 raza.
-2. v2b uczy się tylko na zapytaniach, do których doradca się odezwał. Każde ma wagę tym większą, im rzadziej
-   doradcy odzywają się do podobnych zapytań. v2b przewiduje więc szansę na umowę **pod warunkiem, że doradca
-   zadzwoni**. Na teście jego średni wynik (9,06%) jest równy konwersji obsłużonych zapytań (9,05%), a samo
-   obsłużenie przewiduje dużo słabiej niż v2 (AUC 0,615 wobec 0,766).
-3. W oknie migracji, jedynym okresie bez wpływu decyzji doradców, v2b układa kolejkę lepiej niż v2:
-   - AUC 0,785 wobec 0,764 (różnica +0,013 … +0,030);
-   - lift@10% 3,52 wobec 3,33 (+0,02 … +0,37);
-   - w pierwszych 127 zapytaniach różnica nierozstrzygnięta (48,0% wobec 49,6%; −5,5 … +3,1 pp).
-
-   Na zwykłym teście v2b i v2 są praktycznie równe (AUC −0,008 … +0,001). Oba modele są wyraźnie lepsze od
-   baseline v0 i od v1 na obu zbiorach.
-4. `domteraz` przestaje być karane za brak telefonu. W oknie v2b daje mu średnio 6,32% wobec rzeczywistych 8,19%,
-   czyli zaniża je 1,30 raza, tak jak inne źródła (1,16–1,34). W czołówce 10% kolejki `domteraz` ma 7,1%
-   zapytań zamiast 0,2%.
-5. Same wagi dokładają niewiele. LightGBM tylko na obsłużonych, bez wag, ma w oknie AUC 0,784 (v2b: 0,785).
-   Poprawa bierze się głównie z tego, że brak telefonu przestał liczyć się jako porażka.
-   - Wagi są łagodne: mediana 1,03, maksimum 6,77; przycięcie do 10 nie zadziałało ani razu.
-   - Największe wagi mają obsłużone zapytania `domteraz` z linii MID z budżetem ok. 0,6–0,7 mediany czynszu.
-   - Do wyboru wersji do `current.yaml` potrzebna jest decyzja (pytania w czacie).
+1. Naiwny model (v2) przewiduje szansę na umowę **przy dzisiejszym sposobie pracy zespołu**, czyli łącznie „czy
+   doradca się odezwie” i „czy klient podpisze”. Na teście jego wynik przewiduje samo obsłużenie z AUC 0,766.
+   `domteraz` dostaje średnio 2,9% (41,1% obsłużonych × 6,98% umów po kontakcie), choć w oknie migracji, gdy
+   obsłużono wszystkich, miało 8,19%.
+2. Poprawiony model (v2b) uczy się tylko na obsłużonych zapytaniach i przewiduje szansę na umowę **pod warunkiem
+   kontaktu**. W oknie migracji układa kolejkę najlepiej ze wszystkich wersji: AUC 0,785 wobec 0,764 dla v2
+   (różnica +0,013 … +0,030), lift@10% 3,52. `domteraz` ma w czołówce 10% kolejki 7,1% zapytań zamiast 0,2%. Na
+   zwykłym teście v2 i v2b są praktycznie równe. Same wagi dokładają niewiele: bez nich AUC w oknie wynosi 0,784.
+3. Zapytań, którym nie minęło jeszcze 45 dni, nie wolno liczyć jako „bez umowy”. Dla zapytań z 2026-08-16 –
+   2026-09-30 taka naiwna konwersja wynosi 3,75%, a z ostatniego tygodnia 0%. Estymator, który uwzględnia
+   niepełną obserwację (Kaplan–Meier), daje 4,93% (4,32–5,55%). Na sprawdzianie z udawanym eksportem 2026-05-31
+   KM dał 7,61% przy prawdziwych 7,50%, a liczenie naiwne 5,36%. Konwersja zapytań z sierpnia i września 2026
+   wygląda więc na niższą niż w miesiącach 2026-04 – 07 (7,45–7,80%), ale pewność da dopiero pełne 45 dni.
+4. Szybki kontakt idzie w parze z umową. Poza oknem zapytania z pierwszym kontaktem w ≤ 1 dniu kończą się umową
+   w 12,35%, po > 7 dniach w 5,32%, a bez kontaktu w 1,05%. Ta zależność występuje w każdym źródle. W oknie
+   migracji 97% zapytań miało kontakt w ≤ 1 dniu, a po > 7 dniach nie było żadnego. Z danych nie da się
+   rozdzielić, ile to efekt szybkości, a ile tego, że doradcy szybciej dzwonią do obiecujących zapytań.
+5. Na tle kosztów (tabela B12): reguła źródła nie potrzebuje niczego poza tabelą konwersji, ale ma AUC tylko
+   0,633. LLM v1 kosztuje ok. 1,19 mln tokenów wejścia na 1 000 zapytań i jest najsłabszy (AUC 0,620). v2 i v2b
+   są najlepsze, ale potrzebują tych samych wywołań LLM (sygnały v1) oraz danych z www i CRM. Kwoty w zł nie da
+   się podać, bo w `leasing_bc/zalozenia.yaml` nie ma cennika.
 
 ## Co przewiduje model, prostym językiem
 
@@ -317,6 +316,109 @@ Treść wiadomości:
 Te zapytania ważą w uczeniu tyle co ok. 6 zwykłych. Gdyby było ich wiele, kilka przypadkowych umów w tej grupie
 mocno przesunęłoby model. Tu takich zapytań (waga ≥ 5) jest 33 z 104 479.
 
+### B10. Konwersja zapytań z 2026-08-16 – 2026-09-30: otwarte = 0 wobec poprawnego cenzurowania
+
+Eksport kończy się 2026-09-30 23:59 (tu granica 2026-10-01 00:00). Zapytanie ma wynik `umowa_45d`, gdy do eksportu
+minęło pełne 45 dni. Z tego okresu ma go tylko 94 z 6 907 zapytań (część z 2026-08-16).
+
+| Sposób liczenia | Konwersja | Na jakiej podstawie |
+|---|---:|---|
+| naiwnie: brak umowy do eksportu = 0 (otwarte jako 0) | **3,75%** | 259 umów / 6 907 zapytań |
+| definicja `leady_cel`: tylko zapytania z pełnymi 45 dniami | 4,26% | 4 umowy / 94 zapytania (za mało, by wnioskować) |
+| **Kaplan–Meier** P(umowa w 45 dni), każde zapytanie obserwowane do eksportu | **4,93%** (95% CI 4,32–5,55) | wszystkie 6 907, na 45. dniu w ryzyku 90 |
+| odniesienie: konwersja 45 dni w miesiącach 2026-04 / 05 / 06 / 07 | 7,80% / 7,69% / 7,65% / 7,45% | 3 733 / 3 603 / 4 181 / 4 401 zapytania |
+| odniesienie: 2026-08 (tylko 1–16 sierpnia, niecenzurowane) | 6,50% | 2 278 zapytań |
+
+Według tygodnia utworzenia (tydzień od niedzieli):
+
+| Tydzień od | Zapytania | Umowy do eksportu | Naiwnie (otwarte = 0) | Mediana dni obserwacji |
+|---|---:|---:|---:|---:|
+| 2026-08-16 | 1 058 | 73 | 6,90% | 42,5 |
+| 2026-08-23 | 1 014 | 63 | 6,21% | 35,3 |
+| 2026-08-30 | 1 027 | 55 | 5,36% | 28,4 |
+| 2026-09-06 | 1 070 | 38 | 3,55% | 21,2 |
+| 2026-09-13 | 1 098 | 18 | 1,64% | 14,3 |
+| 2026-09-20 | 1 041 | 12 | 1,15% | 7,2 |
+| 2026-09-27 (do 30.09) | 599 | 0 | 0,00% | 1,6 |
+
+Sprawdzian tej samej metody: udajemy eksport 2026-05-31 23:59 i bierzemy zapytania z 2026-04-16 – 2026-05-31.
+Ich prawdziwe `umowa_45d` znamy z pełnych danych.
+
+| Sposób liczenia | Konwersja |
+|---|---:|
+| naiwnie (otwarte = 0) | 5,36% (294 / 5 490) |
+| tylko pełne 45 dni | 7,41% (10 / 135) |
+| Kaplan–Meier | **7,61%** (95% CI 6,48–8,74) |
+| **prawdziwa `umowa_45d`** | **7,50%** |
+
+| Tydzień od (sprawdzian) | Zapytania | Naiwnie | Prawdziwa | Mediana dni obserwacji |
+|---|---:|---:|---:|---:|
+| 2026-04-12 (od 16.04) | 389 | 7,46% | 7,46% | 44,5 |
+| 2026-04-19 | 894 | 6,49% | 6,60% | 39,3 |
+| 2026-04-26 | 836 | 7,66% | 8,37% | 32,4 |
+| 2026-05-03 | 805 | 4,84% | 6,09% | 25,5 |
+| 2026-05-10 | 842 | 6,29% | 8,67% | 18,2 |
+| 2026-05-17 | 827 | 4,47% | 8,71% | 11,4 |
+| 2026-05-24 | 826 | 1,69% | 6,66% | 4,4 |
+| 2026-05-31 | 71 | 0,00% | 7,04% | 0,4 |
+
+- **Liczenie naiwne:** zaniża wynik tym bardziej, im młodsze zapytanie. Model uczony na takim targecie uznałby
+  najnowsze zapytania za gorsze, choć po prostu nie zdążyły się zamknąć.
+- **Kaplan–Meier:** zakłada, że czas do umowy rozkłada się tak samo w zapytaniach starszych i młodszych. Na
+  sprawdzianie trafił w prawdziwy wynik (7,50% mieści się w przedziale).
+- **Okres 2026-08-16 – 2026-09-30:** KM daje 4,93%. Także wczesne tygodnie (mediana obserwacji 28–42 dni) mają
+  przy liczeniu naiwnym mniej umów niż odpowiadające im tygodnie sprawdzianu (np. 5,36% wobec 7,66% przy ok. 30
+  dniach obserwacji). Spadek wygląda więc na prawdziwy, ale potwierdzą go dopiero pełne 45 dni.
+
+### B11. Konwersja według czasu do pierwszego kontaktu
+
+Niecenzurowane zapytania. Pierwszy kontakt to pierwsza aktywność doradcy lub call center w 45 dni od utworzenia,
+bez zapisu podpisania (`leady_cel.godz_do_pierwszego_kontaktu`). W danych żadna umowa nie powstała przed pierwszym
+kontaktem.
+
+| Pierwszy kontakt | Poza oknem: zapytania | Poza oknem: umowy | Poza oknem: konwersja | W oknie: zapytania | W oknie: umowy | W oknie: konwersja |
+|---|---:|---:|---:|---:|---:|---:|
+| **≤ 1 dzień (≤ 24 h)** | 8 073 | 997 | **12,35%** | 5 170 | 545 | **10,54%** |
+| 1–7 dni | 97 108 | 9 096 | 9,37% | 150 | 14 | 9,33% |
+| **> 7 dni (> 168 h)** | 17 304 | 920 | **5,32%** | 0 | 0 | brak w danych |
+| brak kontaktu w 45 dni | 26 938 | 284 | 1,05% | 0 | 0 | brak w danych |
+
+Poza oknem, według źródła (tylko obsłużone):
+
+| Źródło | ≤ 1 dzień: zapytania | ≤ 1 dzień: konwersja | > 7 dni: zapytania | > 7 dni: konwersja |
+|---|---:|---:|---:|---:|
+| domteraz | 676 | 8,73% | 3 251 | 4,31% |
+| lokum24 | 3 499 | 6,83% | 7 331 | 2,80% |
+| polecenie | 535 | 18,13% | 865 | 9,36% |
+| relokacja_b2b | 965 | 25,60% | 1 574 | 12,64% |
+| social | 416 | 5,05% | 1 045 | 1,15% |
+| www | 1 982 | 16,85% | 3 238 | 8,74% |
+
+- **Poza oknem:** szybki kontakt to tylko 8 073 zapytania (6,6% obsłużonych), a kontakt po tygodniu to 17 304.
+  W każdym źródle konwersja przy kontakcie w ≤ 1 dniu jest mniej więcej dwa razy wyższa niż po > 7 dniach.
+- **W oknie:** call center dzwoniło szybko do wszystkich (97% w ≤ 1 dniu), a konwersja wyniosła 10,54%, mniej niż
+  12,35% dla szybkich kontaktów poza oknem. Poza oknem doradcy szybko dzwonią głównie do zapytań, które wyglądają
+  obiecująco. W oknie szybki kontakt dostali wszyscy, także słabsi.
+- **Przyczyna a związek:** z tych danych nie da się powiedzieć, ile umów dałoby samo przyspieszenie kontaktu.
+  Wiadomo tylko, że opóźnienie powyżej tygodnia idzie w parze z dwa razy niższą konwersją.
+
+### B12. Zestawienie wersji: okno migracji, koszt, czego wersja potrzebuje
+
+AUC i lift@10% na tych samych 5 320 zapytaniach z okna migracji (559 umów). v0 jest tu uczona na treningu v2;
+zapisana wersja v0 liczona z dłuższej historii ma AUC 0,637 i ten sam lift 1,89.
+
+| Wersja | AUC (okno) | lift@10% (okno) | Koszt / 1 000 zapytań | Czego potrzebuje do działania |
+|---|---:|---:|---|---|
+| v0_regula_zrodla (reguła źródła) | 0,633 | 1,89 | 0 tokenów | pól `zrodlo` i `linia_pref` z formularza oraz tabeli konwersji (źródło × linia) z historii `leady_cel`, odświeżanej okresowo |
+| v1_llm_zero_shot (LLM) | 0,620 | 1,40 | wejście 1 190 958 tokenów (1 058 000 z cache promptu), wyjście 70 112; kwota: brak cennika | klucza OpenAI i wywołania `gpt-6-luna` dla każdego zapytania (prompt `ocena_leada_v1`), pól formularza i treści wiadomości (imię usuwane); bez uczenia |
+| v2_lgbm_naiwny (naiwny) | 0,764 | 3,33 | jak v1 (sygnały v1 dla każdego zapytania) + LightGBM bez API | wszystkiego, czego potrzebuje v1 (sygnały), oraz pól formularza, sesji `www_sesje` sprzed zapytania, `crm_firmy_b2b` (umowa ramowa z datą), mediany `czynsz_katalogowy` w mieście i pliku modelu; do ponownego uczenia: historii `umowa_45d` i `obsluzony` |
+| **v2b_lgbm_ipw (poprawiony)** | **0,785** | **3,52** | jak v2 | jak v2; do ponownego uczenia dodatkowo model skłonności (regresja logistyczna na `obsluzony`) i tylko zapytań z obsługą; do predykcji model skłonności nie jest potrzebny |
+
+- **Tokeny:** średnia z wywołań dla 5 320 zapytań okna (`versions/v1_llm_zero_shot/metryki.json`). v2 i v2b
+  wołają ten sam prompt, więc mają te same tokeny. Bez sygnałów LLM v2 miał w oknie AUC 0,751
+  ([kolejka_v2_lgbm_naiwny.md](kolejka_v2_lgbm_naiwny.md), T4). Wariantu v2b bez sygnałów nie liczyliśmy.
+- **Czas odpowiedzi** API przy nowym zapytaniu: brak w danych (nie mierzyliśmy).
+
 ## SQL i kod
 
 Źródło × zbiór (tabela B1), na `domilo.duckdb` przez `polacz()` (strefa Europe/Warsaw). Granice zbiorów są takie
@@ -399,3 +501,48 @@ lgbm = ModelLGBMNaiwny.fit(X_obsluzone, umowa_45d_obsluzonych, wagi=wagi)  # te 
 Wynik każdego zapytania testu i okna (v0, v1, v2, v2b, v2b bez wag, skłonność):
 `api/api/ai/lead_model/evals/wyniki/v2b_lgbm_ipw.parquet`. Rozkład wag, 5 zapytań z największą wagą i model
 skłonności: `versions/v2b_lgbm_ipw/metryki.json` (klucze `wagi`, `top5_wag`, `sklonnosc`).
+
+Cenzurowanie, czas do kontaktu i zestawienie (tabele B10–B12): `api/api/ai/lead_model/evals/analiza_cenzura_kontakt.py`.
+
+```bash
+cd api && poetry run python -m api.ai.lead_model.evals.analiza_cenzura_kontakt   # po `pypyr baza`
+```
+
+```sql
+-- B10: zapytania z okresu [od, do) z czasem obserwacji do „eksportu” (parametry: eksport, eksport, od, do)
+SELECT id_leada, utworzono, umowa_45d, cenzurowany, zamkniety,
+       epoch(?::TIMESTAMPTZ - utworzono) / 86400.0 AS dni_obserwacji,
+       CASE WHEN data_umowy < ?::TIMESTAMPTZ THEN dni_do_umowy END AS dni_do_umowy_przed_eksportem
+FROM leady_cel
+WHERE utworzono >= ?::TIMESTAMPTZ AND utworzono < ?::TIMESTAMPTZ;
+-- okres: '2026-08-16' – '2026-10-01', eksport '2026-10-01 00:00:00+02';
+-- sprawdzian: '2026-04-16' – '2026-06-01', eksport '2026-06-01 00:00:00+02'
+
+-- B11
+SELECT CASE WHEN okno_migracji THEN 'w oknie migracji' ELSE 'poza oknem migracji' END AS okres,
+       CASE WHEN NOT obsluzony THEN 'brak kontaktu w 45 dni'
+            WHEN godz_do_pierwszego_kontaktu <= 24 THEN '≤ 1 dzień'
+            WHEN godz_do_pierwszego_kontaktu <= 168 THEN '1–7 dni'
+            ELSE '> 7 dni' END AS pierwszy_kontakt,
+       count(*) AS zapytania, sum(umowa_45d) AS umowy, avg(umowa_45d) AS konwersja
+FROM leady_cel
+WHERE NOT cenzurowany
+GROUP BY ALL;
+```
+
+```python
+# B10: naiwnie i Kaplan–Meier (fragment analiza_cenzura_kontakt.py)
+obserwacja = df["dni_obserwacji"].clip(upper=45)
+umowa = df["dni_do_umowy_przed_eksportem"]
+zdarzenie = umowa.notna() & (umowa <= 45)
+naiwna = zdarzenie.mean()                                  # otwarte = 0
+czas = np.where(zdarzenie, umowa, obserwacja)              # dni do umowy albo do końca obserwacji
+s = 1.0
+for t in np.unique(czas[zdarzenie]):                       # Kaplan–Meier: S(t) = Π (1 − d / n)
+    n, d = (czas >= t).sum(), ((czas == t) & zdarzenie).sum()
+    s *= 1 - d / n
+p_umowa_45d = 1 - s                                        # CI: wzór Greenwooda
+```
+
+Tabela B12 bierze AUC i lift z `versions/v2b_lgbm_ipw/metryki.json` (klucz `okno_migracji`, wszystkie wersje na
+tych samych zapytaniach), a tokeny z `versions/v1_llm_zero_shot/metryki.json` (`koszt_na_1000`).
