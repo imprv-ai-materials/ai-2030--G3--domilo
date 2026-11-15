@@ -126,3 +126,19 @@ models:
               arguments: {min: 0}
       - name: przychod_wartosc_wyjsciowa
         data_tests: [not_null]
+
+  - name: eksperyment_tydzien
+    description: Tydzień eksperymentu switchback kolejki z wariantem, metryką główną i pomocniczymi.
+    columns:
+      - name: tydzien
+        data_tests: [unique, not_null]
+      - name: wariant
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["model", "od_najnowszego", "mieszany"]
+      - name: pozycje_losowe
+        data_tests:
+          - zakres:
+              arguments: {min: 0}

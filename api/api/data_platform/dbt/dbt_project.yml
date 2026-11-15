@@ -28,6 +28,10 @@ vars:
   godzina_kolejki: "05:30"
   # wartość wyjściowa przychodu na godzinę doradcy (docs/kolejka_metryki.md): kwartał 2026-Q2.
   kwartal_wyjsciowy: "2026-04-01"
+  # Eksperyment kolejki (docs/kolejka_eksperyment.md): limit wartości jednej umowy w metryce głównej = 95. percentyl
+  # wartosc_umowy umów z zapytań podpisanych 2025-07-07 – 2026-06-28 (3 412 umów; zapytanie Q4 w raporcie).
+  # Stały (ustalony przed eksperymentem), żeby nowe dane nie zmieniały definicji w trakcie.
+  limit_wartosci_umowy: 74529
 
 models:
   domilo:

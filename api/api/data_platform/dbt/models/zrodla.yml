@@ -1,7 +1,7 @@
 version: 2
 
 # Tabele domilo.duckdb budowane przez `pypyr baza` (krok 1: Parquety z data/, krok 2: leady_cel) oraz tabele trwałe
-# aplikacji (kolejka_ranking, kolejka_pominiecia: zapisuje je kod, przebudowa bazy je przenosi).
+# aplikacji (kolejka_ranking, kolejka_pominiecia, kolejka_historia: zapisuje je kod, przebudowa bazy je przenosi).
 sources:
   - name: domilo
     schema: main
@@ -87,3 +87,28 @@ sources:
               - accepted_values:
                   arguments:
                     values: ["znam_klienta", "brak_lokalu", "duplikat", "inne"]
+      - name: kolejka_historia
+        description: >
+          Pozycje kolejek doradców z dziennego zadania z wariantem eksperymentu i flagą pozycji losowej
+          (adapters/kolejka_historia.py, docs/kolejka_eksperyment.md).
+        data_tests:
+          - unikalna_kombinacja:
+              arguments:
+                kolumny: [data_kolejki, id_leada]
+          - unikalna_kombinacja:
+              arguments:
+                kolumny: [data_kolejki, id_doradcy, pozycja]
+        columns:
+          - name: wariant
+            data_tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: ["model", "od_najnowszego"]
+          - name: losowa
+            data_tests: [not_null]
+          - name: p_losowania
+            data_tests:
+              - not_null
+              - zakres:
+                  arguments: {min: 0, max: 1}

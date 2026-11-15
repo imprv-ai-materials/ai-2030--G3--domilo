@@ -167,3 +167,28 @@ models:
         data_tests:
           - zakres:
               arguments: {min: 0}
+
+  - name: przychod_z_kontaktow
+    description: >
+      Przychód z zapytań przypisany do tygodnia pierwszego kontaktu doradcy, na godzinę doradcy; wartość umowy
+      ograniczona do limit_wartosci_umowy. Metryka główna eksperymentu kolejki (docs/kolejka_eksperyment.md).
+    columns:
+      - name: tydzien
+        data_tests: [unique, not_null]
+      - name: godziny_doradcow
+        data_tests:
+          - zakres:
+              arguments: {min: 1}
+              config:
+                where: "pelny_okres"
+      - name: przychod_z_kontaktow_na_godzine
+        data_tests:
+          - not_null:
+              config:
+                where: "pelny_okres"
+          - zakres:
+              arguments: {min: 0}
+      - name: umowy
+        data_tests:
+          - zakres:
+              arguments: {min: 0}

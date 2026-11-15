@@ -219,13 +219,18 @@ def test_kolejka_doradcy_ma_maks_40_pozycji_z_jego_miasta_wedlug_ev(dwa_przebieg
     con = polacz(baza_kopia)
     miasta = con.execute("SELECT id_doradcy, miasto FROM crm_doradcy").df().set_index("id_doradcy")["miasto"]
     leady = con.execute("SELECT id_leada, miasto FROM crm_leady").df().set_index("id_leada")["miasto"]
+    losowe = set(
+        con.execute("SELECT id_leada FROM kolejka_historia WHERE data_kolejki = ? AND losowa", [DZIEN]).df()["id_leada"]
+    )
     con.close()
     assert (pozycje["id_doradcy"].map(miasta) == pozycje["miasto"]).all()
     assert (pozycje["id_leada"].map(leady) == pozycje["miasto"]).all()
     for _, g in pozycje.groupby("id_doradcy"):
         g = g.sort_values("pozycja")
         assert list(g["pozycja"]) == list(range(1, len(g) + 1)) and len(g) <= 40
-        assert g["ev_pln"].is_monotonic_decreasing
+        # 5% pozycji losowych (40 -> 2); pozostałe według EV malejąco
+        assert g["id_leada"].isin(losowe).sum() == 2
+        assert g.loc[~g["id_leada"].isin(losowe), "ev_pln"].is_monotonic_decreasing
     assert pozycje["uzasadnienie"].str.len().between(1, 140).all()
 
 
@@ -244,10 +249,11 @@ def test_get_leads_next_zwraca_te_sama_kolejke_co_webhook(dwa_przebiegi, baza_ko
     app.dependency_overrides[baza] = baza_testowa
     try:
         klient = TestClient(app)
-        odp = klient.get("/leads/next", params={"doradca": "D01"})
+        odp = klient.get("/leads/next", params={"doradca": "D01", "data": DZIEN})
+        najnowsza = klient.get("/leads/next", params={"doradca": "D01"})
         brak = klient.get("/leads/next", params={"doradca": "D99"})
         bez_parametru = klient.get("/leads/next")
-        inny_dzien = klient.get("/leads/next", params={"doradca": "D01", "data": "2026-11-17"})
+        inny_dzien = klient.get("/leads/next", params={"doradca": "D01", "data": "2030-01-01"})
     finally:
         app.dependency_overrides.clear()
     assert odp.status_code == 200
@@ -263,6 +269,8 @@ def test_get_leads_next_zwraca_te_sama_kolejke_co_webhook(dwa_przebiegi, baza_ko
     assert [{f: p[f] for f in pola} for p in k["pozycje"]] == [{f: p[f] for f in pola} for p in w_crm]
     assert datetime.fromisoformat(k["stan_danych_na"]) == kd.KONIEC_DANYCH
     assert (brak.status_code, bez_parametru.status_code, inny_dzien.status_code) == (404, 422, 404)
+    # bez daty: najnowsza kolejka doradcy w bazie (nie wcześniejsza niż DZIEN)
+    assert najnowsza.status_code == 200 and najnowsza.json()["data_kolejki"] >= DZIEN
 
 
 def test_po_awarii_webhooka_ponawia_sie_tylko_krok_ktory_padl(baza_kopia, tmp_path):

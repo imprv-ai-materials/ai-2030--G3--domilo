@@ -82,17 +82,21 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   ├── kolejka_doradcow.py   # tabela kolejka_doradcow (dzień × zapytanie; przenoszona przy przebudowie bazy)
 │   ├── kolejka_ranking.py    # tabela kolejka_ranking: pełny ranking dnia (zadanie / symulacja wstecz), dla panelu
 │   ├── kolejka_pominiecia.py # tabela kolejka_pominiecia: pominięcia z CRM z powodem (POST /leads/skips)
+│   ├── kolejka_historia.py   # tabela kolejka_historia: pozycje kolejek z wariantem eksperymentu i flagą losowa (5%)
 │   └── crm_lejek.py          # webhook kolejek do CRM, idempotentny po (id_leada, data_kolejki); atrapa: dev/mock_lejek/
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
 │   ├── leasing_bc/           # zapytania i doradcy (najem); kolejka_dzienna.py: kroki zadania kolejka-doradcow;
-│   │                         # kolejka_wstecz.py (ranking wstecz), panel.py (GET /team/dashboard), pominiecia.py
+│   │                         # kolejka_wstecz.py (ranking wstecz), panel.py (GET /team/dashboard), pominiecia.py,
+│   │                         # eksperyment.py (switchback: plan w parach, wariant dnia, 5% pozycji losowych;
+│   │                         # plan aktywny, gdy istnieje eksperyment_plan.yaml)
 │   ├── retention_bc/         # retencja najemców
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
 │   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)
-│   └── dbt_uruchom.py        # dbt build/test na domilo.duckdb (3. krok pypyr baza)
+│   ├── dbt_uruchom.py        # dbt build/test na domilo.duckdb (3. krok pypyr baza)
+│   └── eksperyment_kolejki.py # moc/MDE i analiza eksperymentu kolejki (docs/kolejka_eksperyment.md)
 └── ai/
     ├── features/             # budowa cech per model
     │   ├── wycena/
@@ -131,10 +135,15 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
   (`api/api/data_platform/dbt/`, opis i liczby w `docs/kolejka_metryki.md`). Panel kierownika (`models/panel`,
   widoki poza `pierwszy_kontakt`): `ranking_dzien`, `pierwszy_kontakt`, `adopcja_dzien`, `kolejka_zapytania`,
-  `pominiecia`, `panel_tydzien` (`docs/kolejka_panel.md`).
+  `pominiecia`, `panel_tydzien` (`docs/kolejka_panel.md`). Eksperyment kolejki (`docs/kolejka_eksperyment.md`):
+  `przychod_z_kontaktow` (metryka główna: przychód z kontaktów tygodnia na godzinę, umowa do `vars.limit_wartosci_umowy`)
+  i widok `eksperyment_tydzien` (wariant tygodnia z `kolejka_historia`).
 - **Tabele trwałe aplikacji** (nie z `data/`; przebudowa je przenosi, a brakujące tworzy puste):
   `wyceny_historia`, `kolejka_doradcow`, `kolejka_ranking` (`zrodlo_kolejki`: `zadanie` albo `symulacja_wstecz`,
-  `pypyr kolejka_wstecz`), `kolejka_pominiecia`.
+  `pypyr kolejka_wstecz`), `kolejka_pominiecia`, `kolejka_historia`.
+- **Kolejka a eksperyment:** 5% pozycji każdej kolejki doradcy (40 → 2) jest losowych, z ziarnem `dzień:miasto:wariant`
+  (ten sam dzień = ta sama kolejka, webhook idempotentny); ranga zawsze według EV. Nie zmieniaj w trakcie
+  eksperymentu modelu, założeń EV, 5%, limitu wartości umowy ani zmiennych korekty.
 - **Widoki:** `telemetra_windy` i `telemetra_cieplo` czytają partycje `rok=/miesiac=` (kolumny `rok`, `miesiac`
   jako INTEGER). Mają ścieżki względne `data/...`: `polacz()` ustawia `file_search_path` na katalog repozytorium,
   a w CLI uruchamiaj zapytania z katalogu głównego.

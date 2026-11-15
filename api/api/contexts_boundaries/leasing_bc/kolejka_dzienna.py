@@ -42,7 +42,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 import pandas as pd
-from api.adapters import kolejka_doradcow, kolejka_ranking
+from api.adapters import kolejka_doradcow, kolejka_historia, kolejka_ranking
 from api.adapters.crm_lejek import KlientLejka
 from api.adapters.duckdb_baza import KATALOG_REPO, SCIEZKA_BAZY, polaczenie
 from api.adapters.llm_client import BrakKluczaAPI, KlientLLM
@@ -53,6 +53,15 @@ from api.ai.lead_model.base import KOLUMNY_WEJSCIA
 from api.ai.lead_model.obecny import wczytaj_obecny
 from api.ai.lead_model.uzasadnienie import WERSJA_PROMPTU, top_wklady, uzasadnij
 from api.ai.llm.prompty import wczytaj_prompt
+from api.contexts_boundaries.leasing_bc.eksperyment import (
+    UDZIAL_LOSOWYCH,
+    WARIANT_DOMYSLNY,
+    WARIANTY,
+    liczba_losowych,
+    wariant_dnia,
+    wczytaj_plan,
+    ziarno,
+)
 from api.contexts_boundaries.leasing_bc.wartosc import wartosc_oczekiwana
 
 STREFA = ZoneInfo("Europe/Warsaw")
@@ -116,42 +125,114 @@ def aktywni_doradcy(con, dzien: date) -> pd.DataFrame:
     return con.execute(SQL_DORADCY, {"dzien": dzien}).df()
 
 
-KOLUMNY_RANKINGU = ["id_leada", "miasto", "ranga", "otwarte_w_miescie", "id_doradcy", "pozycja"]
+KOLUMNY_RANKINGU = [
+    "id_leada",
+    "miasto",
+    "ranga",
+    "otwarte_w_miescie",
+    "id_doradcy",
+    "pozycja",
+    "wariant",
+    "losowa",
+    "p_losowania",
+    "pula_losowania",
+    "ziarno",
+]
 
 
-def ranking_kolejki(ev: pd.DataFrame, doradcy: pd.DataFrame, maks: int = MAKS_POZYCJI) -> pd.DataFrame:
+def _kolejnosc_wariantu(z: pd.DataFrame, wariant: str) -> list[str]:
+    """Kolejność zapytań miasta w kolejce: `model` = EV malejąco, `od_najnowszego` = utworzono malejąco (remis: id)."""
+    if wariant == "model":
+        return z.sort_values(["ev", "id_leada"], ascending=[False, True], kind="mergesort")["id_leada"].tolist()
+    if wariant == "od_najnowszego":
+        return z.sort_values(["utworzono", "id_leada"], ascending=[False, True], kind="mergesort")["id_leada"].tolist()
+    raise ValueError(f"Nieznany wariant kolejki: {wariant} (dozwolone: {', '.join(WARIANTY)})")
+
+
+def ranking_kolejki(
+    ev: pd.DataFrame,
+    doradcy: pd.DataFrame,
+    maks: int = MAKS_POZYCJI,
+    wariant: str = WARIANT_DOMYSLNY,
+    udzial_losowych: float = UDZIAL_LOSOWYCH,
+    ziarno_dnia: str = "",
+) -> pd.DataFrame:
     """Pełny ranking dnia: każde otwarte zapytanie z EV, miejsce w mieście i (dla kolejek) doradca i pozycja.
 
-    `ev`: id_leada, miasto, ev (NaN = poza rankingiem); `doradcy`: id_doradcy, miasto. Ranga: EV malejąco w mieście
-    (remis: id_leada), od 1. W mieście z k doradcami pierwsze k × maks zapytań rozdajemy po kolei: zapytanie
-    z rangą r (od 1) dostaje doradca (r − 1) mod k na pozycji (r − 1) div k + 1. Miasto bez doradcy ma ranking bez
-    kolejek (id_doradcy, pozycja = NA).
+    `ev`: id_leada, miasto, ev (NaN = poza rankingiem), a dla wariantu `od_najnowszego` także utworzono;
+    `doradcy`: id_doradcy, miasto.
+    - Ranga: zawsze EV malejąco w mieście (remis: id_leada), od 1, w obu wariantach (górny decyl znaczy to samo).
+    - Kolejki: w mieście z k doradcami długość kolejki doradcy j to S div k (+1 dla j < S mod k), S = min(k × maks,
+      liczba zapytań). W każdej kolejce `liczba_losowych(długość)` pozycji (5%, 40 -> 2), na losowych miejscach,
+      zajmują zapytania wylosowane bez zwracania ze wszystkich otwartych zapytań miasta. Pozostałe miejsca
+      wypełniamy po kolei w kolejności wariantu (`_kolejnosc_wariantu`): następne zapytanie dostaje następny doradca
+      (po id) na swojej najbliższej wolnej pozycji. Bez części losowej to ta sama reguła co wcześniej: ranga r ->
+      doradca (r − 1) mod k, pozycja (r − 1) div k + 1.
+    - p_losowania = liczba pozycji losowych w mieście / liczba otwartych zapytań miasta (to samo dla każdego zapytania
+      miasta tego dnia; potrzebne do wag w ocenie modelu); pula_losowania = liczba otwartych zapytań miasta.
+    - Losowanie: numpy z ziarnem `ziarno(ziarno_dnia, miasto, wariant)`, więc ten sam dzień daje tę samą kolejkę.
+    Miasto bez doradcy ma ranking bez kolejek (id_doradcy, pozycja = NA).
     """
     z = ev[ev["ev"].notna()].sort_values(["miasto", "ev", "id_leada"], ascending=[True, False, True], kind="mergesort")
-    z = z[["id_leada", "miasto"]].copy()
+    z = z.copy()
     z["ranga"] = z.groupby("miasto").cumcount() + 1
     z["otwarte_w_miescie"] = z.groupby("miasto")["id_leada"].transform("size")
     doradcy_miast = {m: sorted(d["id_doradcy"]) for m, d in doradcy.groupby("miasto")}
-    id_d, poz = [], []
-    for miasto, ranga in zip(z["miasto"], z["ranga"]):
+    przydzial: dict[str, tuple[str, int, bool]] = {}
+    p_losowania: dict[str, float] = {}
+    ziarna: dict[str, str] = {}
+    for miasto, zm in z.groupby("miasto", sort=True):
         ids = doradcy_miast.get(miasto, [])
+        n = len(zm)
+        ziarna[miasto] = f"{ziarno_dnia}:{miasto}:{wariant}"
+        if not ids:
+            p_losowania[miasto] = 0.0
+            continue
         k = len(ids)
-        if k and ranga <= maks * k:
-            id_d.append(ids[(ranga - 1) % k])
-            poz.append((ranga - 1) // k + 1)
-        else:
-            id_d.append(None)
-            poz.append(None)
-    z["id_doradcy"] = pd.Series(id_d, index=z.index, dtype="object")
-    z["pozycja"] = pd.array(poz, dtype="Int64")
+        sloty = min(maks * k, n)
+        dlugosci = [sloty // k + (1 if j < sloty % k else 0) for j in range(k)]
+        losowych = [liczba_losowych(d, udzial_losowych) for d in dlugosci]
+        rng = np.random.default_rng(ziarno(ziarno_dnia, str(miasto), wariant))
+        pula = sorted(zm["id_leada"])
+        wylosowane = [str(x) for x in rng.choice(pula, size=sum(losowych), replace=False)] if sum(losowych) else []
+        p_losowania[miasto] = sum(losowych) / n
+        wolne = []  # dla każdego doradcy: jego pozycje nielosowe rosnąco
+        nr = 0
+        for j, (dlugosc, r) in enumerate(zip(dlugosci, losowych)):
+            miejsca_losowe = sorted(int(x) + 1 for x in rng.choice(dlugosc, size=r, replace=False)) if r else []
+            for poz in miejsca_losowe:
+                przydzial[wylosowane[nr]] = (ids[j], poz, True)
+                nr += 1
+            wolne.append([p for p in range(1, dlugosc + 1) if p not in set(miejsca_losowe)])
+        reszta = (x for x in _kolejnosc_wariantu(zm, wariant) if x not in przydzial)
+        j = 0
+        while any(wolne):
+            if wolne[j]:
+                przydzial[next(reszta)] = (ids[j], wolne[j].pop(0), False)
+            j = (j + 1) % k
+    z["id_doradcy"] = pd.Series([przydzial.get(i, (None,))[0] for i in z["id_leada"]], index=z.index, dtype="object")
+    z["pozycja"] = pd.array([przydzial[i][1] if i in przydzial else None for i in z["id_leada"]], dtype="Int64")
+    z["losowa"] = [bool(przydzial[i][2]) if i in przydzial else False for i in z["id_leada"]]
+    z["wariant"] = wariant
+    z["p_losowania"] = z["miasto"].map(p_losowania).astype(float)
+    z["pula_losowania"] = z["otwarte_w_miescie"].astype(int)
+    z["ziarno"] = z["miasto"].map(ziarna)
     return z[KOLUMNY_RANKINGU].reset_index(drop=True)
 
 
-def przydziel_kolejki(ev: pd.DataFrame, doradcy: pd.DataFrame, maks: int = MAKS_POZYCJI) -> pd.DataFrame:
+def przydziel_kolejki(
+    ev: pd.DataFrame,
+    doradcy: pd.DataFrame,
+    maks: int = MAKS_POZYCJI,
+    wariant: str = WARIANT_DOMYSLNY,
+    udzial_losowych: float = UDZIAL_LOSOWYCH,
+    ziarno_dnia: str = "",
+) -> pd.DataFrame:
     """Kolejki: id_doradcy, miasto, pozycja (od 1), id_leada; część `ranking_kolejki` z doradcą."""
-    r = ranking_kolejki(ev, doradcy, maks)
+    r = ranking_kolejki(ev, doradcy, maks, wariant, udzial_losowych, ziarno_dnia)
     k = r[r["id_doradcy"].notna()].copy()
     k["pozycja"] = k["pozycja"].astype(int)
+    k = k.sort_values(["miasto", "pozycja", "id_doradcy"], kind="mergesort")
     return k[["id_doradcy", "miasto", "pozycja", "id_leada"]].reset_index(drop=True)
 
 
@@ -259,22 +340,32 @@ def krok_ev(katalog: str) -> dict:
     wynik = pd.read_parquet(_plik(katalog, "wynik"), columns=["id_leada", "p"])
     df = otwarte.merge(wynik, on="id_leada", how="left", validate="1:1")
     df["ev"] = wartosc_oczekiwana(df["p"], df)
-    df[["id_leada", "miasto", "p", "ev"]].to_parquet(_plik(katalog, "ev"), index=False)
+    df[["id_leada", "miasto", "utworzono", "p", "ev"]].to_parquet(_plik(katalog, "ev"), index=False)
     return {"zapytania": len(df), "suma_ev_pln": round(float(np.nansum(df["ev"])), 2)}
 
 
-def krok_kolejki(katalog: str, data_kolejki: str, sciezka: Path = SCIEZKA_BAZY) -> dict:
+def krok_kolejki(
+    katalog: str, data_kolejki: str, sciezka: Path = SCIEZKA_BAZY, plan: dict | None | str = "z_pliku"
+) -> dict:
+    """Ranking i kolejki dnia w wariancie z planu eksperymentu (leasing_bc/eksperyment.py), z 5% pozycji losowych."""
     ev = pd.read_parquet(_plik(katalog, "ev"))
+    dzien = date.fromisoformat(data_kolejki)
     with polaczenie(sciezka=sciezka) as con:
-        doradcy = aktywni_doradcy(con, date.fromisoformat(data_kolejki))
-    ranking = ranking_kolejki(ev, doradcy)
+        doradcy = aktywni_doradcy(con, dzien)
+    wariant = wariant_dnia(dzien, wczytaj_plan() if plan == "z_pliku" else plan)
+    ranking = ranking_kolejki(ev, doradcy, wariant=wariant, ziarno_dnia=data_kolejki)
     ranking.to_parquet(_plik(katalog, "ranking"), index=False)
-    kolejki = przydziel_kolejki(ev, doradcy)
+    kolejki = ranking[ranking["id_doradcy"].notna()].copy()
+    kolejki["pozycja"] = kolejki["pozycja"].astype(int)
+    kolejki = kolejki.sort_values(["miasto", "pozycja", "id_doradcy"], kind="mergesort")
+    kolejki = kolejki[["id_doradcy", "miasto", "pozycja", "id_leada"]].reset_index(drop=True)
     kolejki.to_parquet(_plik(katalog, "kolejki"), index=False)
     miasta_bez_doradcy = sorted(set(ev["miasto"]) - set(doradcy["miasto"]))
     return {
+        "wariant": wariant,
         "doradcy": [str(d) for d in sorted(doradcy["id_doradcy"])],
         "pozycje": len(kolejki),
+        "pozycje_losowe": int(ranking["losowa"].sum()),
         "na_doradce": _liczniki(kolejki["id_doradcy"]),
         "miasta_bez_doradcy": [str(m) for m in miasta_bez_doradcy],
     }
@@ -352,10 +443,15 @@ def krok_zapis(
         stan_danych_na=pd.Timestamp(stan_iso),
         id_przebiegu=id_przebiegu,
     )
+    historia = ranking[ranking["id_doradcy"].notna()].assign(
+        ranga_ev=lambda r: r["ranga"],
+        pozycja=lambda r: r["pozycja"].astype(int),
+    )
     with polaczenie(tylko_odczyt=False, sciezka=sciezka) as con:
         n = kolejka_doradcow.zapisz(con, dzien, df)
         n_rankingu = kolejka_ranking.zapisz(con, ranking)
-    return {"pozycje": n, "ranking": n_rankingu}
+        n_historii = kolejka_historia.zapisz(con, dzien, historia)
+    return {"pozycje": n, "ranking": n_rankingu, "historia": n_historii}
 
 
 def krok_webhook(data_kolejki: str, id_doradcy: str, sciezka: Path = SCIEZKA_BAZY, klient: KlientLejka | None = None):
@@ -376,6 +472,7 @@ def wykonaj_kolejke_doradcow(
     katalog_bazowy: Path = KATALOG_PRZEBIEGOW,
     klient_lejka: KlientLejka | None = None,
     z_llm: bool | None = None,
+    plan: dict | None | str = "z_pliku",
 ) -> dict:
     """Kolejność kroków; `krok(id, handler, *args)` = ctx.step.run w Inngest (w testach i CLI: wywołanie wprost)."""
     par = krok("parametry", krok_parametry, data_kolejki, id_przebiegu, str(katalog_bazowy))
@@ -386,7 +483,7 @@ def wykonaj_kolejke_doradcow(
     wynik["cechy"] = krok("cechy", krok_cechy, kat, sciezka)
     wynik["model"] = krok("wynik-modelu", krok_wynik_modelu, kat)
     wynik["ev"] = krok("ev", krok_ev, kat)
-    wynik["kolejki"] = krok("kolejki", krok_kolejki, kat, dzien, sciezka)
+    wynik["kolejki"] = krok("kolejki", krok_kolejki, kat, dzien, sciezka, plan)
     wynik["uzasadnienia"] = krok("uzasadnienia", krok_uzasadnienia, kat, sciezka, z_llm)
     wersja = wynik["model"]["wersja_modelu"]
     wynik["zapis"] = krok("zapis-kolejki", krok_zapis, kat, dzien, stan, wersja, id_przebiegu, sciezka)

@@ -69,7 +69,7 @@ def ev_zapytan(con, od: date, do: date) -> tuple[pd.DataFrame, str]:
     X = leady[["id_leada", "utworzono"]].merge(cechy, on="id_leada", how="left", validate="1:1")
     obecny = wczytaj_obecny()
     p = np.asarray(obecny.model.predict(X), dtype=float)
-    df = leady[["id_leada", "miasto"]].assign(p=p, ev=wartosc_oczekiwana(p, leady))
+    df = leady[["id_leada", "miasto", "utworzono"]].assign(p=p, ev=wartosc_oczekiwana(p, leady))
     return df, obecny.wersja
 
 
@@ -85,7 +85,8 @@ def ranking_wstecz(con, od: date, do: date, id_przebiegu: str, pomin: set[date] 
             e = otwarte.merge(ev, on="id_leada", how="left", validate="1:1")
             if e["ev"].isna().any():
                 raise RuntimeError(f"{dzien}: otwarte zapytania bez EV ({int(e['ev'].isna().sum())})")
-            r = ranking_kolejki(e, aktywni_doradcy(con, dzien)).merge(
+            # Wariant `model` i ta sama część losowa (ziarno dnia) co dzienne zadanie.
+            r = ranking_kolejki(e, aktywni_doradcy(con, dzien), ziarno_dnia=dzien.isoformat()).merge(
                 ev[["id_leada", "p", "ev"]], on="id_leada", validate="1:1"
             )
             czesci.append(

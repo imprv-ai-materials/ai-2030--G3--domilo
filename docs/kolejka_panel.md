@@ -11,8 +11,8 @@ Stan danych: eksport 2026-09-30 23:59 Europe/Warsaw, baza `domilo.duckdb` przebu
    Panel pokazuje punkt odniesienia: kolejkę policzoną wstecz tym samym kodem dla 2026-04-15 – 2026-06-30, której
    doradcy nie widzieli.
 2. Przed wdrożeniem doradcy zaczynali od zapytań z góry (przyszłej) kolejki prawie tak rzadko, jak przy wyborze
-   losowym: 7,7% pierwszych kontaktów dotyczyło pozycji 1–20 kolejki doradcy, a losowo byłoby 6,3%. W Warszawie,
-   gdzie czterech doradców dzieli średnio 769 otwartych zapytań, to 2–3%. Wzrost adopcji po wdrożeniu będzie
+   losowym: 7,6% pierwszych kontaktów dotyczyło pozycji 1–20 kolejki doradcy, a losowo byłoby 6,3%. W Warszawie,
+   gdzie czterech doradców dzieli średnio 769 otwartych zapytań, to 1,7–3,6%. Wzrost adopcji po wdrożeniu będzie
    pierwszym sygnałem, że kolejka zmienia pracę.
 3. Zapytania z górnych 10% rankingu kończyły się umową w 26,5% (276 z 1 042), a pozostałe w 5,4%. Mimo to
    kontaktowano się z nimi niewiele szybciej: mediana 70,5 h wobec 75,6 h od utworzenia zapytania. To jest miejsce,
@@ -27,11 +27,15 @@ Stan danych: eksport 2026-09-30 23:59 Europe/Warsaw, baza `domilo.duckdb` przebu
 
 ## Wyniki (symulacja wstecz 2026-04-15 – 2026-06-30, 77 dni)
 
+Aktualizacja 2026-11-15: od dodania do kolejki 5% pozycji losowych (docs/kolejka_eksperyment.md) symulacja wstecz
+układa kolejki tak samo jak zadanie, z tymi samymi pozycjami losowymi. Zmieniły się tylko liczby adopcji (było
+7,7%, 614 z 8 018). Ranga i górny decyl liczą się według EV, więc konwersja i czas do kontaktu są bez zmian.
+
 ### T1. Panel: wartości dla całego okresu
 
 | Metryka | Wartość | Porównanie |
 |---|---:|---|
-| Adopcja: pierwsze kontakty z top 20 kolejki doradcy | **7,7%** (614 z 8 018) | losowy wybór 6,3% |
+| Adopcja: pierwsze kontakty z top 20 kolejki doradcy | **7,6%** (606 z 8 018) | losowy wybór 6,3% |
 | Przychód na godzinę doradcy, 12 pełnych tygodni 2026-04-13 – 2026-07-05 | **5 445 zł/h** (25 461 110 zł / 4 676 h) | wartość wyjściowa 2026-Q2: 5 497 zł/h (−0,9%) |
 | Konwersja górnego decyla (umowa w 45 dni) | **26,5%** (276 z 1 042) | pozostałe 5,4% (466 z 8 705) |
 | Mediana czasu od utworzenia do pierwszego kontaktu, górne 10% | **70,5 h** | pozostałe 75,6 h |
@@ -46,18 +50,18 @@ i 27,9% pozostałych.
 
 | Tydzień od | Dni kolejki | Pierwsze kontakty | Z top 20 | Adopcja | Losowo | Górny decyl: zapytania / umowy | Konwersja decyla | Pozostałe | Mediana h: decyl / pozostałe | Bez kontaktu (decyl) |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 2026-04-13 | 5 | 537 | 36 | 6,7% | 6,2% | 59 / 18 | 30,5% | 5,7% | 74,2 / 76,8 | 1,7% |
-| 2026-04-20 | 7 | 738 | 55 | 7,5% | 6,2% | 100 / 28 | 28,0% | 3,8% | 72,0 / 75,5 | 1,0% |
-| 2026-04-27 | 7 | 710 | 48 | 6,8% | 6,4% | 93 / 30 | 32,3% | 5,5% | 70,1 / 75,1 | 4,3% |
-| 2026-05-04 | 7 | 663 | 46 | 6,9% | 6,3% | 78 / 19 | 24,4% | 4,0% | 79,7 / 78,0 | 1,3% |
-| 2026-05-11 | 7 | 685 | 72 | 10,5% | 6,9% | 97 / 17 | 17,5% | 7,3% | 64,4 / 75,8 | 1,0% |
-| 2026-05-18 | 7 | 724 | 55 | 7,6% | 6,7% | 90 / 30 | 33,3% | 5,7% | 76,1 / 72,8 | 3,3% |
-| 2026-05-25 | 7 | 666 | 49 | 7,4% | 6,7% | 78 / 22 | 28,2% | 4,4% | 85,6 / 73,7 | 1,3% |
-| 2026-06-01 | 7 | 760 | 62 | 8,2% | 6,5% | 103 / 26 | 25,2% | 5,4% | 62,5 / 78,7 | 2,9% |
-| 2026-06-08 | 7 | 777 | 62 | 8,0% | 6,2% | 114 / 32 | 28,1% | 7,0% | 68,3 / 72,1 | 0,9% |
-| 2026-06-15 | 7 | 781 | 61 | 7,8% | 6,0% | 113 / 20 | 17,7% | 5,2% | 76,0 / 80,0 | 4,4% |
-| 2026-06-22 | 7 | 773 | 55 | 7,1% | 5,9% | 91 / 26 | 28,6% | 5,6% | 70,7 / 75,6 | 4,4% |
-| 2026-06-29 | 2 | 204 | 13 | 6,4% | 5,9% | 26 / 8 | 30,8% | 2,8% | 65,7 / 82,7 | 11,5% |
+| 2026-04-13 | 5 | 537 | 44 | 8,2% | 6,2% | 59 / 18 | 30,5% | 5,7% | 74,2 / 76,8 | 1,7% |
+| 2026-04-20 | 7 | 738 | 48 | 6,5% | 6,2% | 100 / 28 | 28,0% | 3,8% | 72,0 / 75,5 | 1,0% |
+| 2026-04-27 | 7 | 710 | 51 | 7,2% | 6,4% | 93 / 30 | 32,3% | 5,5% | 70,1 / 75,1 | 4,3% |
+| 2026-05-04 | 7 | 663 | 40 | 6,0% | 6,3% | 78 / 19 | 24,4% | 4,0% | 79,7 / 78,0 | 1,3% |
+| 2026-05-11 | 7 | 685 | 69 | 10,1% | 6,9% | 97 / 17 | 17,5% | 7,3% | 64,4 / 75,8 | 1,0% |
+| 2026-05-18 | 7 | 724 | 49 | 6,8% | 6,7% | 90 / 30 | 33,3% | 5,7% | 76,1 / 72,8 | 3,3% |
+| 2026-05-25 | 7 | 666 | 46 | 6,9% | 6,7% | 78 / 22 | 28,2% | 4,4% | 85,6 / 73,7 | 1,3% |
+| 2026-06-01 | 7 | 760 | 63 | 8,3% | 6,5% | 103 / 26 | 25,2% | 5,4% | 62,5 / 78,7 | 2,9% |
+| 2026-06-08 | 7 | 777 | 57 | 7,3% | 6,2% | 114 / 32 | 28,1% | 7,0% | 68,3 / 72,1 | 0,9% |
+| 2026-06-15 | 7 | 781 | 68 | 8,7% | 6,0% | 113 / 20 | 17,7% | 5,2% | 76,0 / 80,0 | 4,4% |
+| 2026-06-22 | 7 | 773 | 57 | 7,4% | 5,9% | 91 / 26 | 28,6% | 5,6% | 70,7 / 75,6 | 4,4% |
+| 2026-06-29 | 2 | 204 | 14 | 6,9% | 5,9% | 26 / 8 | 30,8% | 2,8% | 65,7 / 82,7 | 11,5% |
 
 Tydzień 2026-04-13 ma 5 dni kolejki, a 2026-06-29 tylko 2, więc ich wartości opierają się na mniejszej liczbie
 zapytań.
@@ -66,17 +70,17 @@ zapytań.
 
 | Doradca | Miasto | Pierwsze kontakty | Z top 20 | Adopcja | Losowo | Otwarte zapytania w mieście (średnio dziennie) |
 |---|---|---:|---:|---:|---:|---:|
-| D07 | Gdańsk | 742 | 101 | 13,6% | 11,5% | 173 |
-| D04 | Kraków | 702 | 56 | 8,0% | 6,1% | 330 |
-| D09 | Kraków | 682 | 50 | 7,3% | 6,1% | 330 |
-| D06 | Poznań | 781 | 105 | 13,4% | 11,0% | 183 |
-| D01 | Warszawa | 787 | 24 | 3,0% | 2,6% | 769 |
-| D02 | Warszawa | 820 | 24 | 2,9% | 2,6% | 769 |
-| D03 | Warszawa | 831 | 17 | 2,0% | 2,6% | 769 |
-| D08 | Warszawa | 790 | 24 | 3,0% | 2,6% | 769 |
-| D05 | Wrocław | 618 | 43 | 7,0% | 6,9% | 288 |
-| D10 | Wrocław | 598 | 58 | 9,7% | 7,0% | 288 |
-| D11 | Łódź | 667 | 112 | 16,8% | 12,6% | 158 |
+| D07 | Gdańsk | 742 | 102 | 13,7% | 11,5% | 173 |
+| D04 | Kraków | 702 | 49 | 7,0% | 6,1% | 330 |
+| D09 | Kraków | 682 | 56 | 8,2% | 6,1% | 330 |
+| D06 | Poznań | 781 | 107 | 13,7% | 11,0% | 183 |
+| D01 | Warszawa | 787 | 28 | 3,6% | 2,6% | 769 |
+| D02 | Warszawa | 820 | 19 | 2,3% | 2,6% | 769 |
+| D03 | Warszawa | 831 | 14 | 1,7% | 2,6% | 769 |
+| D08 | Warszawa | 790 | 27 | 3,4% | 2,6% | 769 |
+| D05 | Wrocław | 618 | 45 | 7,3% | 6,9% | 288 |
+| D10 | Wrocław | 598 | 53 | 8,9% | 7,0% | 288 |
+| D11 | Łódź | 667 | 106 | 15,9% | 12,6% | 158 |
 
 Odsetek losowy zależy od liczby otwartych zapytań w mieście, dlatego adopcję porównujemy z nim, a nie między
 miastami.

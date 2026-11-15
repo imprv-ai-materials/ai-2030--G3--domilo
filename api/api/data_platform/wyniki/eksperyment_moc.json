@@ -1,0 +1,303 @@
+{
+  "okres": {
+    "od": "2025-07-07",
+    "do": "2026-06-22",
+    "tygodnie": 51
+  },
+  "zalozenia": {
+    "alfa": 0.05,
+    "moc": 0.8,
+    "efekt_docelowy": 0.15,
+    "zmienne_korekty": [
+      "godziny_doradcow",
+      "nowe_zapytania_2tyg"
+    ]
+  },
+  "metryka_z_polecenia": {
+    "srednia": 5316.270849340026,
+    "odchylenie": 994.2142666190646,
+    "cv": 0.18701347143411412,
+    "autokorelacja_lag1": -0.08931836806354139
+  },
+  "opoznienie_kontakt_podpisanie": [
+    {
+      "opoznienie_tyg": 0,
+      "umowy": 1039,
+      "udzial_wartosci": 0.29539224488017396
+    },
+    {
+      "opoznienie_tyg": 1,
+      "umowy": 942,
+      "udzial_wartosci": 0.28951380249909614
+    },
+    {
+      "opoznienie_tyg": 2,
+      "umowy": 540,
+      "udzial_wartosci": 0.16358044925003956
+    },
+    {
+      "opoznienie_tyg": 3,
+      "umowy": 371,
+      "udzial_wartosci": 0.12024088472918083
+    },
+    {
+      "opoznienie_tyg": 4,
+      "umowy": 268,
+      "udzial_wartosci": 0.08711251192882472
+    },
+    {
+      "opoznienie_tyg": 5,
+      "umowy": 127,
+      "udzial_wartosci": 0.03431252087912347
+    },
+    {
+      "opoznienie_tyg": 6,
+      "umowy": 35,
+      "udzial_wartosci": 0.009847585833561344
+    }
+  ],
+  "tlumienie_metryki_podpisan": {
+    "12": 0.1504784785854615,
+    "16": 0.15075851383981653,
+    "20": 0.1505744412010516,
+    "24": 0.15064673335154474,
+    "30": 0.1507431415996801,
+    "40": 0.15078276157027304,
+    "50": 0.150702608727876
+  },
+  "kandydaci": [
+    {
+      "metryka": "przychod_na_godzine_doradcy",
+      "opis": "przychód na godzinę, tydzień podpisania (z polecenia)",
+      "korekta": false,
+      "w_zlotowkach": true,
+      "srednia": 5316.270849340026,
+      "cv": 0.18701347143411412,
+      "zmiennych_korekty": 0,
+      "tlumienie": {
+        "12": 0.1504784785854615,
+        "16": 0.15075851383981653
+      },
+      "tygodnie_dla_15_proc": null,
+      "tygodnie_dla_15_proc_bez_tlumienia": 52,
+      "mde_siatka": {
+        "12": 2.2314841552300937,
+        "16": 1.868955125386576,
+        "20": 1.6455847976415363,
+        "24": 1.4857272087168174,
+        "30": 1.314798120217583,
+        "44": 1.0729787320703676
+      },
+      "mde_12": 0.3357903406665883,
+      "mde_12_normalne": 0.30249353821970437,
+      "mde_12_prawdziwego_efektu": 2.2314841552300937,
+      "mde_16": 0.28176089713658814,
+      "mde_16_normalne": 0.261967088578903,
+      "mde_16_prawdziwego_efektu": 1.868955125386576,
+      "mde_12_prawdziwego_efektu_zl_h": 12265.479586437748,
+      "mde_12_prawdziwego_efektu_zl_tydzien": 4779448.545515243,
+      "mde_16_prawdziwego_efektu_zl_h": 10272.818153187172,
+      "mde_16_prawdziwego_efektu_zl_tydzien": 4002974.807025268
+    },
+    {
+      "metryka": "przychod_na_godzine_doradcy",
+      "opis": "jw. z korektą (godziny, nowe zapytania)",
+      "korekta": true,
+      "w_zlotowkach": true,
+      "srednia": 5316.270849340026,
+      "cv": 0.1488573985698472,
+      "zmiennych_korekty": 2,
+      "tlumienie": {
+        "12": 0.1504784785854615,
+        "16": 0.15075851383981653
+      },
+      "tygodnie_dla_15_proc": null,
+      "tygodnie_dla_15_proc_bez_tlumienia": 34,
+      "mde_siatka": {
+        "12": 1.828143061074085,
+        "16": 1.5070812178253163,
+        "20": 1.319507991181358,
+        "24": 1.1881990497014578,
+        "30": 1.0494836471586138,
+        "44": 0.8550783714629534
+      },
+      "mde_12": 0.27509618646699674,
+      "mde_12_normalne": 0.24077624375545367,
+      "mde_12_prawdziwego_efektu": 1.828143061074085,
+      "mde_16": 0.2272053246352455,
+      "mde_16_normalne": 0.2085183437200172,
+      "mde_16_prawdziwego_efektu": 1.5070812178253163,
+      "mde_12_prawdziwego_efektu_zl_h": 10048.49232029609,
+      "mde_12_prawdziwego_efektu_zl_tydzien": 3915562.507475377,
+      "mde_16_prawdziwego_efektu_zl_h": 8283.7576368245,
+      "mde_16_prawdziwego_efektu_zl_tydzien": 3227904.225815947
+    },
+    {
+      "metryka": "przychod_z_kontaktow_bez_limitu_na_godzine",
+      "opis": "przychód z kontaktów tygodnia na godzinę",
+      "korekta": false,
+      "w_zlotowkach": true,
+      "srednia": 5169.76326823244,
+      "cv": 0.20543483640035592,
+      "zmiennych_korekty": 0,
+      "tlumienie": {
+        "12": 1.0,
+        "16": 1.0
+      },
+      "tygodnie_dla_15_proc": 62,
+      "tygodnie_dla_15_proc_bez_tlumienia": 62,
+      "mde_siatka": {
+        "12": 0.36886665527709567,
+        "16": 0.3095151561189279,
+        "20": 0.27219035083359233,
+        "24": 0.24586685970389183,
+        "30": 0.21771975413718175,
+        "44": 0.17762867760091106
+      },
+      "mde_12": 0.36886665527709567,
+      "mde_12_normalne": 0.3322900219956774,
+      "mde_12_prawdziwego_efektu": 0.36886665527709567,
+      "mde_16": 0.3095151561189279,
+      "mde_16_normalne": 0.28777160047234657,
+      "mde_16_prawdziwego_efektu": 0.3095151561189279,
+      "mde_12_prawdziwego_efektu_zl_h": 2027.496551931498,
+      "mde_12_prawdziwego_efektu_zl_tydzien": 790047.8230693071,
+      "mde_16_prawdziwego_efektu_zl_h": 1701.267660884803,
+      "mde_16_prawdziwego_efektu_zl_tydzien": 662927.2985247783,
+      "koszt_tygodni_kontrolnych_przy_15_proc_zl": 9959486.23903819
+    },
+    {
+      "metryka": "przychod_z_kontaktow_na_godzine",
+      "opis": "jw., wartość umowy do 95. percentyla",
+      "korekta": false,
+      "w_zlotowkach": true,
+      "srednia": 4774.32521446356,
+      "cv": 0.19583111764216374,
+      "zmiennych_korekty": 0,
+      "tlumienie": {
+        "12": 1.0,
+        "16": 1.0
+      },
+      "tygodnie_dla_15_proc": 56,
+      "tygodnie_dla_15_proc_bez_tlumienia": 56,
+      "mde_siatka": {
+        "12": 0.35162278525666457,
+        "16": 0.29504586472293864,
+        "20": 0.2594659287058614,
+        "24": 0.23437301467775204,
+        "30": 0.20754173699328599,
+        "44": 0.16932484806080203
+      },
+      "mde_12": 0.35162278525666457,
+      "mde_12_normalne": 0.31675604551283365,
+      "mde_12_prawdziwego_efektu": 0.35162278525666457,
+      "mde_16": 0.29504586472293864,
+      "mde_16_normalne": 0.2743187822164138,
+      "mde_16_prawdziwego_efektu": 0.29504586472293864,
+      "mde_12_prawdziwego_efektu_zl_h": 1932.7146395298055,
+      "mde_12_prawdziwego_efektu_zl_tydzien": 753114.4712034476,
+      "mde_16_prawdziwego_efektu_zl_h": 1621.7363777108808,
+      "mde_16_prawdziwego_efektu_zl_tydzien": 631936.6085146732,
+      "koszt_tygodni_kontrolnych_przy_15_proc_zl": 8995664.990099011
+    },
+    {
+      "metryka": "przychod_z_kontaktow_na_godzine",
+      "opis": "jw. z korektą (proponowana metryka główna)",
+      "korekta": true,
+      "w_zlotowkach": true,
+      "srednia": 4774.32521446356,
+      "cv": 0.17211408110113724,
+      "zmiennych_korekty": 2,
+      "tlumienie": {
+        "12": 1.0,
+        "16": 1.0
+      },
+      "tygodnie_dla_15_proc": 44,
+      "tygodnie_dla_15_proc_bez_tlumienia": 44,
+      "mde_siatka": {
+        "12": 0.31807574096478347,
+        "16": 0.26270266742927,
+        "20": 0.2297255301300373,
+        "24": 0.20696404176150915,
+        "30": 0.18291916721549806,
+        "44": 0.14899533438070234
+      },
+      "mde_12": 0.31807574096478347,
+      "mde_12_normalne": 0.2783938342541188,
+      "mde_12_prawdziwego_efektu": 0.31807574096478347,
+      "mde_16": 0.26270266742927,
+      "mde_16_normalne": 0.24109613272102134,
+      "mde_16_prawdziwego_efektu": 0.26270266742927,
+      "mde_12_prawdziwego_efektu_zl_h": 1748.3214024176366,
+      "mde_12_prawdziwego_efektu_zl_tydzien": 681262.5731420724,
+      "mde_16_prawdziwego_efektu_zl_h": 1443.960154099418,
+      "mde_16_prawdziwego_efektu_zl_tydzien": 562663.1400474067,
+      "koszt_tygodni_kontrolnych_przy_15_proc_zl": 7068022.492220651
+    },
+    {
+      "metryka": "umowy_z_kontaktow_na_godzine",
+      "opis": "umowy z kontaktów tygodnia na godzinę z korektą (bez zł)",
+      "korekta": true,
+      "w_zlotowkach": false,
+      "srednia": 0.16868512872105898,
+      "cv": 0.14261905016317897,
+      "zmiennych_korekty": 2,
+      "tlumienie": {
+        "12": 1.0,
+        "16": 1.0
+      },
+      "tygodnie_dla_15_proc": 32,
+      "tygodnie_dla_15_proc_bez_tlumienia": 32,
+      "mde_siatka": {
+        "12": 0.2635673953352503,
+        "16": 0.21768355421239513,
+        "20": 0.1903576784407687,
+        "24": 0.1714968052881985,
+        "30": 0.15157247866073445,
+        "44": 0.1234621416921396
+      },
+      "mde_12": 0.2635673953352503,
+      "mde_12_normalne": 0.2306857402868565,
+      "mde_12_prawdziwego_efektu": 0.2635673953352503,
+      "mde_16": 0.21768355421239513,
+      "mde_16_normalne": 0.19977971137923706,
+      "mde_16_prawdziwego_efektu": 0.21768355421239513,
+      "mde_12_prawdziwego_efektu_zl_h": 1448.7131802205158,
+      "mde_12_prawdziwego_efektu_zl_tydzien": 564515.2358925943,
+      "mde_16_prawdziwego_efektu_zl_h": 1196.5100376077005,
+      "mde_16_prawdziwego_efektu_zl_tydzien": 466240.07798780064,
+      "koszt_tygodni_kontrolnych_przy_15_proc_zl": 5140379.994342292
+    }
+  ],
+  "pieniadze": {
+    "wartosc_wyjsciowa_zl_h": 5496.556880177814,
+    "srednie_godziny_tygodniowo": 389.6666666666667,
+    "efekt_15_proc_zl_h": 824.483532026672,
+    "efekt_15_proc_zl_tydzien": 321273.74964639323
+  },
+  "koszt_tygodni_kontrolnych_przy_15_proc_zl": {
+    "12": 1927642.4978783594,
+    "16": 2570189.997171146
+  },
+  "koszt_czesci_losowej": {
+    "data_kolejki": "2026-11-17",
+    "ev_kolejek": 5048810.050000005,
+    "ev_bez_losowych": 5100086.31,
+    "ev_losowych": 98946.86,
+    "pozycje_losowe": 22.0
+  },
+  "pomocnicze": {
+    "konwersja_decyla": {
+      "tygodnie": 10,
+      "srednia": 0.26326471111031596,
+      "cv": 0.20243379943633616,
+      "zapytan_decyla_tygodniowo": 95.7,
+      "mde_12": 0.36347817060391396,
+      "mde_16": 0.304993691109814
+    },
+    "adopcja_przed_wdrozeniem": {
+      "srednia": 0.0751742367829768,
+      "losowo": 0.06361963788351799
+    }
+  }
+}
