@@ -104,3 +104,23 @@ v1 na tych samych zbiorach: tabela v2 wyżej (v2b − v1: wszystkie przedziały 
 - **Wagi:** mediana 1,03, maksimum 6,77, przyciętych 0, efektywna liczebność 86 239.
 
 `current.yaml` nadal pusty.
+
+## Kalibracja izotoniczna v2b_lgbm_ipw i oceny v1 (2026-11-15)
+
+v2b uczony od nowa tym samym kodem na danych do 2025-06, kalibracja na walidacji 2025-07 – 2026-02 (zapisany v2b
+miał ją w treningu). Wariant „kontakt” to obsłużone zapytania walidacji z wagą IPW. Liczy
+[`kalibracja.py`](kalibracja.py), raport z tabelami i SQL: [kalibracja.md](kalibracja.md). Okno migracji (5 320 zapytań,
+odsetek umów 10,51%), ECE z 10 równych przedziałów w pp:
+
+| Wersja | Średni wynik | ECE (95% CI) | Brier | AUC |
+|---|---:|---:|---:|---:|
+| v2b przed | 8,38% | 2,15 (1,41–2,93) | 0,0835 | 0,7814 |
+| **v2b po, „kontakt”** | 8,28% | 2,22 (1,47–3,01) | 0,0837 | 0,7805 |
+| v1 przed (ocena / 10) | 48,10% | 37,59 (36,70–38,54) | 0,2510 | 0,6198 |
+| v1 po, „kontakt” | 8,64% | 1,86 (1,03–2,64) | 0,0926 | 0,6215 |
+| v0 po, „kontakt” (baseline) | 8,17% | 2,34 (1,48–3,10) | 0,0918 | 0,6355 |
+| stała 8,69% (baseline) | 8,69% | 1,82 (0,97–2,59) | 0,0944 | 0,5000 |
+
+Na obsłużonych zapytaniach testu ECE v2b 0,63 → 0,59 pp, AUC 0,7771 → 0,7768. W oknie wszystkie wersje zaniżają,
+bo w marcu–kwietniu 2025 obsłużone zapytania z okna dały 10,51% umów, a spoza okna 8,31%. Kalibracja nie jest wersją
+w `versions/`, a `current.yaml` nadal jest pusty.
