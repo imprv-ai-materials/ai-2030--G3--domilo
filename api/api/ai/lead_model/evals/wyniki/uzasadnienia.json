@@ -1,0 +1,554 @@
+{
+  "model": "versions/v2b_lgbm_ipw/model.joblib (SHAP: LightGBM pred_contrib, log-szansa)",
+  "prompt": "uzasadnienie_v1",
+  "test_zapytan": 15217,
+  "liczba_faktow_top": {
+    "3": 15180,
+    "2": 32,
+    "1": 4,
+    "0": 1
+  },
+  "cechy_w_top3": {
+    "termin_dni": 7177,
+    "budzet_do_mediany": 6688,
+    "linia": 5840,
+    "zrodlo": 5140,
+    "syg_konkretne_pytania": 3606,
+    "syg_niedopasowanie_oferty": 3206,
+    "www_spacer_3d": 2675,
+    "www_liczba_sesji": 2652,
+    "www_kalkulator": 2132,
+    "dlugosc_wiadomosci": 2125,
+    "miasto": 1586,
+    "liczba_osob": 856,
+    "liczba_lokali": 579,
+    "syg_pilny_termin": 519,
+    "umowa_ramowa": 386,
+    "zwierze": 239,
+    "syg_budzet_niski": 129,
+    "syg_relokacja": 38,
+    "syg_brak_informacji": 35
+  },
+  "cechy_na_1_miejscu": {
+    "termin_dni": 4328,
+    "zrodlo": 4157,
+    "budzet_do_mediany": 2660,
+    "linia": 1219,
+    "www_spacer_3d": 854,
+    "syg_konkretne_pytania": 718,
+    "www_kalkulator": 468,
+    "www_liczba_sesji": 319,
+    "dlugosc_wiadomosci": 232,
+    "syg_niedopasowanie_oferty": 136,
+    "miasto": 85,
+    "liczba_osob": 22,
+    "liczba_lokali": 7,
+    "syg_relokacja": 5,
+    "umowa_ramowa": 3,
+    "syg_pilny_termin": 1,
+    "syg_brak_informacji": 1,
+    "zwierze": 1
+  },
+  "llm": {
+    "zapytan": 495,
+    "z_dnia_przykladu": 196,
+    "zrodlo_zdania": {
+      "llm": 494,
+      "szablon": 1
+    },
+    "problemy_llm": {
+      "fakt spoza top 3: syg_niedopasowanie_oferty (ofert)": 1
+    },
+    "dlugosc_min_mediana_max": [
+      48,
+      92.0,
+      139
+    ]
+  },
+  "kolejka_d03": {
+    "dzien": "2026-06-15",
+    "zapytan": 23,
+    "przyklady": [
+      {
+        "pozycja": 1,
+        "id_leada": "L145834",
+        "godzina": "10:34",
+        "linia": "B2B",
+        "zrodlo": "relokacja_b2b",
+        "p": 0.08893126802328889,
+        "ev": 18254.03207446028,
+        "fakty_top": [
+          "źródło: program relokacji B2B",
+          "użyty kalkulator na stronie",
+          "konkretne pytania w wiadomości"
+        ],
+        "wklady": [
+          0.7190758534814561,
+          0.2704873906656587,
+          0.1676678473455542
+        ],
+        "zdanie": "Zapytanie pochodzi z programu relokacji B2B, użyto kalkulatora na stronie i zawiera konkretne pytania w wiadomości.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Zapytanie pochodzi z programu relokacji B2B, użyto kalkulatora na stronie i zawiera konkretne pytania w wiadomości.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 2,
+        "id_leada": "L145832",
+        "godzina": "10:31",
+        "linia": "B2C",
+        "zrodlo": "lokum24",
+        "p": 0.1286895737169941,
+        "ev": 6189.363654790947,
+        "fakty_top": [
+          "4 wizyty na stronie",
+          "najem roczny B2C",
+          "wprowadzenie za 39 dni"
+        ],
+        "wklady": [
+          0.3888154126350289,
+          0.3212983111290203,
+          0.3134386214552998
+        ],
+        "zdanie": "Zapytanie ma 4 wizyty na stronie, dotyczy najmu rocznego B2C, a wprowadzenie jest za 39 dni.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Zapytanie ma 4 wizyty na stronie, dotyczy najmu rocznego B2C, a wprowadzenie jest za 39 dni.",
+        "problemy_llm": null,
+        "umowa_45d": 1
+      },
+      {
+        "pozycja": 3,
+        "id_leada": "L145882",
+        "godzina": "15:16",
+        "linia": "B2B",
+        "zrodlo": "relokacja_b2b",
+        "p": 0.10958967153059243,
+        "ev": 5623.59399459235,
+        "fakty_top": [
+          "źródło: program relokacji B2B",
+          "najem firmowy B2B",
+          "1 lokal: Orbinet"
+        ],
+        "wklady": [
+          0.8537815405528241,
+          0.18405304206286047,
+          0.141626582395809
+        ],
+        "zdanie": "Zapytanie pochodzi z programu relokacji B2B, dotyczy najmu firmowego B2B i obejmuje 1 lokal: Orbinet.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Zapytanie pochodzi z programu relokacji B2B, dotyczy najmu firmowego B2B i obejmuje 1 lokal: Orbinet.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 4,
+        "id_leada": "L145880",
+        "godzina": "14:58",
+        "linia": "MID",
+        "zrodlo": "www",
+        "p": 0.21448277601797194,
+        "ev": 3612.9301896063344,
+        "fakty_top": [
+          "budżet 4 200 zł, 152% mediany w mieście",
+          "źródło: strona Domilo",
+          "4 wizyty na stronie"
+        ],
+        "wklady": [
+          0.5361372194878603,
+          0.49506788328908036,
+          0.2801092902278309
+        ],
+        "zdanie": "Budżet wynosi 4 200 zł, czyli 152% mediany w mieście; źródłem jest strona Domilo, a zapytanie miało 4 wizyty na stronie.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Budżet wynosi 4 200 zł, czyli 152% mediany w mieście; źródłem jest strona Domilo, a zapytanie miało 4 wizyty na stronie.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 5,
+        "id_leada": "L145873",
+        "godzina": "13:40",
+        "linia": "B2C",
+        "zrodlo": "lokum24",
+        "p": 0.07276501609485461,
+        "ev": 3499.655278586861,
+        "fakty_top": [
+          "wprowadzenie za 29 dni",
+          "konkretne pytania w wiadomości",
+          "wiadomość 179 znaków"
+        ],
+        "wklady": [
+          0.44725891004240736,
+          0.22497217263470623,
+          0.08911181950271205
+        ],
+        "zdanie": "Wprowadzenie za 29 dni, konkretne pytania w wiadomości i wiadomość o długości 179 znaków.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 29 dni, konkretne pytania w wiadomości i wiadomość o długości 179 znaków.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 6,
+        "id_leada": "L145868",
+        "godzina": "13:07",
+        "linia": "MID",
+        "zrodlo": "lokum24",
+        "p": 0.1562218722593296,
+        "ev": 2631.534004927568,
+        "fakty_top": [
+          "wprowadzenie za 23 dni",
+          "budżet 4 550 zł, 165% mediany w mieście",
+          "konkretne pytania w wiadomości"
+        ],
+        "wklady": [
+          0.6115645115885888,
+          0.5736935226095962,
+          0.20640216664075522
+        ],
+        "zdanie": "Wprowadzenie za 23 dni, budżet 4 550 zł (165% mediany w mieście) i konkretne pytania w wiadomości.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 23 dni, budżet 4 550 zł (165% mediany w mieście) i konkretne pytania w wiadomości.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 7,
+        "id_leada": "L145931",
+        "godzina": "20:33",
+        "linia": "B2C",
+        "zrodlo": "lokum24",
+        "p": 0.04905332963071125,
+        "ev": 2359.2346045879467,
+        "fakty_top": [
+          "wprowadzenie za 15 dni",
+          "budżet 4 550 zł, 165% mediany w mieście",
+          "konkretne pytania w wiadomości"
+        ],
+        "wklady": [
+          0.41736158471884705,
+          0.33639568933160363,
+          0.17609333483121412
+        ],
+        "zdanie": "Wprowadzenie za 15 dni, budżet 4 550 zł, 165% mediany w mieście i konkretne pytania w wiadomości.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 15 dni, budżet 4 550 zł, 165% mediany w mieście i konkretne pytania w wiadomości.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 8,
+        "id_leada": "L145798",
+        "godzina": "05:40",
+        "linia": "B2C",
+        "zrodlo": "lokum24",
+        "p": 0.04128152370433906,
+        "ev": 1985.4472670172984,
+        "fakty_top": [
+          "budżet 3 100 zł, 112% mediany w mieście",
+          "wiadomość 23 znaki",
+          "najem roczny B2C"
+        ],
+        "wklady": [
+          0.35623135724435806,
+          0.2518854301827561,
+          0.21512547738175916
+        ],
+        "zdanie": "Budżet wynosi 3 100 zł, czyli 112% mediany w mieście; wiadomość ma 23 znaki, a najem jest roczny B2C.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Budżet wynosi 3 100 zł, czyli 112% mediany w mieście; wiadomość ma 23 znaki, a najem jest roczny B2C.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 9,
+        "id_leada": "L145790",
+        "godzina": "03:22",
+        "linia": "B2C",
+        "zrodlo": "lokum24",
+        "p": 0.03664683095364873,
+        "ev": 1762.540328765022,
+        "fakty_top": [
+          "wprowadzenie za 29 dni",
+          "obejrzany spacer 3D",
+          "4 wizyty na stronie"
+        ],
+        "wklady": [
+          0.44113370961130316,
+          0.41164010192227757,
+          0.26831868446406115
+        ],
+        "zdanie": "Wprowadzenie za 29 dni, obejrzany spacer 3D i 4 wizyty na stronie.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 29 dni, obejrzany spacer 3D i 4 wizyty na stronie.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 10,
+        "id_leada": "L145956",
+        "godzina": "21:59",
+        "linia": "B2C",
+        "zrodlo": "lokum24",
+        "p": 0.032392226153539656,
+        "ev": 1557.913834522336,
+        "fakty_top": [
+          "wprowadzenie za 30 dni",
+          "najem roczny B2C",
+          "pilny termin"
+        ],
+        "wklady": [
+          0.3929112107877492,
+          0.16282912932277518,
+          0.04380667539195135
+        ],
+        "zdanie": "Wprowadzenie za 30 dni, najem roczny B2C i pilny termin.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 30 dni, najem roczny B2C i pilny termin.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 11,
+        "id_leada": "L145836",
+        "godzina": "10:34",
+        "linia": "MID",
+        "zrodlo": "www",
+        "p": 0.07017361423385225,
+        "ev": 1182.064005727106,
+        "fakty_top": [
+          "obejrzany spacer 3D",
+          "źródło: strona Domilo",
+          "wprowadzenie za 54 dni"
+        ],
+        "wklady": [
+          0.43073106858170135,
+          0.413119317566403,
+          0.10158807821875543
+        ],
+        "zdanie": "Obejrzany spacer 3D, źródło: strona Domilo, wprowadzenie za 54 dni.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Obejrzany spacer 3D, źródło: strona Domilo, wprowadzenie za 54 dni.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 12,
+        "id_leada": "L145838",
+        "godzina": "10:38",
+        "linia": "MID",
+        "zrodlo": "domteraz",
+        "p": 0.06808698182449877,
+        "ev": 1146.9149957864079,
+        "fakty_top": [
+          "budżet 5 150 zł, 187% mediany w mieście",
+          "obejrzany spacer 3D",
+          "konkretne pytania w wiadomości"
+        ],
+        "wklady": [
+          0.5622025875540757,
+          0.44030002041162153,
+          0.09279589655162837
+        ],
+        "zdanie": "Budżet wynosi 5 150 zł, czyli 187% mediany w mieście; obejrzano spacer 3D i zadano konkretne pytania w wiadomości.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Budżet wynosi 5 150 zł, czyli 187% mediany w mieście; obejrzano spacer 3D i zadano konkretne pytania w wiadomości.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 13,
+        "id_leada": "L145810",
+        "godzina": "08:04",
+        "linia": "B2C",
+        "zrodlo": "lokum24",
+        "p": 0.022742467546410263,
+        "ev": 1093.8057993848656,
+        "fakty_top": [
+          "użyty kalkulator na stronie",
+          "najem roczny B2C",
+          "zapytanie zgodne z ofertą"
+        ],
+        "wklady": [
+          0.2271060968594451,
+          0.1635606358012767,
+          0.0734181945293006
+        ],
+        "zdanie": "Użyto kalkulatora na stronie, zapytanie dotyczy najmu rocznego B2C i jest zgodne z ofertą.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Użyto kalkulatora na stronie, zapytanie dotyczy najmu rocznego B2C i jest zgodne z ofertą.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 14,
+        "id_leada": "L145784",
+        "godzina": "01:12",
+        "linia": "MID",
+        "zrodlo": "domteraz",
+        "p": 0.05433513041554452,
+        "ev": 915.267121580285,
+        "fakty_top": [
+          "wprowadzenie za 15 dni",
+          "użyty kalkulator na stronie",
+          "budżet 3 250 zł, 118% mediany w mieście"
+        ],
+        "wklady": [
+          0.5727360771157849,
+          0.16178671899678784,
+          0.10796065859538742
+        ],
+        "zdanie": "Wprowadzenie za 15 dni, użyty kalkulator na stronie, budżet 3 250 zł, 118% mediany w mieście.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 15 dni, użyty kalkulator na stronie, budżet 3 250 zł, 118% mediany w mieście.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 15,
+        "id_leada": "L145806",
+        "godzina": "07:36",
+        "linia": "MID",
+        "zrodlo": "social",
+        "p": 0.04654619304545496,
+        "ev": 784.0636399217319,
+        "fakty_top": [
+          "budżet 4 100 zł, 149% mediany w mieście",
+          "obejrzany spacer 3D",
+          "użyty kalkulator na stronie"
+        ],
+        "wklady": [
+          0.45374974046743216,
+          0.2780477265032165,
+          0.1630519592912262
+        ],
+        "zdanie": "Budżet wynosi 4 100 zł, czyli 149% mediany w mieście; obejrzano spacer 3D i użyto kalkulatora na stronie.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Budżet wynosi 4 100 zł, czyli 149% mediany w mieście; obejrzano spacer 3D i użyto kalkulatora na stronie.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 16,
+        "id_leada": "L145789",
+        "godzina": "03:06",
+        "linia": "B2C",
+        "zrodlo": "www",
+        "p": 0.014340959417714275,
+        "ev": 689.7327454827933,
+        "fakty_top": [
+          "źródło: strona Domilo",
+          "konkretne pytania w wiadomości",
+          "najem roczny B2C"
+        ],
+        "wklady": [
+          0.338834606760536,
+          0.18453473992578198,
+          0.08497204349760089
+        ],
+        "zdanie": "Zapytanie pochodzi ze strony Domilo, zawiera konkretne pytania w wiadomości i dotyczy najmu rocznego B2C.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Zapytanie pochodzi ze strony Domilo, zawiera konkretne pytania w wiadomości i dotyczy najmu rocznego B2C.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 17,
+        "id_leada": "L145930",
+        "godzina": "20:31",
+        "linia": "MID",
+        "zrodlo": "lokum24",
+        "p": 0.04045264084816801,
+        "ev": 681.4186671912629,
+        "fakty_top": [
+          "wprowadzenie za 31 dni",
+          "budżet 3 500 zł, 127% mediany w mieście",
+          "miasto: Warszawa"
+        ],
+        "wklady": [
+          0.2877263362452122,
+          0.1660109248906404,
+          0.061148451038931156
+        ],
+        "zdanie": "Wprowadzenie za 31 dni, budżet 3 500 zł, 127% mediany w mieście, Warszawa.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 31 dni, budżet 3 500 zł, 127% mediany w mieście, Warszawa.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 18,
+        "id_leada": "L145851",
+        "godzina": "11:54",
+        "linia": "MID",
+        "zrodlo": "lokum24",
+        "p": 0.03573082622274384,
+        "ev": 601.8804080981864,
+        "fakty_top": [
+          "budżet 4 400 zł, 159% mediany w mieście",
+          "konkretne pytania w wiadomości",
+          "wiadomość 421 znaków"
+        ],
+        "wklady": [
+          0.49838249057033157,
+          0.3022110929705133,
+          0.18550817463216032
+        ],
+        "zdanie": "Budżet 4 400 zł, 159% mediany w mieście, konkretne pytania w wiadomości i wiadomość o długości 421 znaków.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Budżet 4 400 zł, 159% mediany w mieście, konkretne pytania w wiadomości i wiadomość o długości 421 znaków.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 19,
+        "id_leada": "L145949",
+        "godzina": "21:49",
+        "linia": "MID",
+        "zrodlo": "lokum24",
+        "p": 0.03371681618352979,
+        "ev": 567.9547110891318,
+        "fakty_top": [
+          "konkretne pytania w wiadomości",
+          "wiadomość 334 znaki",
+          "budżet 3 200 zł, 116% mediany w mieście"
+        ],
+        "wklady": [
+          0.3401251381333606,
+          0.15330852871250084,
+          0.13685114901801765
+        ],
+        "zdanie": "Wiadomość zawiera konkretne pytania, ma 334 znaki, a budżet wynosi 3 200 zł, czyli 116% mediany w mieście.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wiadomość zawiera konkretne pytania, ma 334 znaki, a budżet wynosi 3 200 zł, czyli 116% mediany w mieście.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      },
+      {
+        "pozycja": 20,
+        "id_leada": "L145833",
+        "godzina": "10:33",
+        "linia": "MID",
+        "zrodlo": "domteraz",
+        "p": 0.02842382090342721,
+        "ev": 478.79499954509583,
+        "fakty_top": [
+          "wprowadzenie za 41 dni",
+          "budżet 3 200 zł, 116% mediany w mieście",
+          "zapytanie zgodne z ofertą"
+        ],
+        "wklady": [
+          0.18073009380032828,
+          0.06209771802567173,
+          0.05972446500145857
+        ],
+        "zdanie": "Wprowadzenie za 41 dni, budżet 3 200 zł (116% mediany w mieście) i zapytanie zgodne z ofertą.",
+        "zrodlo_zdania": "llm",
+        "zdanie_llm": "Wprowadzenie za 41 dni, budżet 3 200 zł (116% mediany w mieście) i zapytanie zgodne z ofertą.",
+        "problemy_llm": null,
+        "umowa_45d": 0
+      }
+    ]
+  }
+}
