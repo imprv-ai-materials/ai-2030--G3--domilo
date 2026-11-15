@@ -63,9 +63,47 @@ operaty, zdjęcia), FK (koszty), dane zewnętrzne (POI, dzielnice GUS). Opis tab
 - Najmy z `data_wprowadzenia` po dniu eksportu to umowy już podpisane (lokal ma jeszcze status „wolny”).
 - `portal_logowania_mies` to agregat za **cały** miesiąc kalendarzowy — uważaj na miesiąc predykcji.
 
+## Mapa folderów
+
+```
+data/                         # dane źródłowe Domilo — TYLKO DO ODCZYTU
+docs/                         # raporty (wnioski → tabele → SQL i kod)
+evals/porownanie.md           # model vs baseline, wszystkie cztery modele
+api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
+├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
+│   ├── valuation_bc/         # wycena lokali
+│   ├── leasing_bc/           # zapytania i doradcy (najem)
+│   ├── retention_bc/         # retencja najemców
+│   └── maintenance_bc/       # serwis i windy
+│       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
+└── ai/
+    ├── features/             # budowa cech per model
+    │   ├── wycena/
+    │   ├── leady/
+    │   ├── najemcy/
+    │   └── windy/
+    ├── valuation_model/      # wycena lokali z przedziałem
+    ├── lead_model/           # kolejka zapytań dla doradców
+    ├── churn_model/          # lista retencyjna najemców
+    ├── failure_model/        # alerty o awariach wind
+    │   ├── base.py           # (w każdym modelu) wspólny interfejs / definicja modelu
+    │   ├── versions/         # kolejne wersje modelu
+    │   ├── evals/            # ewaluacje wersji
+    │   └── current.yaml      # wskazanie wersji używanej obecnie
+    └── llm/
+        ├── prompts/          # prompty
+        ├── schemas/          # schematy odpowiedzi
+        └── cache/            # cache odpowiedzi LLM
+```
+
+Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasing_bc` ↔ `features/leady` ↔ `lead_model`;
+`retention_bc` ↔ `features/najemcy` ↔ `churn_model`; `maintenance_bc` ↔ `features/windy` ↔ `failure_model`.
+
 ## Narzędzia
 
 - Python 3.12 + Poetry (`poetry install`, `poetry run pypyr install`); zadania: `pypyr format|lint|test`.
-- Dane czytamy DuckDB (`SELECT * FROM 'data/crm/crm_leady.parquet'`) lub pandas (`read_parquet`).
-  CLI `duckdb` jest dostępne na hoście; biblioteki do danych i modeli dochodzą w pierwszej lekcji praktycznej.
+- Biblioteki: duckdb 2.0, pandas 3.1, pyarrow 26, scikit-learn 1.9, lightgbm 4.7 (`pyproject.toml`).
+- Dane czytamy DuckDB (`SELECT * FROM 'data/crm/crm_leady.parquet'`) lub pandas (`read_parquet`); CLI `duckdb`
+  jest też na hoście. **DuckDB 2.0:** relacja z `duckdb.sql(...)` nie ma `fetchone()` — używaj `.fetchall()`
+  albo `con.execute(...).fetchone()`.
 - Skille procesu pracy: `.claude/skills/` (m.in. `use-sw-development-workflow`, `sw-test-driven-development`).

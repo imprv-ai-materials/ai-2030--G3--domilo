@@ -7,9 +7,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
-# Biblioteki do danych i modeli (DuckDB, pandas, pyarrow, scikit-learn, LightGBM) dodaje agent
-# w pierwszej lekcji praktycznej („Środowisko i pierwsze zapytanie”).
-dependencies = []
+dependencies = ["duckdb (>=2.0.0,<3.0.0)", "pandas (>=3.1.1,<4.0.0)", "pyarrow (>=26.0.1,<27.0.0)", "scikit-learn (>=1.9.1,<2.0.0)", "lightgbm (>=4.7.0,<5.0.0)"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
