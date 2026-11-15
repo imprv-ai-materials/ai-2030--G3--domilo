@@ -8,6 +8,11 @@ steps:
     in:
       cmd: poetry install
 
+  - name: pypyr.steps.shell
+    description: lifelines bez zależności (0.30.3 deklaruje pandas < 3, projekt ma pandas 3.1; reszta zależności w pyproject)
+    in:
+      cmd: poetry run pip install --no-deps "lifelines==0.30.3"
+
   - name: pypyr.steps.cmd
     description: Instalacja hooków pre-commit
     swallow: true

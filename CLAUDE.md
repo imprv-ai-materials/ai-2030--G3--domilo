@@ -137,6 +137,9 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   tylko z pełnych miesięcy przed miesiącem migawki, zamiast `czynsz_katalogowy` czynsz nowych umów podobnych lokali
   sprzed migawki; bez `rok_urodzenia` i `jezyk_kontaktu` (`features/najemcy/wykluczone.yaml`). Przecieki:
   `docs/przecieki_najemcy.md`.
+  `czas_najmu` — analiza przeżycia: najem B2C/B2B z `pms_najmy` (wprowadzenie do 2026-09-30), `miesiace` (miesiące
+  kalendarzowe z ułamkiem) do wyprowadzki albo do 2026-09-30, `zdarzenie` = 1 zakończony, 0 cenzura
+  (`api/api/ai/features/najemcy/czas_najmu.sql`; Kaplan-Meier: `churn_model/evals/przezycie.py`, `docs/przezycie.md`).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
@@ -168,6 +171,8 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
 
 - Python 3.12 + Poetry (`poetry install`, `poetry run pypyr install`); zadania: `pypyr format|lint|test`.
 - Biblioteki: duckdb 2.0, pandas 3.1, pyarrow 26, scikit-learn 1.9, lightgbm 4.7, pytz (`pyproject.toml`).
+  lifelines 0.30.3 deklaruje `pandas < 3`, więc nie ma jej w `pyproject.toml` (są jej zależności): instaluje ją
+  `pypyr install` przez `pip install --no-deps lifelines==0.30.3`.
   `pytz` jest potrzebny, bo bez niego DuckDB nie zwraca do Pythona kolumn TIMESTAMPTZ.
   dbt-core 1.12 + dbt-duckdb 1.11 (grupa dev); profil w `api/api/data_platform/dbt/profiles.yml` ustawia
   `TimeZone = 'Europe/Warsaw'`, ścieżkę bazy podaje `dbt_uruchom.py`. dbt otwiera bazę do zapisu, więc nie uda się,

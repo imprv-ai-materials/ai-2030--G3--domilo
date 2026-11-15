@@ -24,6 +24,12 @@ steps:
         run: poetry run python -m api.ai.features.najemcy.cechy
         cwd: api
   - name: pypyr.steps.cmd
+    description: Tabela czas_najmu (najem roczny, czas w miesiącach i cenzura; api/api/ai/features/najemcy/czas_najmu.sql)
+    in:
+      cmd:
+        run: poetry run python -m api.ai.features.najemcy.czas_najmu
+        cwd: api
+  - name: pypyr.steps.cmd
     description: Modele dbt metryk (schemat metryki; api/api/data_platform/dbt, docs/kolejka_metryki.md) z testami
     in:
       cmd:

@@ -1,0 +1,168 @@
+{
+  "wszystkie": {
+    "najmy": 16926,
+    "zakonczone": 10630,
+    "cenzurowane": 6296,
+    "odsetek_cenzurowanych": 0.37197211390759777,
+    "srednia_zakonczone": 18.334952552466,
+    "mediana_zakonczone": 12.0,
+    "srednia_staz_jako_koniec": 19.82405902469978,
+    "mediana_staz_jako_koniec": 12.0,
+    "mediana_km": 24.0,
+    "mediana_km_95_od": 24.0,
+    "mediana_km_95_do": 24.0,
+    "km_trwa_dluzej_niz": {
+      "12": 0.5680915075327231,
+      "24": 0.3207741013588183,
+      "36": 0.22097988633113408,
+      "48": 0.15685197435421053
+    },
+    "km_tuz_przed": {
+      "12": 0.9662268929973343,
+      "24": 0.508279735486437
+    },
+    "horyzont_rmst": 48,
+    "rmst_km": 24.613831797158504,
+    "srednia_zakonczone_do_horyzontu": 18.16661721772518,
+    "srednia_staz_jako_koniec_do_horyzontu": 19.343851233053012,
+    "najdluzsza_obserwacja_miesiace": 88.66666666666667
+  },
+  "B2C": {
+    "najmy": 12735,
+    "zakonczone": 7640,
+    "cenzurowane": 5095,
+    "odsetek_cenzurowanych": 0.4000785237534354,
+    "srednia_zakonczone": 19.03857712030237,
+    "mediana_zakonczone": 12.0,
+    "srednia_staz_jako_koniec": 21.411663745682034,
+    "mediana_staz_jako_koniec": 13.033333333333333,
+    "mediana_km": 24.0,
+    "mediana_km_95_od": 24.0,
+    "mediana_km_95_do": 24.0,
+    "km_trwa_dluzej_niz": {
+      "12": 0.5852086389888783,
+      "24": 0.3795620398769987,
+      "36": 0.2774727965055036,
+      "48": 0.19829540357092443
+    },
+    "km_tuz_przed": {
+      "12": 0.970883483487192,
+      "24": 0.5665488751874288
+    },
+    "horyzont_rmst": 48,
+    "rmst_km": 26.514761457431835,
+    "srednia_zakonczone_do_horyzontu": 18.80907389932136,
+    "srednia_staz_jako_koniec_do_horyzontu": 20.78141924249555,
+    "najdluzsza_obserwacja_miesiace": 88.66666666666667
+  },
+  "B2B": {
+    "najmy": 4191,
+    "zakonczone": 2990,
+    "cenzurowane": 1201,
+    "odsetek_cenzurowanych": 0.2865664519207826,
+    "srednia_zakonczone": 16.537062352375745,
+    "mediana_zakonczone": 12.0,
+    "srednia_staz_jako_koniec": 14.999877177477398,
+    "mediana_staz_jako_koniec": 12.0,
+    "mediana_km": 18.0,
+    "mediana_km_95_od": 12.0,
+    "mediana_km_95_do": 18.0,
+    "km_trwa_dluzej_niz": {
+      "12": 0.5122862757194104,
+      "24": 0.12390963103398468,
+      "36": 0.030278603633576567,
+      "48": 0.016540117967079934
+    },
+    "km_tuz_przed": {
+      "12": 0.9513887977646197,
+      "24": 0.3135289148890218
+    },
+    "horyzont_rmst": 48,
+    "rmst_km": 18.237597380791744,
+    "srednia_zakonczone_do_horyzontu": 16.52502221859648,
+    "srednia_staz_jako_koniec_do_horyzontu": 14.975579078376148,
+    "najdluzsza_obserwacja_miesiace": 62.1
+  },
+  "cenzura_wg_roku": [
+    {
+      "rok_wprowadzenia": 2019,
+      "najmy": 334,
+      "cenzurowane": 12,
+      "srednia_zakonczone": 22.593805886720894,
+      "odsetek_cenzurowanych": 0.03592814371257485,
+      "km_po_12": 0.4431137724550895,
+      "km_po_24": 0.26347305389221554,
+      "mediana_km": 12.0
+    },
+    {
+      "rok_wprowadzenia": 2020,
+      "najmy": 744,
+      "cenzurowane": 52,
+      "srednia_zakonczone": 22.061385995755753,
+      "odsetek_cenzurowanych": 0.06989247311827956,
+      "km_po_12": 0.5013440860215057,
+      "km_po_24": 0.2876344086021505,
+      "mediana_km": 13.580645161290322
+    },
+    {
+      "rok_wprowadzenia": 2021,
+      "najmy": 2227,
+      "cenzurowane": 217,
+      "srednia_zakonczone": 20.31705283108268,
+      "odsetek_cenzurowanych": 0.09744050291872475,
+      "km_po_12": 0.49169286035024723,
+      "km_po_24": 0.2617871576111361,
+      "mediana_km": 12.0
+    },
+    {
+      "rok_wprowadzenia": 2022,
+      "najmy": 3118,
+      "cenzurowane": 556,
+      "srednia_zakonczone": 19.621829222702168,
+      "odsetek_cenzurowanych": 0.17831943553559973,
+      "km_po_12": 0.5638229634381012,
+      "km_po_24": 0.3268120590121873,
+      "mediana_km": 24.0
+    },
+    {
+      "rok_wprowadzenia": 2023,
+      "najmy": 3378,
+      "cenzurowane": 903,
+      "srednia_zakonczone": 18.689773301637594,
+      "odsetek_cenzurowanych": 0.2673179396092362,
+      "km_po_12": 0.6302545885139136,
+      "km_po_24": 0.35908821788040274,
+      "mediana_km": 24.0
+    },
+    {
+      "rok_wprowadzenia": 2024,
+      "najmy": 2619,
+      "cenzurowane": 1032,
+      "srednia_zakonczone": 15.03351337755286,
+      "odsetek_cenzurowanych": 0.3940435280641466,
+      "km_po_12": 0.5925925925925928,
+      "km_po_24": 0.34190087026551647,
+      "mediana_km": 24.0
+    },
+    {
+      "rok_wprowadzenia": 2025,
+      "najmy": 2679,
+      "cenzurowane": 1738,
+      "srednia_zakonczone": 11.677463756405169,
+      "odsetek_cenzurowanych": 0.648749533407988,
+      "km_po_12": 0.5768451513074918,
+      "km_po_24": null,
+      "mediana_km": 18.0
+    },
+    {
+      "rok_wprowadzenia": 2026,
+      "najmy": 1827,
+      "cenzurowane": 1786,
+      "srednia_zakonczone": 3.5753737214791497,
+      "odsetek_cenzurowanych": 0.9775588396278051,
+      "km_po_12": null,
+      "km_po_24": null,
+      "mediana_km": null
+    }
+  ]
+}
