@@ -38,3 +38,17 @@ bez wybierania na teście. Szczegóły: `versions/v2_lgbm_geo/ablacja.json`, [b4
 | bez POI (sąsiedztwo + centrum, GUS) | 8,82 | +0,10 | 51 132 | 8,61 | +0,07 | 6,61 | −4,30 |
 | bez geo i sąsiedztwa (= v2_lightgbm) | 10,16 | +1,44 | 63 095 | 10,16 | +1,61 | 8,30 | −6,43 |
 | sąsiedzi tylko opublikowani przed dniem aktu | 8,69 | −0,03 | 50 765 | 8,56 | +0,01 | 6,54 | −4,58 |
+
+## Sprawdzian poza danymi treningowymi: Katowice, 40 operatów due diligence (wrzesień 2026)
+
+Miasto nieobecne w RCN i w treningu; jeden pakiet dewelopera (PK060, rynek pierwotny, rok budowy 2026). Błąd =
+(wycena − operat) / operat. Punkt odniesienia: cena ofertowa. Raport: [b1_bledy.md](../../../../../docs/b1_bledy.md).
+
+| Wycena | Mediana błędu | MAPE | MdAPE | Suma 40 wycen (operaty: 17,45 mln zł) |
+|---|---:|---:|---:|---:|
+| cena ofertowa (punkt odniesienia) | +5,5 | 11,5 | 6,6 | 17,84 mln zł |
+| v1_liniowa | — | — | — | odmowa: „Miasto nieznane w zbiorze treningowym” |
+| v2_lightgbm | +40,2 | 42,5 | 40,2 | 24,19 mln zł |
+| v2_lgbm_geo | +24,9 | 26,4 | 24,9 | 21,49 mln zł |
+
+v2 wycenia bez ostrzeżenia, choć miasto, dzielnica i sąsiedztwo są dla niej nieznane.

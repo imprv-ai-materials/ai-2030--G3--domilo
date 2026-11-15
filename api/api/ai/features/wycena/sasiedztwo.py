@@ -37,3 +37,24 @@ def cechy_sasiedztwa(
         return con.execute(f"SELECT {', '.join(kolumny)} FROM ({sql_sasiedztwa()}) ORDER BY id_transakcji").df()
     finally:
         con.execute("RESET VARIABLE sasiedzi_wg_publikacji")
+
+
+SCIEZKA_SASIEDZTWA_PUNKTOW = Path(__file__).with_name("sasiedztwo_punktow.sql")
+ZNACZNIK_ZRODLA = "/*ZRODLO_PUNKTOW*/"
+
+
+def sql_sasiedztwa_punktow(sql_punktow: str) -> str:
+    """sasiedztwo_punktow.sql dla punktów z `sql_punktow` (kolumny: id_transakcji, miasto, lat, lon, dzien_wyceny)."""
+    sql = SCIEZKA_SASIEDZTWA_PUNKTOW.read_text(encoding="utf-8").strip().rstrip(";")
+    return sql.replace(ZNACZNIK_ZRODLA, sql_punktow)
+
+
+def cechy_sasiedztwa_punktow(
+    con: duckdb.DuckDBPyConnection, sql_punktow: str, *, z_lista_sasiadow: bool = False
+) -> pd.DataFrame:
+    """Sąsiedztwo punktów wycenianych na `dzien_wyceny`: tylko transakcje RCN opublikowane przed tym dniem."""
+    con.execute("SET enable_progress_bar = false")
+    kolumny = ["id_transakcji", *KOLUMNY_SASIEDZTWA] + (["sasiedzi_id"] if z_lista_sasiadow else [])
+    return con.execute(
+        f"SELECT {', '.join(kolumny)} FROM ({sql_sasiedztwa_punktow(sql_punktow)}) ORDER BY id_transakcji"
+    ).df()

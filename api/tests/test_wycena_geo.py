@@ -115,3 +115,25 @@ def test_dane_dzielnicy_z_gus(wynik):
 def test_geohash6_zgodny_z_wartoscia_referencyjna(wynik):
     assert wynik.loc["T_gh", "geohash6"] == "u4pruy"
     assert wynik["geohash6"].str.len().eq(6).all()
+
+
+def test_cechy_geo_dla_innego_zrodla_punktow(wynik):
+    """geo.sql z podstawionymi punktami (np. ofertami) daje te same cechy co dla transakcji w tym samym miejscu."""
+    con = duckdb.connect()
+    con.execute(
+        "CREATE TABLE rcn_transakcje (id_transakcji VARCHAR, miasto VARCHAR, dzielnica VARCHAR, lat DOUBLE, lon DOUBLE)"
+    )
+    con.execute(
+        "CREATE TABLE geo_poi (id_poi VARCHAR, miasto VARCHAR, typ VARCHAR, lat DOUBLE, lon DOUBLE, powierzchnia_ha DOUBLE)"
+    )
+    con.executemany("INSERT INTO geo_poi VALUES (?, ?, ?, ?, ?, ?)", POI)
+    con.execute(
+        "CREATE TABLE gus_dzielnice (miasto VARCHAR, dzielnica VARCHAR, gestosc_os_km2 BIGINT, "
+        "wskaznik_dochodu BIGINT, lat_centrum_miasta DOUBLE, lon_centrum_miasta DOUBLE)"
+    )
+    con.executemany("INSERT INTO gus_dzielnice VALUES (?, ?, ?, ?, ?, ?)", DZIELNICE)
+    oferty = "SELECT 'O1' AS id_transakcji, 'Warszawa' AS miasto, 'D1' AS dzielnica, 52.0 AS lat, 21.0 AS lon"
+    o = cechy_geo(con, oferty).set_index("id_transakcji").loc["O1"]
+    t = wynik.loc["T_waw"]
+    for k in KOLUMNY_GEO:
+        assert o[k] == pytest.approx(t[k]) if k != "geohash6" else o[k] == t[k]

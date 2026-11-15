@@ -185,3 +185,34 @@ def test_sasiedzi_20_losowych_transakcji_to_20_najblizszych_z_dozwolonej_puli(da
         assert set(cechy.loc[id_, "sasiedzi_id"]) == set(kand["id"]), id_
         assert cechy.loc[id_, "sasiedzi_liczba"] == len(kand)
         assert cechy.loc[id_, "sasiedzi_mediana_ceny_m2"] == pytest.approx(kand["cena_m2"].median())
+
+
+# --- punkty wyceniane na dany dzień (oferty, lokale) ------------------------------------------------------------
+
+
+def test_sasiedztwo_punktu_tylko_z_transakcji_opublikowanych_przed_dniem_wyceny_i_z_tego_samego_miasta():
+    from api.ai.features.wycena.sasiedztwo import cechy_sasiedztwa_punktow
+
+    con = _con(
+        [
+            ("S_ok", "2026-03-01", "2026-05-15", "A", 100, 10000),
+            ("S_ok2", "2025-10-01", "2025-12-15", "A", 200, 14000),
+            ("S_nieopublikowana", "2026-07-01", "2026-09-15", "A", 10, 99000),  # akt przed, publikacja po dniu wyceny
+            ("S_za_stara", "2025-08-31", "2025-11-15", "A", 10, 99000),  # > 12 mies. przed 2026-09-01
+            ("S_inne_miasto", "2026-03-01", "2026-05-15", "K", 0, 99000),
+        ]
+    )
+    punkty = "SELECT 'P1' AS id_transakcji, 'A' AS miasto, 52.0 AS lat, 21.0 AS lon, DATE '2026-09-01' AS dzien_wyceny"
+    w = cechy_sasiedztwa_punktow(con, punkty, z_lista_sasiadow=True).set_index("id_transakcji").loc["P1"]
+    assert sorted(w["sasiedzi_id"]) == ["S_ok", "S_ok2"]
+    assert w["sasiedzi_mediana_ceny_m2"] == pytest.approx(12000)
+
+
+def test_sasiedztwo_punktu_w_miescie_bez_transakcji_to_zero_sasiadow():
+    from api.ai.features.wycena.sasiedztwo import cechy_sasiedztwa_punktow
+
+    con = _con([("S", "2026-03-01", "2026-05-15", "A", 100, 10000)])
+    punkty = "SELECT 'P' AS id_transakcji, 'Z' AS miasto, 50.0 AS lat, 19.0 AS lon, DATE '2026-09-01' AS dzien_wyceny"
+    w = cechy_sasiedztwa_punktow(con, punkty).set_index("id_transakcji").loc["P"]
+    assert w["sasiedzi_liczba"] == 0
+    assert pd.isna(w["sasiedzi_mediana_ceny_m2"])

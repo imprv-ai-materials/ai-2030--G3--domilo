@@ -17,3 +17,5 @@ kandydat: >
   v2_lgbm_geo (2026-11-15): test MAPE 8,55% / MdAPE 6,5% / MAE 50 540 zł (v1: 10,17% / 8,3% / 63 252 zł),
   docs/b4_wycena_v2_lgbm_geo.md. Jeszcze nie używana: brak cech otoczenia i sąsiedztwa dla lokali Domilo
   (liczone na dzień wyceny), MAPE > 8% i brak przedziału P10/P90.
+  Poza znanymi miastami wycenia bez ostrzeżenia: Katowice, 40 operatów due diligence, mediana błędu +24,9%
+  (docs/b1_bledy.md); przed użyciem potrzebny bezpiecznik dla nieznanego miasta (v1 go ma: ValueError).

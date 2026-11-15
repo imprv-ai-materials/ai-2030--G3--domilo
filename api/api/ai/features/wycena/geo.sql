@@ -22,9 +22,11 @@
 -- od długości; alfabet base32 geohash). Liczony w SQL bez rozszerzenia spatial: bity geohasha to rozwinięcie
 -- dwójkowe floor((lon + 180) / 360 · 2^15) i floor((lat + 90) / 180 · 2^15).
 -- Zapytanie działa na domilo.duckdb (połączenie przez polacz()).
+-- Źródło punktów: domyślnie rcn_transakcje; geo.py może podstawić inne zapytanie z kolumnami id_transakcji, miasto,
+-- dzielnica, lat, lon (np. oferty z radar_oferty) w miejsce znacznika ZRODLO_PUNKTOW poniżej.
 WITH transakcje AS (
     SELECT id_transakcji, miasto, dzielnica, lat, lon
-    FROM rcn_transakcje
+    FROM /*ZRODLO_PUNKTOW*/ rcn_transakcje
 ),
 punkty AS (
     SELECT miasto, typ, lat, lon
