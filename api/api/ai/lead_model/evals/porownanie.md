@@ -139,3 +139,22 @@ raport: [docs/kolejka_ev.md](../../../../../docs/kolejka_ev.md).
 | **według EV** | **43,3%** (37,5–49,2) | 31,2% | 40,9% |
 
 EV − p: wartość +2,4 … +8,4 pp, umowy −4,7 … −0,7 pp, wpłaty +0,7 … +6,7 pp. `current.yaml` nadal pusty.
+
+## v3_ev_kalibracja: bez cech chronionych, obecna wersja (2026-11-15)
+
+v2b z wagami IPW uczony na treningu do 2025-06, z kalibracją izotoniczną „kontakt” na 2025-07 – 2026-02 i metodą EV,
+bez `jezyk`, `imie`, `rok_urodzenia` (`features/leady/wykluczone.yaml`). Liczy [`ewaluacja_v3.py`](ewaluacja_v3.py);
+wynik w `versions/v3_ev_kalibracja/metryki.json` i w MLflow (`leady`, run `v3_ev_kalibracja`). Raport:
+[docs/kolejka_cechy_chronione.md](../../../../../docs/kolejka_cechy_chronione.md). Ustawiona w `current.yaml`.
+
+| Wersja | Zbiór | AUC | lift@10% | precision@k | ECE | Brier |
+|---|---|---:|---:|---:|---:|---:|
+| v0_regula_zrodla (baseline) | okno migracji (5 320; k = 127) | 0,6328 (0,607–0,658) | 1,89 | 22,0% | 3,28 pp | 0,0924 |
+| przed wykluczeniem (kalibracja.py) | okno migracji | 0,7805 (0,761–0,800) | 3,40 | 50,9% | 2,22 pp | 0,0837 |
+| **v3_ev_kalibracja** | okno migracji | **0,7805** (0,761–0,800) | 3,40 | 50,9% | 2,22 pp | 0,0837 |
+| v0_regula_zrodla (baseline) | test (15 217; k = 125) | 0,6845 (0,668–0,700) | 2,31 | 17,7% | 0,74 pp | 0,0684 |
+| przed wykluczeniem | test | 0,7880 (0,775–0,800) | 3,74 | 34,9% | 1,27 pp | 0,0643 |
+| **v3_ev_kalibracja** | test | **0,7880** (0,775–0,800) | 3,74 | 34,9% | 1,27 pp | 0,0643 |
+
+Przed i po: maksymalna różnica p na każdym zapytaniu = 0, bo żadna z wykluczonych cech nie była w macierzy.
+v3 − v0: okno AUC +0,123 … +0,173, test AUC +0,089 … +0,119.

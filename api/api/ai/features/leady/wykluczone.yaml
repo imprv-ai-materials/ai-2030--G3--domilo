@@ -1,0 +1,41 @@
+# Cechy wykluczone z modelu kolejki zapytań i z promptów LLM (lead_model, features/leady, ai/llm).
+#
+# Decyzja użytkownika z 2026-11-15: „Usuń z modelu i ze wszystkich promptów jezyk, imie i rok_urodzenia”.
+# Odczyt: api.ai.features.leady.wykluczone.WYKLUCZONE. Strażnicy: cechy.py (KOLUMNY_CECH, zbuduj_cechy),
+# ModelLGBMNaiwny (konstruktor i macierz cech), fakty.py (brak szablonu), test api/tests/test_cechy_wykluczone.py.
+# Raport: docs/kolejka_cechy_chronione.md.
+#
+# Pola każdej pozycji: zrodlo (tabela.kolumna), uzasadnienie, dozwolone_uzycie (jedyne miejsca, gdzie kod może
+# czytać pole; nigdy jako cecha ani tekst w prompcie), ryzyko_posrednie (znane ślady cechy w innych cechach).
+
+jezyk:
+  zrodlo: crm_leady.jezyk (pl / en / uk / inne)
+  uzasadnienie: >
+    Język klienta jest bliski pochodzeniu i narodowości. Kolejność obsługi nie może zależeć od tego, w jakim języku
+    ktoś pisze, bo to byłoby nierówne traktowanie klientów ze względu na pochodzenie.
+  dozwolone_uzycie: >
+    Audyt równego traktowania (lead_model/evals/ewaluacja_v3.py: wyniki modelu w grupach języka). Nie jako cecha
+    i nie w treści promptu.
+  ryzyko_posrednie: >
+    Treść wiadomości w obcym języku trafia do LLM v1, więc język widać pośrednio w sygnałach (syg_*, głównie
+    syg_relokacja) i w długości wiadomości. Pomiar w docs/kolejka_cechy_chronione.md.
+
+imie:
+  zrodlo: crm_leady.imie
+  uzasadnienie: >
+    Imię zdradza płeć i często pochodzenie. Nie pomaga ocenić zapytania, a mogłoby wprowadzić uprzedzenia
+    (do modelu albo do LLM).
+  dozwolone_uzycie: >
+    Wyłącznie usunięcie imienia z treści wiadomości przed wysłaniem do LLM (features/leady/ocena_llm._bez_imienia:
+    imię -> „[imię]”). Dlatego `imie` zostaje w KOLUMNY_WEJSCIA (lead_model/base.py), ale nie w cechach ani w prompcie.
+  ryzyko_posrednie: >
+    Polskie formy rodzajowe w treści (np. „byłabym wdzięczna”) zdradzają płeć i trafiają do LLM razem z treścią.
+    Nie mierzono (wymagałoby wnioskowania o płci z imienia).
+
+rok_urodzenia:
+  zrodlo: pms_najemcy.rok_urodzenia
+  uzasadnienie: >
+    Wiek jest cechą chronioną: kolejność obsługi nie może zależeć od wieku klienta. Pole jest w danych najemców
+    (PMS), nie w zapytaniu; zapisujemy je, żeby nie trafiło do modelu przy dołączaniu danych PMS.
+  dozwolone_uzycie: brak (kolejka nie czyta pms_najemcy)
+  ryzyko_posrednie: brak znanego (kolejka nie używa danych najemców)

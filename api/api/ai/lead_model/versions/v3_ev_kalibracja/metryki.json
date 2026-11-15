@@ -1,0 +1,388 @@
+{
+  "wersja": "v3_ev_kalibracja",
+  "wykluczone": {
+    "jezyk": {
+      "zrodlo": "crm_leady.jezyk (pl / en / uk / inne)",
+      "uzasadnienie": "Język klienta jest bliski pochodzeniu i narodowości. Kolejność obsługi nie może zależeć od tego, w jakim języku ktoś pisze, bo to byłoby nierówne traktowanie klientów ze względu na pochodzenie.\n",
+      "dozwolone_uzycie": "Audyt równego traktowania (lead_model/evals/ewaluacja_v3.py: wyniki modelu w grupach języka). Nie jako cecha i nie w treści promptu.\n",
+      "ryzyko_posrednie": "Treść wiadomości w obcym języku trafia do LLM v1, więc język widać pośrednio w sygnałach (syg_*, głównie syg_relokacja) i w długości wiadomości. Pomiar w docs/kolejka_cechy_chronione.md.\n"
+    },
+    "imie": {
+      "zrodlo": "crm_leady.imie",
+      "uzasadnienie": "Imię zdradza płeć i często pochodzenie. Nie pomaga ocenić zapytania, a mogłoby wprowadzić uprzedzenia (do modelu albo do LLM).\n",
+      "dozwolone_uzycie": "Wyłącznie usunięcie imienia z treści wiadomości przed wysłaniem do LLM (features/leady/ocena_llm._bez_imienia: imię -> „[imię]”). Dlatego `imie` zostaje w KOLUMNY_WEJSCIA (lead_model/base.py), ale nie w cechach ani w prompcie.\n",
+      "ryzyko_posrednie": "Polskie formy rodzajowe w treści (np. „byłabym wdzięczna”) zdradzają płeć i trafiają do LLM razem z treścią. Nie mierzono (wymagałoby wnioskowania o płci z imienia).\n"
+    },
+    "rok_urodzenia": {
+      "zrodlo": "pms_najemcy.rok_urodzenia",
+      "uzasadnienie": "Wiek jest cechą chronioną: kolejność obsługi nie może zależeć od wieku klienta. Pole jest w danych najemców (PMS), nie w zapytaniu; zapisujemy je, żeby nie trafiło do modelu przy dołączaniu danych PMS.\n",
+      "dozwolone_uzycie": "brak (kolejka nie czyta pms_najemcy)",
+      "ryzyko_posrednie": "brak znanego (kolejka nie używa danych najemców)"
+    }
+  },
+  "cechy": [
+    "zrodlo",
+    "miasto",
+    "linia",
+    "termin_dni",
+    "liczba_osob",
+    "zwierze",
+    "liczba_lokali",
+    "budzet_do_mediany",
+    "www_liczba_sesji",
+    "www_spacer_3d",
+    "www_kalkulator",
+    "umowa_ramowa",
+    "dlugosc_wiadomosci",
+    "syg_konkretne_pytania",
+    "syg_niedopasowanie_oferty",
+    "syg_pilny_termin",
+    "syg_relokacja",
+    "syg_budzet_niski",
+    "syg_brak_informacji"
+  ],
+  "cechy_wykluczone_w_modelu": [],
+  "cechy_boostera": [
+    "zrodlo",
+    "miasto",
+    "linia",
+    "termin_dni",
+    "liczba_osob",
+    "zwierze",
+    "liczba_lokali",
+    "budzet_do_mediany",
+    "www_liczba_sesji",
+    "www_spacer_3d",
+    "www_kalkulator",
+    "umowa_ramowa",
+    "dlugosc_wiadomosci",
+    "syg_konkretne_pytania",
+    "syg_niedopasowanie_oferty",
+    "syg_pilny_termin",
+    "syg_relokacja",
+    "syg_budzet_niski",
+    "syg_brak_informacji"
+  ],
+  "uczony_na": "trening podzial_v2 z utworzeniem < 2025-07-01; kalibracja: obsłużone 2025-07 – 2026-02 z IPW",
+  "liczebnosci": {
+    "trening": 98222,
+    "trening_obsluzone": 80241,
+    "kalibracja_obsluzone": 24238,
+    "kalibracja_umowy": 2265,
+    "kalibracja_suma_wag": 29438.950286161336
+  },
+  "liczba_drzew": 238,
+  "audyt_imienia": {
+    "wiadomosci_z_imieniem_w_polu": 131170,
+    "rdzen_imienia_w_tresci_przed": 43837,
+    "rdzen_imienia_po_zamianie": 16,
+    "przyklady_po_zamianie": [
+      "Maciej: … Warszawie Czy macie coś na 2–…",
+      "Maciej: … Wrocławiu Czy macie coś na 2–…",
+      "Maciej: …ia w Łodzi Czy macie coś na 2–…",
+      "Maciej: …ki w Łodzi Czy macie coś na 2–…",
+      "Maciej: …nową pracą Czy macie coś na 2–…",
+      "Maciej: …w Krakowie Czy macie coś na 2–…",
+      "Maciej: …w Poznaniu Czy macie coś na 2–…"
+    ]
+  },
+  "slad_jezyka_w_cechach": {
+    "udzial_nie_pl_test": 0.1905106131300519,
+    "auc_wszystkie_cechy": 0.8024789748675172,
+    "udzial_gain_top5": {
+      "syg_relokacja": 0.6952430750395056,
+      "dlugosc_wiadomosci": 0.0875173820055232,
+      "zrodlo": 0.07739201036487843,
+      "termin_dni": 0.029422477515366547,
+      "budzet_do_mediany": 0.02782280974160167
+    },
+    "auc_bez_cech_z_tekstu": 0.6816019862513127
+  },
+  "okno_migracji": {
+    "v3_ev_kalibracja": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "sredni_wynik": 0.08283106531816226,
+      "ece_10_rowne": 0.022244122651762555,
+      "ece_10_decyle": 0.022471397828987254,
+      "brier": 0.08368876604909405,
+      "auc": 0.7805101752875085,
+      "lift_10": 3.4031859613254962,
+      "k": 127,
+      "precision_k": 0.5091407052379322,
+      "rozne_wartosci": 59,
+      "auc_ci95": [
+        0.7605892574245766,
+        0.7997845026827635
+      ],
+      "lift_10_ci95": [
+        3.0747889260764922,
+        3.7422716765495214
+      ],
+      "precision_k_ci95": [
+        0.4293757820876243,
+        0.5811642940256571
+      ]
+    },
+    "przed_wykluczeniem": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "sredni_wynik": 0.08283106531816226,
+      "ece_10_rowne": 0.022244122651762555,
+      "ece_10_decyle": 0.022471397828987254,
+      "brier": 0.08368876604909405,
+      "auc": 0.7805101752875085,
+      "lift_10": 3.4031859613254962,
+      "k": 127,
+      "precision_k": 0.5091407052379322,
+      "rozne_wartosci": 59,
+      "auc_ci95": [
+        0.7605892574245766,
+        0.7997845026827635
+      ],
+      "lift_10_ci95": [
+        3.0747889260764922,
+        3.7422716765495214
+      ],
+      "precision_k_ci95": [
+        0.4293757820876243,
+        0.5811642940256571
+      ]
+    },
+    "v0_regula_zrodla": {
+      "n": 5320,
+      "umowy": 559,
+      "konwersja": 0.10507518796992481,
+      "sredni_wynik": 0.0723107427708316,
+      "ece_10_rowne": 0.03276444519909321,
+      "ece_10_decyle": 0.03280740975333597,
+      "brier": 0.09240364031074723,
+      "auc": 0.632776032455111,
+      "lift_10": 1.8890115327522554,
+      "k": 127,
+      "precision_k": 0.2200557103064067,
+      "rozne_wartosci": 16,
+      "auc_ci95": [
+        0.6073391721236334,
+        0.6581231923080492
+      ],
+      "lift_10_ci95": [
+        1.5955012547923433,
+        2.176757914025416
+      ],
+      "precision_k_ci95": [
+        0.17800936196645664,
+        0.2626943265324752
+      ]
+    },
+    "roznica_v3_minus_przed_ci95": {
+      "auc": [
+        0.0,
+        0.0
+      ],
+      "lift": [
+        0.0,
+        0.0
+      ],
+      "prec": [
+        0.0,
+        0.0
+      ]
+    },
+    "roznica_v3_minus_v0_ci95": {
+      "auc": [
+        0.1232226201165226,
+        0.17297074243048988
+      ],
+      "lift": [
+        1.1457890800650083,
+        1.8900706344723044
+      ],
+      "prec": [
+        0.21296990815456576,
+        0.3620094200158938
+      ]
+    },
+    "maks_roznica_p_v3_przed": 0.0,
+    "v3_obsluzone": null,
+    "grupy_jezyka_v3": [
+      {
+        "jezyk": "en",
+        "zapytania": 449,
+        "umowy": 48,
+        "konwersja": 0.10690423162583519,
+        "srednie_p": 0.11550832939652522,
+        "udzial_w_czolowce_10": 0.1915367483296214,
+        "auc": 0.8290211970074813,
+        "srednie_p_minus_konwersja_ci95": [
+          -0.01671458710252699,
+          0.034239839697734316
+        ]
+      },
+      {
+        "jezyk": "inne",
+        "zapytania": 91,
+        "umowy": 15,
+        "konwersja": 0.16483516483516483,
+        "srednie_p": 0.11782747152754823,
+        "udzial_w_czolowce_10": 0.2087912087912088,
+        "auc": 0.8425438596491228,
+        "srednie_p_minus_konwersja_ci95": [
+          -0.12103018004394815,
+          0.01994828432415213
+        ]
+      },
+      {
+        "jezyk": "pl",
+        "zapytania": 4414,
+        "umowy": 454,
+        "konwersja": 0.10285455369279566,
+        "srednie_p": 0.07813322891043789,
+        "udzial_w_czolowce_10": 0.08767557770729498,
+        "auc": 0.7778837382636943,
+        "srednie_p_minus_konwersja_ci95": [
+          -0.03324408747345427,
+          -0.016414337186371773
+        ]
+      },
+      {
+        "jezyk": "uk",
+        "zapytania": 366,
+        "umowy": 42,
+        "konwersja": 0.11475409836065574,
+        "srednie_p": 0.09069851167733231,
+        "udzial_w_czolowce_10": 0.1092896174863388,
+        "auc": 0.7453336272780717,
+        "srednie_p_minus_konwersja_ci95": [
+          -0.05566387713713746,
+          0.006608400106714929
+        ]
+      }
+    ]
+  },
+  "test": {
+    "v3_ev_kalibracja": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "sredni_wynik": 0.08878686024433986,
+      "ece_10_rowne": 0.012706682334035059,
+      "ece_10_decyle": 0.01264186456400896,
+      "brier": 0.06429271865470489,
+      "auc": 0.7879766228459382,
+      "lift_10": 3.736728283164613,
+      "k": 125,
+      "precision_k": 0.34857142857142853,
+      "rozne_wartosci": 88,
+      "auc_ci95": [
+        0.7747767720905704,
+        0.8003796646875896
+      ],
+      "lift_10_ci95": [
+        3.492348955380845,
+        3.985527852842271
+      ],
+      "precision_k_ci95": [
+        0.264,
+        0.4275058333333333
+      ]
+    },
+    "przed_wykluczeniem": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "sredni_wynik": 0.08878686024433986,
+      "ece_10_rowne": 0.012706682334035059,
+      "ece_10_decyle": 0.01264186456400896,
+      "brier": 0.06429271865470489,
+      "auc": 0.7879766228459382,
+      "lift_10": 3.736728283164613,
+      "k": 125,
+      "precision_k": 0.34857142857142853,
+      "rozne_wartosci": 88,
+      "auc_ci95": [
+        0.7747767720905704,
+        0.8003796646875896
+      ],
+      "lift_10_ci95": [
+        3.492348955380845,
+        3.985527852842271
+      ],
+      "precision_k_ci95": [
+        0.264,
+        0.4275058333333333
+      ]
+    },
+    "v0_regula_zrodla": {
+      "n": 15217,
+      "umowy": 1167,
+      "konwersja": 0.07669054347111783,
+      "sredni_wynik": 0.07943998334387749,
+      "ece_10_rowne": 0.00740639369419223,
+      "ece_10_decyle": 0.007962768411995624,
+      "brier": 0.06839545877251171,
+      "auc": 0.6844568455784367,
+      "lift_10": 2.310493242532209,
+      "k": 125,
+      "precision_k": 0.17719298245614035,
+      "rozne_wartosci": 16,
+      "auc_ci95": [
+        0.6677746521947092,
+        0.7004352802014471
+      ],
+      "lift_10_ci95": [
+        2.107864934995674,
+        2.515510466689407
+      ],
+      "precision_k_ci95": [
+        0.15997392581435566,
+        0.19455709524554704
+      ]
+    },
+    "roznica_v3_minus_przed_ci95": {
+      "auc": [
+        0.0,
+        0.0
+      ],
+      "lift": [
+        0.0,
+        0.0
+      ],
+      "prec": [
+        0.0,
+        0.0
+      ]
+    },
+    "roznica_v3_minus_v0_ci95": {
+      "auc": [
+        0.08872139006651301,
+        0.11881301778481586
+      ],
+      "lift": [
+        1.1613562932212882,
+        1.6963450380093055
+      ],
+      "prec": [
+        0.08760168897949623,
+        0.24915817249774663
+      ]
+    },
+    "maks_roznica_p_v3_przed": 0.0,
+    "v3_obsluzone": {
+      "n": 12570,
+      "umowy": 1137,
+      "konwersja": 0.09045346062052506,
+      "sredni_wynik": 0.09528073274669797,
+      "ece_10_rowne": 0.0058582830152217776,
+      "ece_10_decyle": 0.006615704161725874,
+      "brier": 0.07461349395773229,
+      "auc": 0.7767646094746026,
+      "lift_10": 3.3843792574197664,
+      "k": 125,
+      "precision_k": 0.34857142857142853,
+      "rozne_wartosci": 83
+    }
+  }
+}

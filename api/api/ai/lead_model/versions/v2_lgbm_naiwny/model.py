@@ -15,6 +15,7 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from api.ai.features.leady.cechy import KATEGORIE, KOLUMNY_CECH
+from api.ai.features.leady.wykluczone import sprawdz_brak_wykluczonych
 from api.ai.lead_model.base import ModelLeadow
 
 PARAMETRY = {
@@ -42,6 +43,7 @@ class ModelLGBMNaiwny(ModelLeadow):
     wersja = "v2_lgbm_naiwny"
 
     def __init__(self, cechy: tuple[str, ...] = KOLUMNY_CECH, parametry: dict | None = None):
+        sprawdz_brak_wykluczonych(cechy, self.wersja)
         self.cechy = tuple(cechy)
         self.parametry = {**PARAMETRY, **(parametry or {})}
 
@@ -51,6 +53,7 @@ class ModelLGBMNaiwny(ModelLeadow):
         brak = [k for k in self.cechy if k not in leady.columns]
         if brak:
             raise ValueError(f"Brak cech wymaganych przez {self.wersja}: {', '.join(brak)} (features/leady/cechy.py)")
+        sprawdz_brak_wykluczonych(self.cechy, self.wersja)
         X = leady[list(self.cechy)].copy()
         for k in self.cechy:
             if k in KATEGORIE:

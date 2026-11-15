@@ -2,7 +2,8 @@
 
 Rodziny: zapytanie (formularz), budzet (budżet / mediana czynszu w mieście), www (sesje przed utworzeniem),
 firma_b2b (umowa ramowa obowiązująca w chwili zapytania), tekst (długość wiadomości + sygnały LLM v1).
-Żadna rodzina nie czyta kolumn stanu z crm_leady (status, data_statusu, powod_utraty, id_doradcy, id_umowy).
+Żadna rodzina nie czyta kolumn stanu z crm_leady (status, data_statusu, powod_utraty, id_doradcy, id_umowy) ani cech
+wykluczonych (wykluczone.yaml: jezyk, imie, rok_urodzenia); KOLUMNY_CECH i wynik zbuduj_cechy są sprawdzane.
 Wynik: jeden wiersz na zapytanie z crm_leady (id_leada + kolumny cech). Raport: docs/kolejka_v2_lgbm_naiwny.md.
 """
 
@@ -10,6 +11,7 @@ from pathlib import Path
 
 import duckdb
 import pandas as pd
+from api.ai.features.leady.wykluczone import sprawdz_brak_wykluczonych
 
 KATALOG_SQL = Path(__file__).parent
 RODZINY = ("zapytanie", "budzet", "www", "firma_b2b", "tekst")
@@ -30,6 +32,7 @@ CECHY_RODZIN = {
     "tekst": ("dlugosc_wiadomosci", *SYGNALY_KOLUMNY),
 }
 KOLUMNY_CECH = tuple(k for rodzina in RODZINY for k in CECHY_RODZIN[rodzina])
+sprawdz_brak_wykluczonych(KOLUMNY_CECH, "KOLUMNY_CECH")  # jezyk, imie, rok_urodzenia: wykluczone.yaml
 KATEGORIE = ("zrodlo", "miasto", "linia")
 
 
@@ -48,6 +51,7 @@ def zbuduj_cechy(con: duckdb.DuckDBPyConnection, sygnaly: pd.DataFrame) -> pd.Da
     finally:
         con.unregister("sygnaly_v1")
     cechy = pd.concat(czesci, axis=1, join="outer")
+    sprawdz_brak_wykluczonych(cechy.columns, "zbuduj_cechy")
     # Liczby jako float64 z NaN (DuckDB oddaje nullable Int64 z pd.NA, a LightGBM oczekuje NaN).
     liczbowe = [k for k in KOLUMNY_CECH if k not in KATEGORIE]
     cechy[liczbowe] = cechy[liczbowe].astype("float64")

@@ -1,0 +1,27 @@
+# Wersja modelu kolejki zapytań używana obecnie (katalog w versions/).
+wersja: v3_ev_kalibracja
+model: versions/v3_ev_kalibracja/model.joblib
+klasa: api.ai.lead_model.versions.v3_ev_kalibracja.model.ModelV3EVKalibracja
+ustalono: 2026-11-15
+regula_wyboru: >
+  Decyzja użytkownika z 2026-11-15 („zapisz model jako versions/v3_ev_kalibracja/, ustaw go w current.yaml”), po
+  wykluczeniu cech chronionych (features/leady/wykluczone.yaml) i ponownym uczeniu.
+kolejnosc: >
+  Według EV = p × mediana czynszu linii w mieście × czas najmu linii × liczba lokali (metoda wartosc_oczekiwana,
+  założenia w contexts_boundaries/leasing_bc/zalozenia.yaml); uzasadnienie: top 3 SHAP -> zdanie z LLM
+  (ai/lead_model/uzasadnienie.py, prompt uzasadnienie_v1).
+uzasadnienie: >
+  Okno migracji (5 320 zapytań): AUC 0,7805 (95% CI 0,761–0,800), lift@10% 3,40, precision@127 50,9%, ECE 2,22 pp;
+  baseline v0_regula_zrodla AUC 0,6328, lift 1,89, precision 22,0% (v3 − v0: AUC +0,123 … +0,173). Test 2026-03 –
+  2026-06 (15 217): AUC 0,7880, lift 3,74; v0 0,6845 / 2,31; obsłużone ECE 0,59 pp. Kolejka dzienna w oknie
+  (docs/kolejka_ev.md): górne 10% według EV zbiera 43,3% wartości umów, według p 37,9%, od najnowszego 9,1%.
+  Wykluczenie jezyk / imie / rok_urodzenia nie zmienia wyników (żadna z tych cech nie była w macierzy; maks. różnica
+  p przed i po = 0; docs/kolejka_cechy_chronione.md).
+ograniczenia: >
+  Uczony na danych do 2025-06 (kalibracja 2025-07 – 2026-02), więc nie widzi najnowszych zapytań; zapisany
+  v2b_lgbm_ipw (uczony do 2026-02, bez kalibracji) ma w oknie AUC 0,7846. W oknie migracji zaniża szansę na umowę
+  (średnio 8,28% wobec 10,51%), więc kwoty EV są zaniżone; skrajne schodki kalibracji opierają się na pojedynczych
+  zapytaniach (kalibracja.md). Czas najmu w EV jest zaniżony (średnia z zakończonych najmów). Język wiadomości
+  widać pośrednio w cechach z tekstu (AUC odczytu języka z cech 0,80), a w oknie zapytania po polsku mają
+  zaniżone p (7,81% wobec 10,29% umów) i rzadziej trafiają do górnych 10% (8,8% wobec 19,2% dla angielskich).
+poprzednia: brak (current.yaml był pusty)
