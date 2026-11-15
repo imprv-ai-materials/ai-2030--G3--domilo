@@ -41,3 +41,8 @@ api/api/ai/llm/cache/
 # dbt (api/api/data_platform/dbt): skompilowane SQL, manifest i logi z każdego uruchomienia
 api/api/data_platform/dbt/target/
 api/api/data_platform/dbt/logs/
+
+# Kolejka doradców (leasing_bc/kolejka_dzienna.py): pliki pośrednie przebiegów i stan atrapy CRM (dev/mock_lejek)
+kolejka_dzienna/
+dev/mock_lejek/stan.json
+dev/mock_lejek/stan.tmp

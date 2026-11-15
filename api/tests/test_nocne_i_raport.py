@@ -182,7 +182,7 @@ def test_zadanie_nocne_wycenia_lokale_potem_oferty_potem_raport_z_tym_samym_czas
 def test_funkcja_inngest_ma_harmonogram_nocny_w_czasie_warszawskim_i_zdarzenie_reczne():
     from api import inngest_app
 
-    [fn] = inngest_app.FUNKCJE
+    [fn] = [f for f in inngest_app.FUNKCJE if f.local_id == "wyceny-nocne"]
     cfg = fn.get_config("http://app:8101/api/inngest").main
     assert fn.local_id == "wyceny-nocne"
     wyzwalacze = [t.model_dump(exclude_none=True) for t in cfg.triggers]

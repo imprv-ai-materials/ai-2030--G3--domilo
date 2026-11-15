@@ -1,0 +1,6 @@
+steps:
+  - name: pypyr.steps.cmd
+    description: Atrapa CRM (webhook kolejek doradców, dev/mock_lejek/app.py) na porcie 8102; stan w dev/mock_lejek/stan.json
+    in:
+      cmd:
+        run: poetry run uvicorn app:app --app-dir dev/mock_lejek --host 127.0.0.1 --port 8102

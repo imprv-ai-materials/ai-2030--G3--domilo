@@ -71,16 +71,19 @@ domilo.duckdb                 # baza budowana z data/ (pypyr baza), w .gitignore
 docs/                         # raporty (wnioski → tabele → SQL i kod)
 ├── bank/                     # raporty kwartalne dla banku (zadanie nocne, raport_RRRRQn.md)
 evals/porownanie.md           # model vs baseline, wszystkie cztery modele
-dev/                          # pipeline'y pypyr (m.in. baza.yaml)
+dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml, mock_lejek.yaml)
+├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
-├── main.py                   # FastAPI: POST /valuation, odczyty dla panelu, Inngest pod /api/inngest (pypyr api)
-├── inngest_app.py            # funkcja Inngest wyceny-nocne (02:00 Europe/Warsaw; ręcznie: pypyr nocne)
+├── main.py                   # FastAPI: POST /valuation, GET /leads/next?doradca=, odczyty panelu, Inngest (pypyr api)
+├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka)
 ├── adapters/                 # połączenia z systemami zewnętrznymi
 │   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
-│   └── wyceny_historia.py    # tabela wyceny_historia w domilo.duckdb (przenoszona przy przebudowie bazy)
+│   ├── wyceny_historia.py    # tabela wyceny_historia w domilo.duckdb (przenoszona przy przebudowie bazy)
+│   ├── kolejka_doradcow.py   # tabela kolejka_doradcow (dzień × zapytanie; przenoszona przy przebudowie bazy)
+│   └── crm_lejek.py          # webhook kolejek do CRM, idempotentny po (id_leada, data_kolejki); atrapa: dev/mock_lejek/
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
-│   ├── leasing_bc/           # zapytania i doradcy (najem)
+│   ├── leasing_bc/           # zapytania i doradcy (najem); kolejka_dzienna.py: kroki zadania kolejka-doradcow
 │   ├── retention_bc/         # retencja najemców
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła

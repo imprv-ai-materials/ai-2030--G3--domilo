@@ -7,18 +7,20 @@ Wycena z opisem wymaga OPENAI_API_KEY w środowisku (cechy z LLM); bez opisu cec
 """
 
 from collections.abc import Callable, Iterator
+from datetime import date
 from functools import lru_cache
 
 import duckdb
 import inngest.fast_api
 import numpy as np
 import pandas as pd
-from api.adapters import wyceny_historia
+from api.adapters import kolejka_doradcow, wyceny_historia
 from api.adapters.duckdb_baza import polaczenie
 from api.adapters.llm_client import BrakKluczaAPI
 from api.ai.features.wycena.cechy_llm import KOLUMNY_LLM
 from api.ai.features.wycena.ceny_w_opisie import bez_kwot
 from api.ai.valuation_model.obecny import ObecnyModel, wczytaj_obecny
+from api.contexts_boundaries.leasing_bc.schematy import KolejkaDoradcy
 from api.contexts_boundaries.valuation_bc.cechy_opisu import cechy_z_opisu
 from api.contexts_boundaries.valuation_bc.schematy import (
     Czynnik,
@@ -32,9 +34,9 @@ from api.contexts_boundaries.valuation_bc.schematy import (
 )
 from api.contexts_boundaries.valuation_bc.wycena import OPISY_CECH, cechy_punktow, najwazniejsze, wycen
 from api.inngest_app import FUNKCJE, klient_inngest
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Query
 
-app = FastAPI(title="Domilo: wycena lokali", version="1.0")
+app = FastAPI(title="Domilo: wycena lokali i kolejka doradców", version="1.1")
 inngest.fast_api.serve(app, klient_inngest, FUNKCJE)
 
 
@@ -118,3 +120,26 @@ def karta(rodzaj: str, id_obiektu: str, con: duckdb.DuckDBPyConnection = Depends
     if k is None:
         raise HTTPException(404, f"Brak wyceny: {rodzaj} {id_obiektu}")
     return KartaWyceny(**{**k, "czynniki": _czynniki(k["czynniki"])})
+
+
+@app.get("/leads/next", response_model=KolejkaDoradcy)
+def kolejka_doradcy(
+    doradca: str = Query(..., min_length=1, description="id_doradcy, np. D01"),
+    data: date | None = Query(None, description="dzień kolejki RRRR-MM-DD; domyślnie najnowsza kolejka doradcy"),
+    con: duckdb.DuckDBPyConnection = Depends(baza),
+) -> KolejkaDoradcy:
+    """Kolejka doradcy z zadania kolejka-doradcow: te same pozycje, które poszły webhookiem do CRM."""
+    dzien = data or kolejka_doradcow.ostatnia_data(con, doradca)
+    pozycje = kolejka_doradcow.pozycje(con, doradca, dzien) if dzien else []
+    if not pozycje:
+        kiedy = f" na {dzien}" if dzien else ""
+        raise HTTPException(404, f"Brak kolejki doradcy {doradca}{kiedy}")
+    pierwsza = pozycje[0]
+    return KolejkaDoradcy(
+        id_doradcy=doradca,
+        miasto=pierwsza["miasto"],
+        data_kolejki=pierwsza["data_kolejki"],
+        wersja_modelu=pierwsza["wersja_modelu"],
+        stan_danych_na=pierwsza["stan_danych_na"],
+        pozycje=pozycje,
+    )

@@ -1,0 +1,16 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - name: pypyr.steps.default
+    description: data= opcjonalna (RRRR-MM-DD); pusta = dziś w Europe/Warsaw
+    in:
+      defaults:
+        data: ""
+  - name: pypyr.steps.cmd
+    description: >
+      Zadanie kolejka-doradcow bez Inngest (te same kroki co funkcja Inngest): otwarte zapytania, sygnały LLM, cechy,
+      wynik modelu z current.yaml, EV, kolejki, uzasadnienia, zapis, webhook do CRM. Wymaga atrapy (pypyr mock_lejek)
+      albo CRM_LEJEK_URL; sygnały i zdania z LLM wymagają OPENAI_API_KEY (set -a && . ./.env && set +a).
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.leasing_bc.kolejka_dzienna {data}
+        cwd: api

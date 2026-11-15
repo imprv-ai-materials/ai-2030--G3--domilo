@@ -58,6 +58,8 @@ precommit = { pipeline_name = "dev/precommit" }
 baza = { pipeline_name = "dev/baza" }
 api = { pipeline_name = "dev/api" }
 nocne = { pipeline_name = "dev/nocne" }
+kolejka = { pipeline_name = "dev/kolejka" }
+mock_lejek = { pipeline_name = "dev/mock_lejek" }
 
 [tool.pytest.ini_options]
 pythonpath = ["api"]

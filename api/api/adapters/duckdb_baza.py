@@ -41,9 +41,12 @@ _NAZWA_TABELI = re.compile(r"^[a-z][a-z0-9_]*$")
 
 def _tabele_trwale() -> dict[str, str]:
     """Tabele spoza data/ (zapisywane przez aplikację), które przebudowa przenosi ze starej bazy: nazwa -> DDL."""
-    from api.adapters.wyceny_historia import SQL_TABELI, TABELA
+    from api.adapters import kolejka_doradcow, wyceny_historia
 
-    return {TABELA: SQL_TABELI}
+    return {
+        wyceny_historia.TABELA: wyceny_historia.SQL_TABELI,
+        kolejka_doradcow.TABELA: kolejka_doradcow.SQL_TABELI,
+    }
 
 
 def polacz(sciezka: Path = SCIEZKA_BAZY, tylko_odczyt: bool = True) -> duckdb.DuckDBPyConnection:

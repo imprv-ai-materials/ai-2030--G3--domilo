@@ -12,6 +12,11 @@ trzyma wspólne zmienne (długość linii, katalogi kodu i testów).
 | `pypyr lint` | `flake8` na `api/api` |
 | `pypyr test` | `pytest` z pokryciem na `api/tests` (`pypyr test tests=api/tests/x.py` zawęża) |
 | `pypyr precommit` | wszystkie hooki pre-commit na wszystkich plikach |
+| `pypyr baza` | `domilo.duckdb` z `data/`, tabela `leady_cel`, modele dbt (schemat `metryki`) |
+| `pypyr api` | API (FastAPI) z funkcjami Inngest na porcie 8101 |
+| `pypyr nocne` | zadanie nocne wyceny bez Inngest |
+| `pypyr mock_lejek` | atrapa CRM dla webhooka kolejek doradców (`dev/mock_lejek/`, port 8102) |
+| `pypyr kolejka [data=RRRR-MM-DD]` | zadanie kolejka-doradcow bez Inngest (te same kroki); wymaga atrapy albo `CRM_LEJEK_URL` |
 
 Bez aktywnego `.venv` poprzedź polecenie `poetry run` (w devcontainerze `.venv/bin` jest w PATH).
 Kolejne pipeline'y (start API, nocne zadania, MLflow) dopisujemy razem z kodem, który uruchamiają.
