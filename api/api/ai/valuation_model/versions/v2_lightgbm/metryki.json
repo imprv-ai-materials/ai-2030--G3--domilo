@@ -1,0 +1,47 @@
+{
+  "wersja": "v2_lightgbm",
+  "uczony_na": "trening (rcn_transakcje, data_aktu 2023-01-01 – 2025-06-30, podzial.sql)",
+  "wczesne_zatrzymanie_na": "walidacja (data_aktu 2025-07-01 – 2025-12-31), l2 na ln(ceny)",
+  "transakcje_treningowe": 38522,
+  "test_otwarty": "2026-11-15",
+  "parametry": {
+    "objective": "regression",
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "min_child_samples": 20,
+    "random_state": 42,
+    "deterministic": true,
+    "force_row_wise": true,
+    "n_jobs": 4,
+    "verbose": -1,
+    "max_drzew": 5000,
+    "stopping_rounds": 200,
+    "najlepsza_iteracja": 265
+  },
+  "metryki": {
+    "trening": {
+      "n": 38522,
+      "mae": 48420.615112021995,
+      "rmse": 69127.68192484666,
+      "mape": 9.041144512792357,
+      "mdape": 6.72331186646061,
+      "mediana_bledu_proc": -0.4232329105294313
+    },
+    "walidacja": {
+      "n": 7686,
+      "mae": 57667.213135493395,
+      "rmse": 84950.20822212551,
+      "mape": 10.157811102297277,
+      "mdape": 7.49230100671478,
+      "mediana_bledu_proc": -4.639666281535394
+    },
+    "test": {
+      "n": 7487,
+      "mae": 63094.945136569266,
+      "rmse": 95538.40966423854,
+      "mape": 10.159248169370422,
+      "mdape": 8.301515035688412,
+      "mediana_bledu_proc": -6.43313031045743
+    }
+  }
+}

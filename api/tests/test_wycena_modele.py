@@ -13,6 +13,7 @@ from api.ai.valuation_model.versions.v1_liniowa.model import (
     ModelLiniowy,
     przedzial_roku_budowy,
 )
+from api.ai.valuation_model.versions.v2_lightgbm.model import ModelLightGBM
 
 
 def _lokale(wiersze):
@@ -36,7 +37,7 @@ def test_metryki_licza_mae_rmse_mape_i_mdape_w_pln_i_procentach():
 # --- kontrakt --------------------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("klasa", [ModelMedianaDzielnicy, ModelLiniowy])
+@pytest.mark.parametrize("klasa", [ModelMedianaDzielnicy, ModelLiniowy, ModelLightGBM])
 def test_kazda_wersja_spelnia_kontrakt_a_przedzial_nie_jest_jeszcze_gotowy(klasa):
     model = klasa()
     assert isinstance(model, ModelWyceny)
@@ -199,3 +200,70 @@ def test_efekty_procentowe_dzielnic_sa_wzgledem_sredniej_wazonej_miasta_a_ciagle
     # ln(metraż): efekt dla +10% metrażu, nie e^b − 1
     assert ef.loc["metraż (+10%)", "efekt_proc"] == pytest.approx(100 * (1.1**1.0 - 1), abs=1e-4)
     assert {"typ", "odniesienie", "efekt_proc", "b"} <= set(ef.columns)
+
+
+# --- v2: LightGBM na ln(ceny) ----------------------------------------------------------------------------------
+
+
+def _v2(**kw):
+    return ModelLightGBM(max_drzew=kw.pop("max_drzew", 300), stopping_rounds=kw.pop("stopping_rounds", 20), **kw)
+
+
+def test_lightgbm_wczesne_zatrzymanie_na_walidacji_ucina_liczbe_drzew():
+    X, y = _syntetyczne(n_duza=300, n_mala=50, seed=1)
+    X_wal, y_wal = _syntetyczne(n_duza=100, n_mala=20, seed=2)
+    model = _v2(max_drzew=3000).fit(X, y, X_wal, y_wal)
+    assert 0 < model.najlepsza_iteracja_ < 3000
+    assert model.l2_walidacja_ is not None
+    blad = np.abs(model.predict(X_wal) / y_wal - 1)
+    assert np.median(blad) < 0.05
+
+
+def test_lightgbm_bez_walidacji_uczy_max_drzew():
+    X, y = _syntetyczne()
+    model = _v2(max_drzew=50).fit(X, y)
+    assert model.najlepsza_iteracja_ == 50
+    assert model.l2_walidacja_ is None
+
+
+def test_lightgbm_explain_sumuje_sie_do_ln_wyceny():
+    X, y = _syntetyczne()
+    model = _v2().fit(X, y)
+    wyj = model.explain(X)
+    skladowe = [k for k in wyj.columns if k.startswith("wklad_")]
+    assert {"wklad_dzielnica", "wklad_metraz", "wklad_bazowy"} <= set(skladowe)
+    assert np.allclose(wyj[skladowe].sum(axis=1), np.log(model.predict(X)))
+    assert np.allclose(wyj["wycena_pln"], model.predict(X))
+
+
+def test_lightgbm_rozroznia_dzielnice_o_tej_samej_nazwie_w_roznych_miastach():
+    X, y = _syntetyczne(n_duza=200, n_mala=0)
+    X_b = X.assign(miasto="B")
+    y_b = y * np.where(X["dzielnica"] == "a1", 0.5, 1.0)  # w mieście B dzielnica a1 jest tańsza, nie droższa
+    model = _v2().fit(pd.concat([X, X_b], ignore_index=True), pd.concat([y, y_b], ignore_index=True))
+    assert "A | a1" in model.kategorie_["dzielnica"] and "B | a1" in model.kategorie_["dzielnica"]
+    lokal = _lokale([("A", "a1", 50.0, 2, 1, 2000), ("B", "a1", 50.0, 2, 1, 2000)])
+    wycena_a, wycena_b = model.predict(lokal)
+    assert wycena_b < 0.75 * wycena_a
+
+
+def test_lightgbm_nieznana_dzielnica_i_miasto_daja_wycene_bez_bledu():
+    X, y = _syntetyczne()
+    model = _v2().fit(X, y)
+    nowe = _lokale([("A", "nieznana", 50.0, 2, 1, 2000), ("Z", "z1", 50.0, 2, 1, 2000)])
+    pred = model.predict(nowe)
+    assert np.all(np.isfinite(pred)) and np.all(pred > 0)
+
+
+def test_lightgbm_po_zapisie_i_wczytaniu_daje_te_same_wyceny(tmp_path):
+    X, y = _syntetyczne()
+    model = _v2().fit(X, y)
+    model.zapisz(tmp_path / "model.joblib")
+    assert np.allclose(ModelWyceny.wczytaj(tmp_path / "model.joblib").predict(X), model.predict(X))
+
+
+def test_lightgbm_waznosc_cech_sumuje_sie_do_100():
+    X, y = _syntetyczne()
+    w = _v2().fit(X, y).waznosc_cech()
+    assert w["udzial_proc"].sum() == pytest.approx(100)
+    assert set(w["cecha"]) == {"miasto", "dzielnica", "metraz", "pokoje", "pietro", "rok_budowy"}

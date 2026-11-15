@@ -10,3 +10,6 @@ ograniczenia: >
   Nie spełnia jeszcze warunków banku: MAPE 10,2% > 8% (na transakcjach RCN, operatów kontrolnych jeszcze nie
   liczyliśmy), brak przedziału P10/P90 (predict_interval rzuca NotImplementedError) i brak odpowiedzi „nie wiem”.
   Model nie uwzględnia czasu transakcji: na teście zaniża wycenę (mediana błędu ze znakiem −6,3%).
+sprawdzone_niewybrane: >
+  v2_lightgbm (2026-11-15): LightGBM na tych samych cechach, test MAPE 10,2% / MdAPE 8,3% / MAE 63 095 zł /
+  RMSE 95 538 zł, czyli bez poprawy względem v1 (docs/b3_wycena_v2_geo.md); v1 zostaje jako prostsza.

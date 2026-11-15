@@ -7,7 +7,8 @@ MAE w PLN, MAPE i MdAPE w %. Wyniki liczy [`ewaluacja.py`](ewaluacja.py) i zapis
 `versions/<wersja>/metryki.json`. Raport z RMSE, podziałem na miasta i rynek oraz kodem:
 [docs/b2_wycena_v0_v1.md](../../../../../docs/b2_wycena_v0_v1.md).
 
-Te same runy (parametry, metryki, model) są w MLflow, eksperyment `wycena` (`mlflow.db`, zapis: `ewaluacja.py`).
+Te same runy (parametry, metryki, model) są w MLflow, eksperyment `wycena` (`mlflow.db`, zapis: `ewaluacja.py`;
+v2: [`ewaluacja_v2.py`](ewaluacja_v2.py)).
 Podział losowy 85/15 dla porównania: [docs/b1_v1.md](../../../../../docs/b1_v1.md).
 
 Warunek banku: MAPE ≤ 8% na operatach kontrolnych (jeszcze nie liczone, tu MAPE na transakcjach RCN).
@@ -18,3 +19,5 @@ Warunek banku: MAPE ≤ 8% na operatach kontrolnych (jeszcze nie liczone, tu MAP
 | v0_mediana_dzielnicy | test | 83 401 | 13,4 | 11,3 | baseline; zaniża wycenę (mediana błędu −6,4%), bo nie uwzględnia wzrostu cen |
 | v1_liniowa | walidacja | 57 814 | 10,2 | 7,6 | regresja liniowa na ln(ceny); ln(metraż) wybrany na walidacji (MAPE 10,2 vs 13,4 dla metrażu w m²) |
 | v1_liniowa | test | 63 252 | 10,2 | 8,3 | lepsza od v0 na wszystkich metrykach i w każdym mieście; bez czasu transakcji: mediana błędu −6,3%; 3 dzielnice (< 30 transakcji) w „reszcie miasta”; brak przedziału |
+| v2_lightgbm | walidacja | 57 667 | 10,2 | 7,5 | LightGBM na ln(ceny), te same cechy co v1; walidacja użyta do wczesnego zatrzymania (265 drzew), więc wynik lekko optymistyczny |
+| v2_lightgbm | test | 63 095 | 10,2 | 8,3 | sam boosting ≈ v1 (MAPE −0,01 pp, MAE −157 zł, RMSE +540 zł); mediana błędu −6,4%; test otwarty raz 2026-11-15; [b3_wycena_v2_geo.md](../../../../../docs/b3_wycena_v2_geo.md) |
