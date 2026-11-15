@@ -1,0 +1,624 @@
+{
+  "wersja": "v1_ryzyko",
+  "zbiory": {
+    "trening": "umowy z końcem 2023-03 – 2025-12 (miesiac_konca)",
+    "test": "umowy z końcem 2026-04 – 2026-09 (miesiac_konca)",
+    "przerwa": "końce 2026-01 – 2026-03 poza zbiorami (wynik treningu znany przed pierwszą migawką testu)"
+  },
+  "trening": {
+    "n": 14903,
+    "odejscia": 5931,
+    "miesiac_konca_od": "2023-03-01",
+    "miesiac_konca_do": "2025-12-01",
+    "liczba_drzew": 131,
+    "auc_walidacji_w_czasie": 0.6621711627579159,
+    "walidacja_migawki_po": "2025-05-01"
+  },
+  "test": {
+    "n": 2856,
+    "odejscia": 1065,
+    "miesiac_konca_od": "2026-04-01",
+    "miesiac_konca_do": "2026-09-01",
+    "data_migawki_od": "2026-01-31",
+    "data_migawki_do": "2026-08-01"
+  },
+  "cechy": [
+    "linia",
+    "miesiecy_umowy",
+    "nr_okresu",
+    "staz_dni",
+    "indeksacja_ostatnia_pct",
+    "czynsz_m2",
+    "czynsz_do_podobnych",
+    "plat_liczba_90d",
+    "plat_spoznione_90d",
+    "plat_zalegle_na_migawke",
+    "plat_max_opoznienie_90d",
+    "plat_srednie_opoznienie_90d",
+    "zgl_90d",
+    "zgl_365d",
+    "zgl_otwarte_na_migawke",
+    "ocena_srednia_365d",
+    "ocena_min_365d",
+    "ocena_liczba_365d",
+    "ankieta_ostatni_wynik",
+    "ankieta_dni_od_odpowiedzi",
+    "ankieta_brak_wyniku",
+    "ankiety_bez_odpowiedzi_365d",
+    "portal_miesiace_3m",
+    "portal_logowania_3m",
+    "portal_odslony_oferty_3m",
+    "liczba_wind",
+    "windy_awarie_90d",
+    "windy_awarie_90d_na_winde"
+  ],
+  "parametry": {
+    "objective": "binary",
+    "metric": "auc",
+    "learning_rate": 0.03,
+    "num_leaves": 31,
+    "min_child_samples": 100,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "seed": 42,
+    "deterministic": true,
+    "force_row_wise": true,
+    "num_threads": 4,
+    "verbose": -1
+  },
+  "wyniki": {
+    "wszystkie": {
+      "v1_ryzyko": {
+        "n": 2856,
+        "odejscia": 1065,
+        "odsetek_odejsc": 0.37289915966386555,
+        "k_decyl": 286,
+        "auc": 0.6944734103485607,
+        "recall_10": 0.231924882629108,
+        "precision_10": 0.8636363636363636,
+        "lift_10": 2.3160051216389244,
+        "auc_ci95": [
+          0.6723137851032318,
+          0.7142377455582211
+        ],
+        "recall_10_ci95": [
+          0.21851716433069268,
+          0.24506073601161066
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "score_polityki": {
+        "n": 2856,
+        "odejscia": 1065,
+        "odsetek_odejsc": 0.37289915966386555,
+        "k_decyl": 286,
+        "auc": 0.6823910895111971,
+        "recall_10": 0.1671361502347418,
+        "precision_10": 0.6223776223776224,
+        "lift_10": 1.6690239338126662,
+        "auc_ci95": [
+          0.663042386337288,
+          0.702056410583955
+        ],
+        "recall_10_ci95": [
+          0.1523541175861444,
+          0.18137964272777887
+        ],
+        "udzial_b2b_w_decylu": 0.26223776223776224
+      },
+      "roznica_v1_minus_score_polityki": {
+        "auc_ci95": [
+          -0.01698688592849964,
+          0.03862232212864911
+        ],
+        "recall_10_ci95": [
+          0.04700136808755759,
+          0.08366651682623465
+        ]
+      },
+      "regula_b2b_potem_score": {
+        "n": 2856,
+        "odejscia": 1065,
+        "odsetek_odejsc": 0.37289915966386555,
+        "k_decyl": 286,
+        "auc": 0.7594563846881774,
+        "recall_10": 0.23943661971830985,
+        "precision_10": 0.8916083916083916,
+        "lift_10": 2.3910174332709544,
+        "auc_ci95": [
+          0.7418157478980095,
+          0.7770147017581324
+        ],
+        "recall_10_ci95": [
+          0.22621104984564622,
+          0.25253866326047725
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "roznica_v1_minus_regula_b2b_potem_score": {
+        "auc_ci95": [
+          -0.08566758528640211,
+          -0.04520751833389409
+        ],
+        "recall_10_ci95": [
+          -0.019343296897725414,
+          0.0037594869110688283
+        ]
+      }
+    },
+    "bez_wypowiedzenia_przed_migawka": {
+      "v1_ryzyko": {
+        "n": 2493,
+        "odejscia": 702,
+        "odsetek_odejsc": 0.2815884476534296,
+        "k_decyl": 249,
+        "auc": 0.6916228817401346,
+        "recall_10": 0.28347578347578345,
+        "precision_10": 0.7991967871485943,
+        "lift_10": 2.838173205643085,
+        "auc_ci95": [
+          0.6657046256177882,
+          0.7146325634547596
+        ],
+        "recall_10_ci95": [
+          0.26294083706934773,
+          0.3024617227498814
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "score_polityki": {
+        "n": 2493,
+        "odejscia": 702,
+        "odsetek_odejsc": 0.2815884476534296,
+        "k_decyl": 249,
+        "auc": 0.6864991306644015,
+        "recall_10": 0.18233618233618235,
+        "precision_10": 0.5140562248995983,
+        "lift_10": 1.825558644835753,
+        "auc_ci95": [
+          0.6632182780004875,
+          0.7081927319301201
+        ],
+        "recall_10_ci95": [
+          0.1599985590778098,
+          0.20276372924648783
+        ],
+        "udzial_b2b_w_decylu": 0.21285140562248997
+      },
+      "roznica_v1_minus_score_polityki": {
+        "auc_ci95": [
+          -0.025415247907102874,
+          0.03752453474375514
+        ],
+        "recall_10_ci95": [
+          0.07330401496113613,
+          0.12992741968740976
+        ]
+      },
+      "regula_b2b_potem_score": {
+        "n": 2493,
+        "odejscia": 702,
+        "odsetek_odejsc": 0.2815884476534296,
+        "k_decyl": 249,
+        "auc": 0.7671067429582226,
+        "recall_10": 0.2905982905982906,
+        "precision_10": 0.8192771084337349,
+        "lift_10": 2.909484090206982,
+        "auc_ci95": [
+          0.7461415263865756,
+          0.7872083308652148
+        ],
+        "recall_10_ci95": [
+          0.27113910150064097,
+          0.3111790275289861
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "roznica_v1_minus_regula_b2b_potem_score": {
+        "auc_ci95": [
+          -0.09945838532151552,
+          -0.05092345994436599
+        ],
+        "recall_10_ci95": [
+          -0.023845435869071344,
+          0.006964518768139939
+        ]
+      }
+    },
+    "B2C": {
+      "v1_ryzyko": {
+        "n": 2397,
+        "odejscia": 695,
+        "odsetek_odejsc": 0.28994576554025864,
+        "k_decyl": 240,
+        "auc": 0.568929486258232,
+        "recall_10": 0.1366906474820144,
+        "precision_10": 0.3958333333333333,
+        "lift_10": 1.3651978417266186,
+        "auc_ci95": [
+          0.5441222392008997,
+          0.5931371325034928
+        ],
+        "recall_10_ci95": [
+          0.11671290393988709,
+          0.1575865077153737
+        ],
+        "udzial_b2b_w_decylu": 0.0
+      },
+      "score_polityki": {
+        "n": 2397,
+        "odejscia": 695,
+        "odsetek_odejsc": 0.28994576554025864,
+        "k_decyl": 240,
+        "auc": 0.6723241383391524,
+        "recall_10": 0.17841726618705037,
+        "precision_10": 0.5166666666666667,
+        "lift_10": 1.7819424460431659,
+        "auc_ci95": [
+          0.649904760514774,
+          0.6935865887371423
+        ],
+        "recall_10_ci95": [
+          0.15438895269850386,
+          0.19534934203883822
+        ],
+        "udzial_b2b_w_decylu": 0.0
+      },
+      "roznica_v1_minus_score_polityki": {
+        "auc_ci95": [
+          -0.13626197683289074,
+          -0.0734705113119858
+        ],
+        "recall_10_ci95": [
+          -0.06735409174930906,
+          -0.01164314739097191
+        ]
+      },
+      "regula_b2b_potem_score": {
+        "n": 2397,
+        "odejscia": 695,
+        "odsetek_odejsc": 0.28994576554025864,
+        "k_decyl": 240,
+        "auc": 0.6723241383391524,
+        "recall_10": 0.17841726618705037,
+        "precision_10": 0.5166666666666667,
+        "lift_10": 1.7819424460431659,
+        "auc_ci95": [
+          0.649904760514774,
+          0.6935865887371423
+        ],
+        "recall_10_ci95": [
+          0.15438895269850386,
+          0.19534934203883822
+        ],
+        "udzial_b2b_w_decylu": 0.0
+      },
+      "roznica_v1_minus_regula_b2b_potem_score": {
+        "auc_ci95": [
+          -0.13626197683289074,
+          -0.0734705113119858
+        ],
+        "recall_10_ci95": [
+          -0.06735409174930906,
+          -0.01164314739097191
+        ]
+      }
+    },
+    "B2B": {
+      "v1_ryzyko": {
+        "n": 459,
+        "odejscia": 370,
+        "odsetek_odejsc": 0.8061002178649237,
+        "k_decyl": 46,
+        "auc": 0.6584269662921348,
+        "recall_10": 0.11351351351351352,
+        "precision_10": 0.9130434782608695,
+        "lift_10": 1.1326674500587544,
+        "auc_ci95": [
+          0.5955735520589938,
+          0.7227033636538394
+        ],
+        "recall_10_ci95": [
+          0.10263157894736842,
+          0.12365591397849462
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "score_polityki": {
+        "n": 459,
+        "odejscia": 370,
+        "odsetek_odejsc": 0.8061002178649237,
+        "k_decyl": 46,
+        "auc": 0.7158518068630428,
+        "recall_10": 0.11621621621621622,
+        "precision_10": 0.9347826086956522,
+        "lift_10": 1.1596357226792011,
+        "auc_ci95": [
+          0.6542162138422556,
+          0.7762566492982691
+        ],
+        "recall_10_ci95": [
+          0.10540540540540541,
+          0.12432432432432433
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "roznica_v1_minus_score_polityki": {
+        "auc_ci95": [
+          -0.1496917638764737,
+          0.030486692376372894
+        ],
+        "recall_10_ci95": [
+          -0.01634877384196186,
+          0.013056543519527421
+        ]
+      },
+      "regula_b2b_potem_score": {
+        "n": 459,
+        "odejscia": 370,
+        "odsetek_odejsc": 0.8061002178649237,
+        "k_decyl": 46,
+        "auc": 0.7158518068630428,
+        "recall_10": 0.11621621621621622,
+        "precision_10": 0.9347826086956522,
+        "lift_10": 1.1596357226792011,
+        "auc_ci95": [
+          0.6542162138422556,
+          0.7762566492982691
+        ],
+        "recall_10_ci95": [
+          0.10540540540540541,
+          0.12432432432432433
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "roznica_v1_minus_regula_b2b_potem_score": {
+        "auc_ci95": [
+          -0.1496917638764737,
+          0.030486692376372894
+        ],
+        "recall_10_ci95": [
+          -0.01634877384196186,
+          0.013056543519527421
+        ]
+      }
+    },
+    "okres_kampania_2026q3": {
+      "v1_ryzyko": {
+        "n": 1586,
+        "odejscia": 611,
+        "odsetek_odejsc": 0.38524590163934425,
+        "k_decyl": 159,
+        "auc": 0.703489025976751,
+        "recall_10": 0.22749590834697217,
+        "precision_10": 0.8742138364779874,
+        "lift_10": 2.2692359159641375,
+        "auc_ci95": [
+          0.6766656524873537,
+          0.7308512830041486
+        ],
+        "recall_10_ci95": [
+          0.21060428967791622,
+          0.24521983556773572
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "score_polityki": {
+        "n": 1586,
+        "odejscia": 611,
+        "odsetek_odejsc": 0.38524590163934425,
+        "k_decyl": 159,
+        "auc": 0.6844987200470015,
+        "recall_10": 0.15875613747954173,
+        "precision_10": 0.610062893081761,
+        "lift_10": 1.5835675097015924,
+        "auc_ci95": [
+          0.6581392678713501,
+          0.7111929817710166
+        ],
+        "recall_10_ci95": [
+          0.14064284694959694,
+          0.18016528925619835
+        ],
+        "udzial_b2b_w_decylu": 0.23270440251572327
+      },
+      "roznica_v1_minus_score_polityki": {
+        "auc_ci95": [
+          -0.01999467193501112,
+          0.05614115963345672
+        ],
+        "recall_10_ci95": [
+          0.043478260869565216,
+          0.09309791332263243
+        ]
+      },
+      "regula_b2b_potem_score": {
+        "n": 1586,
+        "odejscia": 611,
+        "odsetek_odejsc": 0.38524590163934425,
+        "k_decyl": 159,
+        "auc": 0.7597012044147887,
+        "recall_10": 0.24549918166939444,
+        "precision_10": 0.9433962264150944,
+        "lift_10": 2.448815736651947,
+        "auc_ci95": [
+          0.7355928705336922,
+          0.782556070376291
+        ],
+        "recall_10_ci95": [
+          0.23088923556942278,
+          0.2614601018675722
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "roznica_v1_minus_regula_b2b_potem_score": {
+        "auc_ci95": [
+          -0.08529955308648503,
+          -0.02829823227469909
+        ],
+        "recall_10_ci95": [
+          -0.03197357334790727,
+          -0.004918032786885267
+        ]
+      }
+    },
+    "okres_polityka_2026": {
+      "v1_ryzyko": {
+        "n": 1270,
+        "odejscia": 454,
+        "odsetek_odejsc": 0.35748031496062993,
+        "k_decyl": 127,
+        "auc": 0.6829840416342747,
+        "recall_10": 0.2356828193832599,
+        "precision_10": 0.84251968503937,
+        "lift_10": 2.356828193832599,
+        "auc_ci95": [
+          0.65198465677562,
+          0.7145236121042248
+        ],
+        "recall_10_ci95": [
+          0.21413378378378378,
+          0.2595942220871679
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "score_polityki": {
+        "n": 1270,
+        "odejscia": 454,
+        "odsetek_odejsc": 0.35748031496062993,
+        "k_decyl": 127,
+        "auc": 0.6809028677550315,
+        "recall_10": 0.17841409691629956,
+        "precision_10": 0.6377952755905512,
+        "lift_10": 1.7841409691629955,
+        "auc_ci95": [
+          0.6514600329843552,
+          0.7096725964958797
+        ],
+        "recall_10_ci95": [
+          0.15546076538723597,
+          0.2013892954722873
+        ],
+        "udzial_b2b_w_decylu": 0.30708661417322836
+      },
+      "roznica_v1_minus_score_polityki": {
+        "auc_ci95": [
+          -0.03957613541838916,
+          0.04389844050543967
+        ],
+        "recall_10_ci95": [
+          0.02801724137931036,
+          0.08823871409028722
+        ]
+      },
+      "regula_b2b_potem_score": {
+        "n": 1270,
+        "odejscia": 454,
+        "odsetek_odejsc": 0.35748031496062993,
+        "k_decyl": 127,
+        "auc": 0.7604922475598169,
+        "recall_10": 0.23348017621145375,
+        "precision_10": 0.8346456692913385,
+        "lift_10": 2.3348017621145374,
+        "auc_ci95": [
+          0.732810213342711,
+          0.7872815949765768
+        ],
+        "recall_10_ci95": [
+          0.21141430262497296,
+          0.25476190476190474
+        ],
+        "udzial_b2b_w_decylu": 1.0
+      },
+      "roznica_v1_minus_regula_b2b_potem_score": {
+        "auc_ci95": [
+          -0.1082157046980933,
+          -0.04642704418565983
+        ],
+        "recall_10_ci95": [
+          -0.01636075631097254,
+          0.023208163689342448
+        ]
+      }
+    }
+  },
+  "waznosc_cech": [
+    {
+      "cecha": "linia",
+      "gain": 15741.788910627365,
+      "udzial": 0.4075022046910544
+    },
+    {
+      "cecha": "indeksacja_ostatnia_pct",
+      "gain": 3156.315408229828,
+      "udzial": 0.08170643723253564
+    },
+    {
+      "cecha": "czynsz_m2",
+      "gain": 3051.608598589897,
+      "udzial": 0.07899592853389385
+    },
+    {
+      "cecha": "czynsz_do_podobnych",
+      "gain": 2887.4131376743317,
+      "udzial": 0.07474545784703401
+    },
+    {
+      "cecha": "portal_logowania_3m",
+      "gain": 2049.46503674984,
+      "udzial": 0.053053787320764455
+    },
+    {
+      "cecha": "ankieta_dni_od_odpowiedzi",
+      "gain": 1198.1146488189697,
+      "udzial": 0.03101517646045736
+    },
+    {
+      "cecha": "ocena_srednia_365d",
+      "gain": 1061.95645070076,
+      "udzial": 0.027490496626739493
+    },
+    {
+      "cecha": "nr_okresu",
+      "gain": 932.3205547332764,
+      "udzial": 0.024134657356262045
+    },
+    {
+      "cecha": "ankieta_ostatni_wynik",
+      "gain": 925.9723122119904,
+      "udzial": 0.023970322614002153
+    },
+    {
+      "cecha": "zgl_365d",
+      "gain": 919.6386227607727,
+      "udzial": 0.023806364601996467
+    },
+    {
+      "cecha": "portal_odslony_oferty_3m",
+      "gain": 871.7654206752777,
+      "udzial": 0.022567087699846586
+    },
+    {
+      "cecha": "staz_dni",
+      "gain": 810.0234997272491,
+      "udzial": 0.020968796104715564
+    },
+    {
+      "cecha": "zgl_90d",
+      "gain": 673.0924084186554,
+      "udzial": 0.017424108654273806
+    },
+    {
+      "cecha": "windy_awarie_90d",
+      "gain": 666.7206602096558,
+      "udzial": 0.01725916542846605
+    },
+    {
+      "cecha": "windy_awarie_90d_na_winde",
+      "gain": 653.2089717388153,
+      "udzial": 0.01690939305683623
+    }
+  ]
+}
