@@ -162,6 +162,69 @@ ze średnią w tym samym horyzoncie 4 lat: KM daje 24,61 mies., a proste podejś
 - 915 zakończonych najmów skończyło się przed końcem umowy (wypowiedzenie w trakcie). Dają łagodne spadki krzywej
   między schodkami.
 
+## Grupy: linia klienta i indeksacja przy ostatnim przedłużeniu
+
+![Krzywe Kaplana-Meiera: B2C / B2B, indeksacja przy ostatnim przedłużeniu, kontrola od początku przedłużenia](img/przezycie_km_grupy.png)
+
+*Wykres `docs/img/przezycie_km_grupy.png`: pasma to 95% przedział, kropka to mediana. W prawym panelu obie
+mediany wypadają w tym samym punkcie (24 mies.).*
+
+**Naiwne średnie z `leasing_bc/zalozenia.yaml` (`czas_najmu_mies`: B2C 19,01, B2B 16,5 mies.) są niższe od RMST
+do 60 mies. o 9,85 mies. (51,8%) w B2C i o 1,89 mies. (11,5%) w B2B. RMST ucina czas najmu na 5 latach, więc
+prawdziwe niedoszacowanie jest co najmniej tak duże.**
+
+S(t) to odsetek najmów trwających dłużej niż t miesięcy. RMST do 60 mies. to średni czas najmu w pierwszych 5 latach
+(pole pod krzywą). Czas liczony od wprowadzenia.
+
+| Grupa | Najmy | Aktywne | S(12) | S(24) | Mediana KM (95% przedział) | RMST do 60 mies. |
+|---|---:|---:|---:|---:|---:|---:|
+| B2C | 12 735 | 5 095 | 58,52% | 37,96% | 24 (24–24) | 28,86 |
+| B2B | 4 191 | 1 201 | 51,23% | 12,39% | 18 (12–18) | 18,39 |
+| Indeksacja przy ostatnim przedłużeniu ≤ 6% | 5 681 | 3 527 | 100,00%² | 73,30% | 48 (48–48) | 43,98 |
+| Indeksacja przy ostatnim przedłużeniu > 6% | 1 468 | 101 | 100,00%² | 34,78% | 24 (24–24) | 29,48 |
+| *bez przedłużenia (dla porządku)* | 9 777 | 2 668 | 14,46% | 0,00% | 12 (12–12) | 12,81 |
+
+² S(12) = 100% wynika z definicji grupy, a nie z danych: przedłużenie ma tylko najem, który przetrwał pierwszą umowę
+(najkrótszy czas w grupach: 12,03 i 12,37 mies.).
+
+**Różnica 14,5 mies. RMST między grupami indeksacji nie mierzy wpływu podwyżki.** Grupę wyznacza się dopiero po
+fakcie. Indeksacje > 6% to prawie wyłącznie przedłużenia z lat 2022–2023 (tabela niżej), więc „ostatnie
+przedłużenie > 6%” oznacza najczęściej najem, który po 2022–2023 już się nie przedłużył. Kto przedłużał dalej, ma
+ostatnie przedłużenie z lat 2024–2026, zwykle z indeksacją ≤ 6%. Stąd tylko 101 aktywnych najmów w grupie > 6%
+wobec 3 527 w grupie ≤ 6%.
+
+| Rok początku ostatniego przedłużenia | ≤ 6% | > 6% |
+|---|---:|---:|
+| 2020 | 47 | 0 |
+| 2021 | 141 | 11 |
+| 2022 | 77 | 403 |
+| 2023 | 224 | 583 |
+| 2024 | 874 | 312 |
+| 2025 | 1 684 | 98 |
+| 2026 | 2 634 | 61 |
+
+**Kontrola bez tego obciążenia:** każde przedłużenie z lat 2022–2023 (obie grupy są wtedy liczne) z czasem od
+początku przedłużenia, a grupa to indeksacja tego przedłużenia, znana w chwili podpisania. S(12) oznacza tu, że
+najem trwał dłużej niż 12 mies. od przedłużenia, czyli zwykle przedłużono go ponownie. Jeden najem może mieć kilka
+wierszy (średnio 1,26), więc przedziały są za wąskie.
+
+| Przedłużenia | Indeksacja | Przedłużenia (wiersze) | Aktywne | S(12) | S(24) | Mediana KM | RMST do 60 mies. |
+|---|---|---:|---:|---:|---:|---:|---:|
+| 2022–2023, obie linie | ≤ 6% | 996 | 354 | 69,78% | 49,10% | 24 (24–36) | 32,67 |
+| 2022–2023, obie linie | > 6% | 2 479 | 755 | 60,23% | 43,20% | 24 (24–24) | 30,41 |
+| 2022, B2C | ≤ 6% | 193 | 50 | 63,21% | 49,22% | 24 | 31,54 |
+| 2022, B2C | > 6% | 974 | 229 | 61,60% | 42,81% | 24 | 30,24 |
+| 2023, B2C | ≤ 6% | 729 | 298 | 74,62% | 52,81% | 36 | 35,65 |
+| 2023, B2C | > 6% | 1 376 | 525 | 64,10% | 47,24% | 24 | 33,45 |
+| 2023, B2B | ≤ 6% | 66 | 6 | 40,91% | 12,12% | 12 | 20,03 |
+| 2023, B2B | > 6% | 100 | 1 | 11,00% | 4,00% | 12 | 13,92 |
+
+B2B z 2022 roku (8 i 29 przedłużeń) pomijamy, bo grupy są za małe. Wniosek z kontroli: po przedłużeniu
+z indeksacją > 6% kolejne przedłużenie zdarza się rzadziej, ale różnica RMST to 2,26 mies. (32,67 wobec 30,41),
+a nie 14,5 mies. W B2C zmienia się też z roku na rok: S(12) różni się o 1,6 p.p. w 2022 roku i o 10,5 p.p.
+w 2023 roku. To nadal porównanie, a nie przyczyna, bo nie wiemy, dlaczego danemu najemcy dano wyższą
+indeksację (np. niski czynsz wyjściowy lub budynek).
+
 ## SQL i kod
 
 Budowa tabeli i analiza (z katalogu głównego repozytorium):
@@ -171,6 +234,30 @@ pypyr baza                                                  # przebudowa bazy, k
 cd api && poetry run python -m api.ai.features.najemcy.czas_najmu      # albo tylko tabela
 cd api && poetry run python -m api.ai.churn_model.evals.przezycie       # JSON z wynikami + wykres
 cd api && poetry run pytest tests/test_czas_najmu.py                    # testy definicji i KM
+cd api && poetry run python -m api.ai.churn_model.evals.przezycie_grupy # grupy: JSON + przezycie_km_grupy.png
+cd api && poetry run pytest tests/test_przezycie_grupy.py               # testy grup i porównania z założeniami
+```
+
+Grupy (sekcja „Grupy: linia klienta i indeksacja”):
+
+- [`api/api/ai/features/najemcy/indeksacja_ostatnia.sql`](../api/api/ai/features/najemcy/indeksacja_ostatnia.sql):
+  `czas_najmu` + indeksacja przedłużenia z najwyższym `nr_okresu` i `data_od` ≤ 2026-09-30 (8 przedłużeń zaczyna
+  się po eksporcie), `grupa_indeksacji` = `<= 6%` (z 6,0 włącznie) / `> 6%` / `bez przedłużenia`.
+- [`api/api/ai/features/najemcy/okresy_przedluzen.sql`](../api/api/ai/features/najemcy/okresy_przedluzen.sql):
+  kontrola, czyli jeden wiersz na przedłużenie B2C / B2B z `data_od` ≤ 2026-09-30, czas od `data_od` liczony
+  tak samo jak w `czas_najmu.sql`.
+- [`api/api/ai/churn_model/evals/przezycie_grupy.py`](../api/api/ai/churn_model/evals/przezycie_grupy.py):
+  `metryki_km()` liczy S(12), S(24), medianę z przedziałem i `restricted_mean_survival_time(km, t=60)`,
+  a `roznice_z_zalozeniami()` porównuje RMST z `czas_najmu_mies` z `leasing_bc/zalozenia.yaml`
+  (`wczytaj_zalozenia()`). Wyniki:
+  [`api/api/ai/churn_model/evals/wyniki/przezycie_grupy.json`](../api/api/ai/churn_model/evals/wyniki/przezycie_grupy.json)
+  (klucze `linia`, `indeksacja_ostatnia`, `kontrola_od_przedluzenia_2022_2023`, `kontrola_<rok>_<linia>`,
+  `ostatnie_przedluzenie_wg_roku`, `kontrola_przedluzenia_na_najem`, `zalozenia_vs_rmst`).
+
+```sql
+-- Udział indeksacji > 6% wśród wszystkich przedłużeń według roku data_od (2022: 83,3%, 2023: 65,0%, 2024: 19,8%)
+SELECT year(data_od) AS rok, count(*) AS n, round(avg((indeksacja_pct > 6)::INT), 3) AS udzial_powyzej_6
+FROM pms_umowy WHERE typ = 'przedłużenie' GROUP BY 1 ORDER BY 1;
 ```
 
 - Definicja tabeli: [`api/api/ai/features/najemcy/czas_najmu.sql`](../api/api/ai/features/najemcy/czas_najmu.sql).

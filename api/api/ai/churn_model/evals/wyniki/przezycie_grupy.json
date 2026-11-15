@@ -1,0 +1,293 @@
+{
+  "linia": {
+    "B2C": {
+      "najmy": 12735,
+      "cenzurowane": 5095,
+      "najkrotszy_czas_miesiace": 0.03333333333333333,
+      "S_12": 0.5852086389888783,
+      "S_24": 0.3795620398769987,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 28.856324951485924
+    },
+    "B2B": {
+      "najmy": 4191,
+      "cenzurowane": 1201,
+      "najkrotszy_czas_miesiace": 0.03333333333333333,
+      "S_12": 0.5122862757194104,
+      "S_24": 0.12390963103398468,
+      "mediana_km": 18.0,
+      "mediana_km_95_od": 12.0,
+      "mediana_km_95_do": 18.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 18.39197181515116
+    }
+  },
+  "indeksacja_ostatnia": {
+    "<= 6%": {
+      "najmy": 5681,
+      "cenzurowane": 3527,
+      "najkrotszy_czas_miesiace": 12.033333333333333,
+      "S_12": 1.0,
+      "S_24": 0.733047833290948,
+      "mediana_km": 48.0,
+      "mediana_km_95_od": 48.0,
+      "mediana_km_95_do": 48.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 43.97643841685253
+    },
+    "> 6%": {
+      "najmy": 1468,
+      "cenzurowane": 101,
+      "najkrotszy_czas_miesiace": 12.366666666666667,
+      "S_12": 1.0,
+      "S_24": 0.3477906916189608,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 29.47989042476175
+    },
+    "bez przedłużenia": {
+      "najmy": 9777,
+      "cenzurowane": 2668,
+      "najkrotszy_czas_miesiace": 0.03333333333333333,
+      "S_12": 0.14456180731096865,
+      "S_24": 0.0,
+      "mediana_km": 12.0,
+      "mediana_km_95_od": 12.0,
+      "mediana_km_95_do": 12.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 12.812476083207194
+    }
+  },
+  "indeksacja_ostatnia_B2C": {
+    "<= 6%": {
+      "najmy": 5165,
+      "cenzurowane": 3333,
+      "najkrotszy_czas_miesiace": 12.033333333333333,
+      "S_12": 1.0,
+      "S_24": 0.744325781611135,
+      "mediana_km": 48.0,
+      "mediana_km_95_od": 48.0,
+      "mediana_km_95_do": 48.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 45.06520594131901
+    },
+    "> 6%": {
+      "najmy": 1297,
+      "cenzurowane": 98,
+      "najkrotszy_czas_miesiace": 12.366666666666667,
+      "S_12": 1.0,
+      "S_24": 0.34552769320657967,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 29.76045737358629
+    }
+  },
+  "indeksacja_ostatnia_B2B": {
+    "<= 6%": {
+      "najmy": 516,
+      "cenzurowane": 194,
+      "najkrotszy_czas_miesiace": 12.4,
+      "S_12": 1.0,
+      "S_24": 0.6279723070536276,
+      "mediana_km": 30.0,
+      "mediana_km_95_od": 30.0,
+      "mediana_km_95_do": 30.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 33.396099702614464
+    },
+    "> 6%": {
+      "najmy": 171,
+      "cenzurowane": 3,
+      "najkrotszy_czas_miesiace": 16.866666666666667,
+      "S_12": 1.0,
+      "S_24": 0.36474419581888823,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 27.40191527904387
+    }
+  },
+  "kontrola_od_przedluzenia_2022_2023": {
+    "<= 6%": {
+      "najmy": 996,
+      "cenzurowane": 354,
+      "najkrotszy_czas_miesiace": 1.2666666666666666,
+      "S_12": 0.6977911646586344,
+      "S_24": 0.4909638554216869,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 36.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 32.67379602998246
+    },
+    "> 6%": {
+      "najmy": 2479,
+      "cenzurowane": 755,
+      "najkrotszy_czas_miesiace": 1.1,
+      "S_12": 0.6022589753933038,
+      "S_24": 0.43202904396934244,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 30.414590828552953
+    }
+  },
+  "kontrola_2022_B2C": {
+    "<= 6%": {
+      "najmy": 193,
+      "cenzurowane": 50,
+      "najkrotszy_czas_miesiace": 1.8064516129032258,
+      "S_12": 0.6321243523316064,
+      "S_24": 0.4922279792746113,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 36.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 31.541964324605143
+    },
+    "> 6%": {
+      "najmy": 974,
+      "cenzurowane": 229,
+      "najkrotszy_czas_miesiace": 1.1,
+      "S_12": 0.6160164271047228,
+      "S_24": 0.4281314168377824,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 30.244878915543875
+    }
+  },
+  "kontrola_2022_B2B": {
+    "<= 6%": {
+      "najmy": 8,
+      "cenzurowane": 0,
+      "najkrotszy_czas_miesiace": 12.0,
+      "S_12": 0.25000000000000006,
+      "S_24": 0.12500000000000003,
+      "mediana_km": 12.0,
+      "mediana_km_95_od": 12.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 16.5
+    },
+    "> 6%": {
+      "najmy": 29,
+      "cenzurowane": 0,
+      "najkrotszy_czas_miesiace": 12.0,
+      "S_12": 0.0,
+      "S_24": null,
+      "mediana_km": 12.0,
+      "mediana_km_95_od": 12.0,
+      "mediana_km_95_do": 12.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 12.0
+    }
+  },
+  "kontrola_2023_B2C": {
+    "<= 6%": {
+      "najmy": 729,
+      "cenzurowane": 298,
+      "najkrotszy_czas_miesiace": 1.4666666666666668,
+      "S_12": 0.7462277091906718,
+      "S_24": 0.5281207133058986,
+      "mediana_km": 36.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 36.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 35.65389585798049
+    },
+    "> 6%": {
+      "najmy": 1376,
+      "cenzurowane": 525,
+      "najkrotszy_czas_miesiace": 1.1612903225806452,
+      "S_12": 0.6409883720930234,
+      "S_24": 0.4723837209302325,
+      "mediana_km": 24.0,
+      "mediana_km_95_od": 24.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 33.448194180304036
+    }
+  },
+  "kontrola_2023_B2B": {
+    "<= 6%": {
+      "najmy": 66,
+      "cenzurowane": 6,
+      "najkrotszy_czas_miesiace": 1.2666666666666666,
+      "S_12": 0.4090909090909093,
+      "S_24": 0.12121212121212123,
+      "mediana_km": 12.0,
+      "mediana_km_95_od": 12.0,
+      "mediana_km_95_do": 24.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 20.03238840013034
+    },
+    "> 6%": {
+      "najmy": 100,
+      "cenzurowane": 1,
+      "najkrotszy_czas_miesiace": 4.866666666666667,
+      "S_12": 0.10999999999999997,
+      "S_24": 0.03999999999999999,
+      "mediana_km": 12.0,
+      "mediana_km_95_od": 12.0,
+      "mediana_km_95_do": 12.0,
+      "horyzont_rmst": 60,
+      "rmst_km": 13.915763440860214
+    }
+  },
+  "ostatnie_przedluzenie_wg_roku": {
+    "2020": {
+      "<= 6%": 47,
+      "> 6%": 0
+    },
+    "2021": {
+      "<= 6%": 141,
+      "> 6%": 11
+    },
+    "2022": {
+      "<= 6%": 77,
+      "> 6%": 403
+    },
+    "2023": {
+      "<= 6%": 224,
+      "> 6%": 583
+    },
+    "2024": {
+      "<= 6%": 874,
+      "> 6%": 312
+    },
+    "2025": {
+      "<= 6%": 1684,
+      "> 6%": 98
+    },
+    "2026": {
+      "<= 6%": 2634,
+      "> 6%": 61
+    }
+  },
+  "kontrola_przedluzenia_na_najem": 1.263177026535805,
+  "zalozenia_vs_rmst": {
+    "B2C": {
+      "naiwna_srednia": 19.01,
+      "rmst_km": 28.856324951485924,
+      "roznica_miesiace": 9.846324951485922,
+      "roznica_proc_naiwnej": 0.5179550211197224
+    },
+    "B2B": {
+      "naiwna_srednia": 16.5,
+      "rmst_km": 18.39197181515116,
+      "roznica_miesiace": 1.8919718151511589,
+      "roznica_proc_naiwnej": 0.11466495849400962
+    }
+  }
+}
