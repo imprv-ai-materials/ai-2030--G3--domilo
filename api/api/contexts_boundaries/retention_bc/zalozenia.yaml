@@ -1,0 +1,46 @@
+# Stałe ekonomiczne oferty retencyjnej (retention_bc).
+#
+# Zasada (CLAUDE.md): liczby tylko od użytkownika, każda z opisem źródła, datą i osobą odpowiedzialną.
+# Każda pozycja: wartosc, jednostka, opis, zrodlo (kto i kiedy podał), data (od kiedy obowiązuje), odpowiedzialny.
+# Odczyt: api.contexts_boundaries.retention_bc.zalozenia.wczytaj_zalozenia() / zalozenia_oferty().
+# Użycie: wartość oczekiwana oferty dla najemcy EV = uplift × R − D × P(przedłuży | oferta) − k
+# (retention_bc/polityka_rabatow.py, docs/polityka_rabatow.md).
+
+koszt_odejscia_R:
+  wartosc: 4920
+  jednostka: PLN na jednego najemcę, który odchodzi (zamiast przedłużyć umowę)
+  opis: >
+    Koszt odejścia najemcy: to, co Domilo traci, gdy najemca nie przedłuża umowy. W EV to wartość jednego
+    dodatkowego przedłużenia wywołanego ofertą (uplift × R).
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „R = 4 920 PLN (koszt odejścia najemcy, Monika Lis, FinKs i PMS
+    2025)”; podstawa: dane FinKs i PMS za 2025 r. Wartości nie wyliczano z data/.
+  data: 2026-11-16
+  odpowiedzialny: Monika Lis
+
+rabat_roczny_D:
+  wartosc: 1800
+  jednostka: PLN na jedną przedłużoną umowę z ofertą (rabat za rok)
+  opis: >
+    Roczny koszt rabatu dla najemcy, który przyjął ofertę i przedłużył umowę. Płacimy go każdemu przedłużającemu
+    z ofertą, także temu, kto przedłużyłby bez niej (stąd D × P(przedłuży | oferta) w EV).
+    Uwaga z danych (nie zmienia założenia): fk_rabaty księguje 150 PLN za każdy miesiąc kalendarzowy nowej umowy,
+    także niepełny. Z 507 przedłużeń z ofertą z końcem umowy 2025-07 – 2025-09 (pełny rok widać w danych)
+    485 ma 13 pozycji = 1 950 PLN (mediana i maksimum); pozostałe 22 mają od 3 do 12 pozycji.
+    Wrażliwość z D = 1 950: docs/polityka_rabatow.md.
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „D = 1 800 PLN (roczny rabat, Joanna Michalak, FinKs)”;
+    podstawa: FinKs.
+  data: 2026-11-16
+  odpowiedzialny: Joanna Michalak
+
+koszt_kontaktu_k:
+  wartosc: 60
+  jednostka: PLN za jedną wysłaną ofertę (kontakt z najemcą)
+  opis: >
+    Koszt przygotowania i przekazania oferty jednemu najemcy, niezależnie od tego, czy ją przyjmie.
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „k = 60 PLN (koszt kontaktu, szacunek Joanny Michalak)”;
+    to szacunek, nie wartość z systemu.
+  data: 2026-11-16
+  odpowiedzialny: Joanna Michalak

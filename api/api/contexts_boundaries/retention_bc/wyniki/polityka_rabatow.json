@@ -1,0 +1,496 @@
+{
+  "zalozenia": {
+    "R": 4920.0,
+    "D": 1800.0,
+    "k": 60.0
+  },
+  "zbior_oceny": {
+    "opis": "test_2025, część testowa 30% według id_umowy (churn_model/evals/uplift.md)",
+    "umowy": 1413,
+    "oferta": 710,
+    "kontrola": 703
+  },
+  "rok": {
+    "umowy": 5985,
+    "data_do_od": "2025-10-01",
+    "data_do_do": "2026-09-30",
+    "mnoznik": 4.235668789808917
+  },
+  "prog_ryzyka_score": 0.5182,
+  "polityki_zbior_oceny": {
+    "wszyscy": {
+      "oferty": 1413,
+      "udzial": 1.0,
+      "umowy_oferta_w_tescie": 710,
+      "umowy_kontrola_w_tescie": 703,
+      "odsetek_oferta": 0.6422535211267606,
+      "odsetek_kontrola": 0.5874822190611664,
+      "uplift_obserwowany": 0.05477130206559422,
+      "dodatkowe_przedluzenia": 77.39184981868463,
+      "rabaty": 907.5042253521127,
+      "korzysc_z_przedluzen": 380767.9011079284,
+      "koszt_rabatow": 1633507.605633803,
+      "koszt_kontaktow": 84780.0,
+      "zysk_netto": -1337519.7045258745,
+      "zysk_na_oferte": -946.5815318654455,
+      "prog_D": 326.15594819195996,
+      "prog_R": 22202.43616943445,
+      "model_dodatkowe_przedluzenia": 68.26142441666053,
+      "model_rabaty": 886.6746258751929,
+      "model_zysk_netto": -1344948.1184453776
+    },
+    "gorne_35_ryzyka": {
+      "oferty": 515,
+      "udzial": 0.36447275300778487,
+      "umowy_oferta_w_tescie": 255,
+      "umowy_kontrola_w_tescie": 260,
+      "odsetek_oferta": 0.48627450980392156,
+      "odsetek_kontrola": 0.38076923076923075,
+      "uplift_obserwowany": 0.10550527903469081,
+      "dodatkowe_przedluzenia": 54.33521870286577,
+      "rabaty": 250.4313725490196,
+      "korzysc_z_przedluzen": 267329.27601809957,
+      "koszt_rabatow": 450776.4705882353,
+      "koszt_kontaktow": 30900.0,
+      "zysk_netto": -214347.19457013573,
+      "zysk_na_oferte": -416.20814479638005,
+      "prog_D": 944.0880893300249,
+      "prog_R": 8864.903502501786,
+      "model_dodatkowe_przedluzenia": 24.025188823666866,
+      "model_rabaty": 305.9579975747563,
+      "model_zysk_netto": -463420.4666221204
+    },
+    "gorne_20_upliftu": {
+      "oferty": 283,
+      "udzial": 0.2002830856334041,
+      "umowy_oferta_w_tescie": 145,
+      "umowy_kontrola_w_tescie": 138,
+      "odsetek_oferta": 0.7586206896551724,
+      "odsetek_kontrola": 0.644927536231884,
+      "uplift_obserwowany": 0.11369315342328834,
+      "dodatkowe_przedluzenia": 32.1751624187906,
+      "rabaty": 214.68965517241378,
+      "korzysc_z_przedluzen": 158301.79910044975,
+      "koszt_rabatow": 386441.3793103448,
+      "koszt_kontaktow": 16980.0,
+      "zysk_netto": -245119.58020989507,
+      "zysk_na_oferte": -866.1469265367317,
+      "prog_D": 658.2608695652173,
+      "prog_R": 12538.285714285716,
+      "model_dodatkowe_przedluzenia": 62.81880987522426,
+      "model_rabaty": 217.5980493660145,
+      "model_zysk_netto": -99587.94427272267
+    },
+    "ev_dodatnie": {
+      "oferty": 30,
+      "udzial": 0.021231422505307854,
+      "umowy_oferta_w_tescie": 15,
+      "umowy_kontrola_w_tescie": 15,
+      "odsetek_oferta": 0.5333333333333333,
+      "odsetek_kontrola": 0.5333333333333333,
+      "uplift_obserwowany": 0.0,
+      "dodatkowe_przedluzenia": 0.0,
+      "rabaty": 16.0,
+      "korzysc_z_przedluzen": 0.0,
+      "koszt_rabatow": 28800.0,
+      "koszt_kontaktow": 1800.0,
+      "zysk_netto": -30600.0,
+      "zysk_na_oferte": -1020.0,
+      "prog_D": null,
+      "prog_R": null,
+      "model_dodatkowe_przedluzenia": 8.449419441139064,
+      "model_rabaty": 19.576368187893003,
+      "model_zysk_netto": 4533.680912196776
+    }
+  },
+  "polityki_rok": {
+    "wszyscy": {
+      "oferty": 5985.0,
+      "udzial": 1.0,
+      "umowy_oferta_w_tescie": 3007.3248407643314,
+      "umowy_kontrola_w_tescie": 2977.675159235669,
+      "odsetek_oferta": 0.6422535211267606,
+      "odsetek_kontrola": 0.5874822190611664,
+      "uplift_obserwowany": 0.05477130206559422,
+      "dodatkowe_przedluzenia": 327.8062428625814,
+      "rabaty": 3843.887323943662,
+      "korzysc_z_przedluzen": 1612806.7148839007,
+      "koszt_rabatow": 6918997.183098593,
+      "koszt_kontaktow": 359100.0,
+      "zysk_netto": -5665290.468214692,
+      "zysk_na_oferte": -946.5815318654455,
+      "prog_D": 326.15594819195996,
+      "prog_R": 22202.43616943445,
+      "model_dodatkowe_przedluzenia": 289.1327849495494,
+      "model_rabaty": 3755.660039535053,
+      "model_zysk_netto": -5696754.769211313
+    },
+    "gorne_35_ryzyka": {
+      "oferty": 2181.3694267515925,
+      "udzial": 0.36447275300778487,
+      "umowy_oferta_w_tescie": 1080.095541401274,
+      "umowy_kontrola_w_tescie": 1101.2738853503186,
+      "odsetek_oferta": 0.48627450980392156,
+      "odsetek_kontrola": 0.38076923076923075,
+      "uplift_obserwowany": 0.10550527903469081,
+      "dodatkowe_przedluzenia": 230.1459900471703,
+      "rabaty": 1060.744348694892,
+      "korzysc_z_przedluzen": 1132318.2710320777,
+      "koszt_rabatow": 1909339.8276508057,
+      "koszt_kontaktow": 130882.16560509555,
+      "zysk_netto": -907903.7222238233,
+      "zysk_na_oferte": -416.20814479638005,
+      "prog_D": 944.0880893300249,
+      "prog_R": 8864.903502501786,
+      "model_dodatkowe_przedluzenia": 101.76274246967176,
+      "model_rabaty": 1295.9367413198277,
+      "model_zysk_netto": -1962895.6070300005
+    },
+    "gorne_20_upliftu": {
+      "oferty": 1198.6942675159237,
+      "udzial": 0.2002830856334041,
+      "umowy_oferta_w_tescie": 614.171974522293,
+      "umowy_kontrola_w_tescie": 584.5222929936306,
+      "odsetek_oferta": 0.7586206896551724,
+      "odsetek_kontrola": 0.644927536231884,
+      "uplift_obserwowany": 0.11369315342328834,
+      "dodatkowe_przedluzenia": 136.28333126430414,
+      "rabaty": 909.3542719086316,
+      "korzysc_z_przedluzen": 670513.9898203764,
+      "koszt_rabatow": 1636837.689435537,
+      "koszt_kontaktow": 71921.65605095541,
+      "zysk_netto": -1038245.3556661161,
+      "zysk_na_oferte": -866.1469265367317,
+      "prog_D": 658.2608695652173,
+      "prog_R": 12538.285714285716,
+      "model_dodatkowe_przedluzenia": 266.0796724014276,
+      "model_rabaty": 921.6732664229277,
+      "model_zysk_netto": -421821.5473972011
+    },
+    "ev_dodatnie": {
+      "oferty": 127.07006369426752,
+      "udzial": 0.021231422505307854,
+      "umowy_oferta_w_tescie": 63.53503184713376,
+      "umowy_kontrola_w_tescie": 63.53503184713376,
+      "odsetek_oferta": 0.5333333333333333,
+      "odsetek_kontrola": 0.5333333333333333,
+      "uplift_obserwowany": 0.0,
+      "dodatkowe_przedluzenia": 0.0,
+      "rabaty": 67.77070063694268,
+      "korzysc_z_przedluzen": 0.0,
+      "koszt_rabatow": 121987.26114649682,
+      "koszt_kontaktow": 7624.203821656051,
+      "zysk_netto": -129611.46496815287,
+      "zysk_na_oferte": -1020.0,
+      "prog_D": null,
+      "prog_R": null,
+      "model_dodatkowe_przedluzenia": 35.788942218837434,
+      "model_rabaty": 82.91901175126654,
+      "model_zysk_netto": 19203.170742744307
+    }
+  },
+  "bootstrap_zbior_oceny": {
+    "przedzialy": {
+      "wszyscy": {
+        "zysk_netto": [
+          -1632407.8063666394,
+          -1054720.9752115828
+        ],
+        "dodatkowe_przedluzenia": [
+          5.629285973723385,
+          147.3291113745482
+        ]
+      },
+      "gorne_35_ryzyka": {
+        "zysk_netto": [
+          -406549.80184022925,
+          -36060.97787544972
+        ],
+        "dodatkowe_przedluzenia": [
+          7.113188280625816,
+          97.71719556499691
+        ]
+      },
+      "gorne_20_upliftu": {
+        "zysk_netto": [
+          -374268.1405865103,
+          -114411.40669975523
+        ],
+        "dodatkowe_przedluzenia": [
+          2.7441823089177024,
+          62.645379861714765
+        ]
+      },
+      "ev_dodatnie": {
+        "zysk_netto": [
+          -78294.04545454546,
+          15948.89258241754
+        ],
+        "dodatkowe_przedluzenia": [
+          -11.031189600840339,
+          11.459045733678071
+        ]
+      }
+    },
+    "roznica_zysku_wzgledem_gorne_35_ryzyka": {
+      "wszyscy": [
+        -1355060.4770725023,
+        -883939.3823962779
+      ],
+      "gorne_35_ryzyka": [
+        0.0,
+        0.0
+      ],
+      "gorne_20_upliftu": [
+        -225481.12038521783,
+        176315.15846339928
+      ],
+      "ev_dodatnie": [
+        7381.528431118384,
+        382041.5876724472
+      ]
+    },
+    "p_zysk_ujemny": {
+      "wszyscy": 1.0,
+      "gorne_35_ryzyka": 0.993,
+      "gorne_20_upliftu": 1.0,
+      "ev_dodatnie": 0.899
+    }
+  },
+  "bootstrap_rok": {
+    "przedzialy": {
+      "wszyscy": {
+        "zysk_netto": [
+          -6914338.797667613,
+          -4467448.716660527
+        ],
+        "dodatkowe_przedluzenia": [
+          23.843790907809243,
+          624.0373188794558
+        ]
+      },
+      "gorne_35_ryzyka": {
+        "zysk_netto": [
+          -1722010.307157659,
+          -152742.35851703223
+        ],
+        "dodatkowe_przedluzenia": [
+          30.129109596281324,
+          413.8976754823118
+        ]
+      },
+      "gorne_20_upliftu": {
+        "zysk_netto": [
+          -1585275.8821020979,
+          -484608.8245562881
+        ],
+        "dodatkowe_przedluzenia": [
+          11.623447359428486,
+          265.3450803059893
+        ]
+      },
+      "ev_dodatnie": {
+        "zysk_netto": [
+          -331627.64475969895,
+          67554.22654336093
+        ],
+        "dodatkowe_przedluzenia": [
+          -46.72446550674411,
+          48.53672237513323
+        ]
+      }
+    },
+    "roznica_zysku_wzgledem_gorne_35_ryzyka": {
+      "wszyscy": [
+        -5739587.37103958,
+        -3744074.454098884
+      ],
+      "gorne_35_ryzyka": [
+        0.0,
+        0.0
+      ],
+      "gorne_20_upliftu": [
+        -955063.3443068144,
+        746812.6138736339
+      ],
+      "ev_dodatnie": [
+        31265.709596775323,
+        1618201.629313232
+      ]
+    },
+    "p_zysk_ujemny": {
+      "wszyscy": 1.0,
+      "gorne_35_ryzyka": 0.993,
+      "gorne_20_upliftu": 1.0,
+      "ev_dodatnie": 0.899
+    }
+  },
+  "wrazliwosc_D_z_fk": {
+    "D": 1950.0,
+    "fk_rabaty": {
+      "przedluzenia_z_rabatem": 507,
+      "z_13_pozycjami": 485,
+      "mediana_suma": 1950,
+      "max_suma": 1950,
+      "max_pozycji": 13
+    },
+    "polityki_rok": {
+      "wszyscy": {
+        "oferty": 5985.0,
+        "udzial": 1.0,
+        "umowy_oferta_w_tescie": 3007.3248407643314,
+        "umowy_kontrola_w_tescie": 2977.675159235669,
+        "odsetek_oferta": 0.6422535211267606,
+        "odsetek_kontrola": 0.5874822190611664,
+        "uplift_obserwowany": 0.05477130206559422,
+        "dodatkowe_przedluzenia": 327.8062428625814,
+        "rabaty": 3843.887323943662,
+        "korzysc_z_przedluzen": 1612806.7148839007,
+        "koszt_rabatow": 7495580.281690141,
+        "koszt_kontaktow": 359100.0,
+        "zysk_netto": -6241873.56680624,
+        "zysk_na_oferte": -1042.9195600344594,
+        "prog_D": 326.15594819195996,
+        "prog_R": 23961.350501133915,
+        "model_dodatkowe_przedluzenia": 289.1327849495494,
+        "model_rabaty": 3755.660039535053,
+        "model_zysk_netto": -6260103.77514157
+      },
+      "gorne_35_ryzyka": {
+        "oferty": 2181.3694267515925,
+        "udzial": 0.36447275300778487,
+        "umowy_oferta_w_tescie": 1080.095541401274,
+        "umowy_kontrola_w_tescie": 1101.2738853503186,
+        "odsetek_oferta": 0.48627450980392156,
+        "odsetek_kontrola": 0.38076923076923075,
+        "uplift_obserwowany": 0.10550527903469081,
+        "dodatkowe_przedluzenia": 230.1459900471703,
+        "rabaty": 1060.744348694892,
+        "korzysc_z_przedluzen": 1132318.2710320777,
+        "koszt_rabatow": 2068451.4799550395,
+        "koszt_kontaktow": 130882.16560509555,
+        "zysk_netto": -1067015.3745280572,
+        "zysk_na_oferte": -489.14932126696834,
+        "prog_D": 944.0880893300249,
+        "prog_R": 9556.254467476769,
+        "model_dodatkowe_przedluzenia": 101.76274246967176,
+        "model_rabaty": 1295.9367413198277,
+        "model_zysk_netto": -2157286.1182279745
+      },
+      "gorne_20_upliftu": {
+        "oferty": 1198.6942675159237,
+        "udzial": 0.2002830856334041,
+        "umowy_oferta_w_tescie": 614.171974522293,
+        "umowy_kontrola_w_tescie": 584.5222929936306,
+        "odsetek_oferta": 0.7586206896551724,
+        "odsetek_kontrola": 0.644927536231884,
+        "uplift_obserwowany": 0.11369315342328834,
+        "dodatkowe_przedluzenia": 136.28333126430414,
+        "rabaty": 909.3542719086316,
+        "korzysc_z_przedluzen": 670513.9898203764,
+        "koszt_rabatow": 1773240.8302218318,
+        "koszt_kontaktow": 71921.65605095541,
+        "zysk_netto": -1174648.496452411,
+        "zysk_na_oferte": -979.9400299850078,
+        "prog_D": 658.2608695652173,
+        "prog_R": 13539.164835164838,
+        "model_dodatkowe_przedluzenia": 266.0796724014276,
+        "model_rabaty": 921.6732664229277,
+        "model_zysk_netto": -560072.5373606402
+      },
+      "ev_dodatnie": {
+        "oferty": 127.07006369426752,
+        "udzial": 0.021231422505307854,
+        "umowy_oferta_w_tescie": 63.53503184713376,
+        "umowy_kontrola_w_tescie": 63.53503184713376,
+        "odsetek_oferta": 0.5333333333333333,
+        "odsetek_kontrola": 0.5333333333333333,
+        "uplift_obserwowany": 0.0,
+        "dodatkowe_przedluzenia": 0.0,
+        "rabaty": 67.77070063694268,
+        "korzysc_z_przedluzen": 0.0,
+        "koszt_rabatow": 132152.86624203823,
+        "koszt_kontaktow": 7624.203821656051,
+        "zysk_netto": -139777.07006369426,
+        "zysk_na_oferte": -1100.0,
+        "prog_D": null,
+        "prog_R": null,
+        "model_dodatkowe_przedluzenia": 35.788942218837434,
+        "model_rabaty": 82.91901175126654,
+        "model_zysk_netto": 6765.318980054327
+      }
+    }
+  },
+  "sprawdzenie_caly_test_2025": {
+    "umowy": 4734,
+    "mnoznik": 1.2642585551330798,
+    "polityki_rok": {
+      "wszyscy": {
+        "oferty": 5985.0,
+        "udzial": 1.0,
+        "umowy_oferta_w_tescie": 2948.250950570342,
+        "umowy_kontrola_w_tescie": 3036.7490494296576,
+        "odsetek_oferta": 0.6312178387650086,
+        "odsetek_kontrola": 0.5791007493755204,
+        "uplift_obserwowany": 0.052117089389488225,
+        "dodatkowe_przedluzenia": 311.92077999608705,
+        "rabaty": 3777.8387650085765,
+        "korzysc_z_przedluzen": 1534650.2375807483,
+        "koszt_rabatow": 6800109.777015437,
+        "koszt_kontaktow": 359100.0,
+        "zysk_netto": -5624559.539434689,
+        "zysk_na_oferte": -939.7760299807334,
+        "prog_D": 311.1700394598708,
+        "prog_R": 22952.012934518978,
+        "model_dodatkowe_przedluzenia": 0.0,
+        "model_rabaty": 0.0,
+        "model_zysk_netto": -359100.0
+      },
+      "gorne_35_ryzyka": {
+        "oferty": 2121.425855513308,
+        "udzial": 0.35445711871567387,
+        "umowy_oferta_w_tescie": 1043.0133079847908,
+        "umowy_kontrola_w_tescie": 1078.412547528517,
+        "odsetek_oferta": 0.49575757575757573,
+        "odsetek_kontrola": 0.34466588511137164,
+        "uplift_obserwowany": 0.1510916906462041,
+        "dodatkowe_przedluzenia": 320.5298190900756,
+        "rabaty": 1051.7129392787187,
+        "korzysc_z_przedluzen": 1577006.7099231717,
+        "koszt_rabatow": 1893083.2907016939,
+        "koszt_kontaktow": 127285.55133079848,
+        "zysk_netto": -443362.1321093206,
+        "zysk_na_oferte": -208.99251838431238,
+        "prog_D": 1378.4380741636733,
+        "prog_R": 6303.216492518365,
+        "model_dodatkowe_przedluzenia": 0.0,
+        "model_rabaty": 0.0,
+        "model_zysk_netto": -127285.55133079848
+      }
+    },
+    "zysk_netto_rok_ci95": {
+      "wszyscy": [
+        -6320043.295655683,
+        -4901283.280232216
+      ],
+      "gorne_35_ryzyka": [
+        -851305.1602608418,
+        -20987.21296239717
+      ]
+    }
+  },
+  "kalibracja_modelu": {
+    "p_oferta_model_w_grupie_oferta": 0.6258189185572124,
+    "przedluzenia_grupa_oferta": 0.6422535211267606,
+    "p_kontrola_model_w_grupie_kontrola": 0.5782640397842252,
+    "przedluzenia_grupa_kontrola": 0.5874822190611664
+  },
+  "ev_najemcow": {
+    "srednia": -951.8387250144215,
+    "mediana": -896.8681110423646,
+    "p90": -338.57601586654897,
+    "maks": 585.3547467800215,
+    "dodatnie": 30,
+    "uplift_potrzebny_przy_p_oferta_mediana": 0.26025783709965883
+  }
+}

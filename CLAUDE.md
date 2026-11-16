@@ -91,6 +91,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   │                         # eksperyment.py (switchback: plan w parach, wariant dnia, 5% pozycji losowych;
 │   │                         # plan aktywny, gdy istnieje eksperyment_plan.yaml)
 │   ├── retention_bc/         # retencja najemców; ryzyko_najmu.py: GET /risk (v2_przezycie_cox, mediana i RMST60)
+│   │                         # polityka_rabatow.py: EV oferty (uplift v3 × R − D × P − k, zalozenia.yaml)
+│   │                         # i polityki rabatów na rok (docs/polityka_rabatow.md)
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
