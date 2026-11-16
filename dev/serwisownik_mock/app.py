@@ -1,10 +1,12 @@
-"""Atrapa Serwisownika: przyjmuje zgłoszenia z alarmów o ryzyku awarii wind (api/api/adapters/serwisownik_alarmy.py).
+"""Atrapa Serwisownika: przyjmuje zgłoszenia z alertów o ryzyku awarii wind (api/api/adapters/serwisownik.py,
+`KlientSerwisownika`).
 
-Uruchomienie: `pypyr mock_serwisownik` (port 8103) albo
-    poetry run uvicorn app:app --app-dir dev/mock_serwisownik --port 8103
-Stan w pliku JSON (`MOCK_SERWISOWNIK_STAN`, domyślnie dev/mock_serwisownik/stan.json, poza gitem).
+Uruchomienie: `pypyr serwisownik_mock` (port 8103) albo
+    poetry run uvicorn app:app --app-dir dev/serwisownik_mock --port 8103
+Stan w pliku JSON (`SERWISOWNIK_MOCK_STAN`, domyślnie dev/serwisownik_mock/stan.json, poza gitem).
 
-- `POST /api/zgloszenia`: zgłoszenie z `klucz_idempotencji`. Nowy klucz: nowe zgłoszenie `A000001`, `A000002`, …
+- `POST /api/zgloszenia`: zgłoszenie z `klucz_idempotencji` = `{id_windy}:{data_alarmu}` (422, gdy klucz nie pasuje do
+  `id_urzadzenia` i `alarm.dzien`). Nowy klucz: nowe zgłoszenie `A000001`, `A000002`, …
   (200, `utworzono = true`). Ten sam klucz i ta sama treść: 200 z tym samym id, `utworzono = false`. Ten sam klucz
   i inna treść: 409, nic nie zapisane.
 - `GET /api/zgloszenia`: wszystkie zgłoszenia po kluczu; `DELETE /api/zgloszenia`: czyści stan.
@@ -26,7 +28,7 @@ def _kanoniczny(obiekt) -> str:
 
 
 def utworz_aplikacje(sciezka: Path | None = None) -> FastAPI:
-    plik = Path(sciezka or os.environ.get("MOCK_SERWISOWNIK_STAN", SCIEZKA_DOMYSLNA))
+    plik = Path(sciezka or os.environ.get("SERWISOWNIK_MOCK_STAN", SCIEZKA_DOMYSLNA))
     blokada = threading.Lock()
     aplikacja = FastAPI(title="Atrapa Serwisownika: zgłoszenia z alarmów wind", version="1.0")
 
@@ -45,6 +47,8 @@ def utworz_aplikacje(sciezka: Path | None = None) -> FastAPI:
         if brak:
             raise HTTPException(422, f"brak pól: {', '.join(brak)}")
         klucz = zgloszenie["klucz_idempotencji"]
+        if klucz != f"{zgloszenie['id_urzadzenia']}:{zgloszenie['alarm'].get('dzien')}":
+            raise HTTPException(422, f"klucz {klucz} nie pasuje do id_urzadzenia:alarm.dzien")
         with blokada:
             stan = wczytaj()
             znane = stan.get(klucz)

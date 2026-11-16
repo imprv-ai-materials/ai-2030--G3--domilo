@@ -17,7 +17,7 @@ steps:
     description: >
       Zadanie ryzyko-wind bez Inngest (te same kroki): ryzyko modelem z failure_model/current.yaml, tabela
       ryzyko_wind, reguła alarmu (poniedziałek, 3 windy, przerwa 7 dni) -> alarmy_wind i zgłoszenia w Serwisowniku.
-      W dzień alarmu wymaga atrapy (pypyr mock_serwisownik) albo SERWISOWNIK_URL.
+      W dzień alarmu wymaga atrapy (pypyr serwisownik_mock) albo SERWISOWNIK_URL.
     in:
       cmd:
         run: poetry run python -m api.contexts_boundaries.maintenance_bc.ryzyko_dzienne {data}

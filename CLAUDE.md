@@ -73,7 +73,8 @@ docs/                         # raporty (wnioski → tabele → SQL i kod)
 evals/porownanie.md           # model vs baseline, wszystkie cztery modele
 dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml, mock_lejek.yaml)
 ├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
-├── mock_serwisownik/         # atrapa Serwisownika: zgłoszenia z alarmów wind (port 8103; pypyr mock_serwisownik)
+├── serwisownik_mock/         # atrapa Serwisownika: zgłoszenia z alertów wind, klucz {id_windy}:{data_alarmu}
+│                             # (port 8103; pypyr serwisownik_mock; stan w stan.json poza gitem)
 ├── metabase/                 # Metabase 0.63.17 + sterownik DuckDB 1.5.6.0 (port 3300; pypyr metabase): panel kampanii
 │                             # dla marketingu; czyta Parquet z dane/ (DuckDB :memory: + widoki read_parquet), bo
 │                             # sterownik (DuckDB 1.5) nie otwiera domilo.duckdb; plugins/, stan/, dane/, .env poza gitem
@@ -86,7 +87,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │                             # (06:00; oba: pypyr ryzyko_wind) — trzy osobne funkcje
 ├── adapters/                 # połączenia z systemami zewnętrznymi
 │   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
-│   ├── serwisownik.py        # wczytanie serwis_* (TIMESTAMP lokalny, koszt_netto '1 234,50' -> DECIMAL z kontrolą formatu)
+│   ├── serwisownik.py        # wczytanie serwis_* (TIMESTAMP lokalny, koszt_netto '1 234,50' -> DECIMAL z kontrolą formatu);
+│   │                         # KlientSerwisownika: alert windy -> zgłoszenie (SERWISOWNIK_URL), klucz {id_windy}:{data_alarmu}
 │   ├── wyceny_historia.py    # tabela wyceny_historia w domilo.duckdb (przenoszona przy przebudowie bazy)
 │   ├── kolejka_doradcow.py   # tabela kolejka_doradcow (dzień × zapytanie; przenoszona przy przebudowie bazy)
 │   ├── kolejka_ranking.py    # tabela kolejka_ranking: pełny ranking dnia (zadanie / symulacja wstecz), dla panelu
@@ -96,7 +98,6 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   ├── lista_retencyjna.py   # tabela lista_retencyjna: umowy za 60–66 dni z ryzykiem, upliftem, akcją i grupą kampanii
 │   ├── telemetra.py          # okna Telemetry: API (TELEMETRA_URL; bez niej atrapa = eksport data/), magazyn Parquet
 │   │                         # telemetra_biezaca/ (poza gitem) idempotentny po (id_windy, ts_utc), widok eksport + magazyn
-│   ├── serwisownik_alarmy.py # alarm windy -> zgłoszenie w Serwisowniku (SERWISOWNIK_URL), klucz alarm-windy:{winda}:{dzień}
 │   └── ryzyko_wind.py        # tabele ryzyko_wind (winda × dzień oceny) i alarmy_wind (pierwsza decyzja dnia zostaje)
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
@@ -125,7 +126,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │                             # cechy-wind (features/windy cechy_dnia + cechy_tsfresh_dnia -> windy_dzienne/, poza gitem),
 │                             # ryzyko-wind (current.yaml, alarmy_wind.wybierz_alarmy z `poprzednie`, bez wind z tryb
 │                             # 'wylaczona' o 05:50, krok serwisownik-<id_windy>); wyjasnienie.py: 3 sygnały (SHAP po
-│                             # sygnałach) i podzespoły (podzespoly_sygnalow.yaml — założenie); docs/b4_ryzyko_dzienne.md
+│                             # sygnałach), podzespoły = suma SHAP według podzespoly.yaml (cecha -> podzespół, teksty
+│                             # „Sprawdź …”; założenie) i opis alertu jednym zdaniem; docs/b4_ryzyko_dzienne.md
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
 │   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)
@@ -150,7 +152,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     │   ├── versions/         # kolejne wersje modelu (wind: v2_lgbm_losowy = przestroga, v2b_lgbm_czas_winda,
 │   │                     # v3_punkt_pracy = v2b + izotonia + punkt pracy; base.wczytaj_obecny())
     │   ├── evals/            # ewaluacje wersji (failure_model/evals/historia_awarii.py: docs/b4_historia_awarii.md;
-    │   │                     # ewaluacja_v2.py + porownanie.md: losowy podział vs czas + 28 wind poza treningiem)
+    │   │                     # ewaluacja_v2.py + porownanie.md: losowy podział vs czas + 28 wind poza treningiem;
+    │   │                     # podzespoly.py: lista podzespołów vs baseline, --wybor na walidacji;
+    │   │                     # przyklady_alertow.py: alerty z poniedziałków testu przez atrapę Serwisownika)
     │   └── current.yaml      # wskazanie wersji używanej obecnie
     └── llm/
         ├── ekstrakcja_awarii.py # awaria windy z notatek (prompt awaria_v1, schemat schemas/awaria.py): wejście =

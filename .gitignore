@@ -58,5 +58,5 @@ dev/metabase/dane/
 # Alerty o awariach wind (maintenance_bc): magazyn okien Telemetry, cechy i przebiegi dzienne, stan atrapy Serwisownika
 telemetra_biezaca/
 windy_dzienne/
-dev/mock_serwisownik/stan*.json
-dev/mock_serwisownik/stan*.tmp
+dev/serwisownik_mock/stan*.json
+dev/serwisownik_mock/stan*.tmp

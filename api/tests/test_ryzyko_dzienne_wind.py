@@ -11,7 +11,7 @@ import inngest
 import numpy as np
 import pandas as pd
 import pytest
-from api.adapters import ryzyko_wind, serwisownik_alarmy, telemetra
+from api.adapters import ryzyko_wind, serwisownik, telemetra
 from api.adapters.duckdb_baza import KATALOG_REPO, SCIEZKA_BAZY, polacz, polaczenie
 from api.contexts_boundaries.maintenance_bc import (
     alarmy_wind,
@@ -129,49 +129,89 @@ def test_winda_ktora_stoi_nie_dostaje_alarmu():
     assert ryzyko_dzienne.wybierz_alarmy_dnia(wtorek, pd.DataFrame(), alarmy_wind.wczytaj_zalozenia()).empty
 
 
-def test_wyjasnienie_grupuje_wklady_po_sygnalach_i_wskazuje_podzespoly():
+def test_podzespoly_to_suma_wszystkich_wkladow_cech_wedlug_podzespoly_yaml():
     cechy = pd.Series({"drzwi_bledy_max_24h": 3.0, "drzwi_bledy_sr_24h": 0.5, "ts_naped_prad_rms": 2.0})
     wklady = pd.Series(
         {
             "wklad_drzwi_bledy_max_24h": 0.4,
             "wklad_drzwi_bledy_sr_24h": 0.3,
+            "wklad_drzwi_ponowne_otwarcia_sr_24h": -0.1,  # ujemny wkład też liczy się do sumy podzespołu
             "wklad_ts_naped_prad_rms": 0.5,
-            "wklad_uzycie_kursy_sr_24h": 0.2,
-            "wklad_wibracje_rms_max_3d": -0.9,
+            "wklad_naped_prad_sr_sr_24h": -0.6,  # napęd razem −0,1 -> poza listą
+            "wklad_uzycie_kursy_sr_24h": 0.2,  # użycie: bez podzespołu
+            "wklad_wibracje_rms_max_3d": 0.05,  # hamulec_liny (podzespoly.yaml)
             "wklad_staly": -3.0,
         }
     )
     w = wyjasnienie.wyjasnij(cechy, wklady)
-    assert [s["sygnal"] for s in w["sygnaly"]] == ["drzwi_bledy", "naped_prad_sr", "uzycie_kursy"]
+    assert [s["sygnal"] for s in w["sygnaly"]] == ["drzwi_bledy", "uzycie_kursy", "wibracje_rms"]
     assert w["sygnaly"][0]["wklad"] == pytest.approx(0.7) and w["sygnaly"][0]["cecha"] == "drzwi_bledy_max_24h"
-    assert w["sygnaly"][0]["wartosc"] == 3.0
-    assert [p["podzespol"] for p in w["podzespoly"]] == ["drzwi", "naped"]  # wibracje < 0, użycie bez podzespołu
+    assert w["sygnaly"][0]["wartosc"] == 3.0 and w["sygnaly"][0]["podzespol"] == "drzwi"
+    assert [(p["podzespol"], p["wklad"]) for p in w["podzespoly"]] == [("drzwi", 0.6), ("hamulec_liny", 0.05)]
+    assert w["podzespoly"][0]["sygnaly"] == ["drzwi_bledy"]
 
 
-def test_kazda_cecha_aktywnego_modelu_ma_sygnal_a_kazdy_sygnal_wpis_o_podzespolach():
+def test_opis_alertu_jednym_zdaniem_z_wartosciami_wzgledem_normy():
+    cechy = pd.Series(
+        {
+            "drzwi_czas_zamykania_sr_sr_24h": 4.14,
+            "drzwi_czas_zamykania_sr_norma": 3.0,
+            "drzwi_ponowne_otwarcia_sr_3d": 0.9,
+            "drzwi_ponowne_otwarcia_norma": 0.3,
+        }
+    )
+    w = pd.Series(
+        {
+            "drzwi_czas_zamykania_sr_do_normy_24h": 0.8,
+            "drzwi_ponowne_otwarcia_do_normy_24h": 0.1,
+            "drzwi_ponowne_otwarcia_do_normy_3d": 0.4,
+        }
+    )
+    podzespoly = [
+        {"podzespol": "drzwi", "wklad": 1.3, "sygnaly": ["drzwi_czas_zamykania_sr", "drzwi_ponowne_otwarcia"]}
+    ]
+    assert wyjasnienie.opis_alertu(cechy, w, podzespoly) == (
+        "Drzwi: czas zamykania +38% względem normy z 30 dni, ponowne otwarcia 3× (ostatnie 3 dni). "
+        "Sprawdź operator drzwi i rolki."
+    )
+    bledy = pd.Series({"sterownik_bledy_sr_24h": 0.05, "sterownik_bledy_norma": 0.0})
+    tylko_bledy = [{"podzespol": "sterownik", "wklad": 0.4, "sygnaly": ["sterownik_bledy"]}]
+    assert wyjasnienie.opis_alertu(bledy, pd.Series(dtype=float), tylko_bledy, okna_24h=144) == (
+        "Sterownik: błędy sterownika 7 w ostatniej dobie (zwykle 0). Sprawdź sterownik i wersję jego oprogramowania."
+    )
+    assert wyjasnienie.opis_alertu(cechy, w, []).startswith("Ryzyko bez wskazania podzespołu")
+
+
+def test_podzespoly_yaml_obejmuje_wszystkie_cechy_a_sygnal_ma_jeden_podzespol():
     from api.ai.failure_model.base import wczytaj_obecny
+    from api.ai.features.windy.tsfresh_cechy import nazwy_cech
 
-    sygnaly = {wyjasnienie.sygnal_cechy(c) for c in wczytaj_obecny().cechy}
-    assert sygnaly == set(wyjasnienie.podzespoly_sygnalow())
-    dozwolone = set(alarmy_wind.PODZESPOLY_Z_SYGNALEM)
-    assert all(set(p) <= dozwolone for p in wyjasnienie.podzespoly_sygnalow().values())
+    mapa = wyjasnienie.mapa_cech()
+    assert set(wczytaj_obecny().cechy) <= set(mapa) and set(nazwy_cech()) <= set(mapa)
+    assert {p for p in mapa.values() if p} == set(alarmy_wind.PODZESPOLY_Z_SYGNALEM)
+    konf = wyjasnienie.konfiguracja()
+    assert set(konf["podzespoly"]) == set(alarmy_wind.PODZESPOLY_Z_SYGNALEM)
+    sygnaly = {wyjasnienie.sygnal_cechy(c) for c in mapa}
+    assert sygnaly == set(konf["sygnaly"])
+    for s in sygnaly:
+        wyjasnienie.podzespol_sygnalu(s)  # ValueError, gdy cechy sygnału mają różne podzespoły
 
 
 # --- Serwisownik ----------------------------------------------------------------------------------------------
 
 
 @pytest.fixture
-def serwisownik(tmp_path):
+def klient_serwisownika(tmp_path):
     from fastapi.testclient import TestClient
 
-    sys.path.insert(0, str(KATALOG_REPO / "dev" / "mock_serwisownik"))
+    sys.path.insert(0, str(KATALOG_REPO / "dev" / "serwisownik_mock"))
     try:
         from app import utworz_aplikacje
     finally:
         sys.path.pop(0)
         sys.modules.pop("app", None)
     http = TestClient(utworz_aplikacje(tmp_path / "stan.json"))
-    return serwisownik_alarmy.KlientSerwisownika(url="http://testserver", http=http), http
+    return serwisownik.KlientSerwisownika(url="http://testserver", http=http), http
 
 
 def _zgloszenie(pozycja: int = 1) -> dict:
@@ -184,13 +224,16 @@ def _zgloszenie(pozycja: int = 1) -> dict:
     }
 
 
-def test_serwisownik_zaklada_zgloszenie_raz_a_inna_tresc_to_konflikt(serwisownik):
-    klient, http = serwisownik
+def test_serwisownik_zaklada_zgloszenie_raz_a_inna_tresc_to_konflikt(klient_serwisownika):
+    klient, http = klient_serwisownika
     pierwsze = klient.zglos_alarm(_zgloszenie())
     assert pierwsze == {"id_zgloszenia": "A000001", "utworzono": True}
     assert klient.zglos_alarm(_zgloszenie()) == {"id_zgloszenia": "A000001", "utworzono": False}
-    with pytest.raises(serwisownik_alarmy.KonfliktIdempotencji):
+    with pytest.raises(serwisownik.KonfliktIdempotencji):
         klient.zglos_alarm(_zgloszenie(pozycja=2))
+    assert serwisownik.klucz_idempotencji("B01-W1", PON) == f"B01-W1:{PON}"  # winda + data alarmu
+    zly = {**_zgloszenie(), "klucz_idempotencji": f"B02-W1:{PON}"}
+    assert http.post("/api/zgloszenia", json=zly).status_code == 422
     assert http.get("/api/zgloszenia").json()["liczba"] == 1
 
 
@@ -255,7 +298,7 @@ class _Klient:
         self.wyslane: dict[str, dict] = {}
 
     def zglos_alarm(self, z: dict) -> dict:
-        klucz = serwisownik_alarmy.klucz_idempotencji(z["alarm"]["id_windy"], z["alarm"]["dzien"])
+        klucz = serwisownik.klucz_idempotencji(z["alarm"]["id_windy"], z["alarm"]["dzien"])
         if klucz in self.wyslane:
             assert self.wyslane[klucz] == z  # ponowny przebieg = ta sama treść
             return {"id_zgloszenia": f"Z-{klucz}", "utworzono": False}
@@ -287,6 +330,9 @@ def test_poniedzialek_trzy_alarmy_w_serwisowniku_a_ponowny_przebieg_ich_nie_zmie
     assert [s["utworzono"] for s in pon["serwisownik"]] == [True] * 3
     assert not pon2["alarmy"]["zapisano_teraz"]
     assert [s["utworzono"] for s in pon2["serwisownik"]] == [False] * 3
+    for z in przebiegi["klient"].wyslane.values():
+        assert z["tresc_zgloszenia"].count(". Sprawdź ") == 1 and z["tresc_zgloszenia"].endswith(".")
+        assert z["alarm"]["podejrzane_podzespoly"][0]["wklad"] > 0
     assert len(przebiegi["klient"].wyslane) == 3 + len(przebiegi["pon_nast"]["alarmy"]["alarmy"])
     with polaczenie(sciezka=przebiegi["baza"]) as con:
         a = ryzyko_wind.alarmy(con, date.fromisoformat(PON), date.fromisoformat(PON))
@@ -333,6 +379,7 @@ def test_endpoint_ryzyka_windy(przebiegi):
         assert 0 <= w["ryzyko"] <= 1 and w["ranga"] == 1 and w["ocenione_windy"] == 140
         assert 1 <= len(w["sygnaly"]) <= 3 and all(s["wklad"] > 0 for s in w["sygnaly"])
         assert w["podzespoly"] and w["alarm"]["pozycja"] == 1 and w["alarm"]["id_zgloszenia"]
+        assert w["opis"].startswith(("Drzwi:", "Napęd:", "Hamulec i liny:", "Sterownik:"))
         najnowsza = klient.get(f"/lifts/{pierwszy['id_windy']}/risk").json()
         assert najnowsza["dzien_oceny"] == "2026-09-28"
         assert klient.get("/lifts/NIE-MA/risk").status_code == 404

@@ -168,7 +168,8 @@ def _przenies_tabele_trwale(con: duckdb.DuckDBPyConnection, stara: Path) -> None
         for nazwa, ddl in _tabele_trwale().items():
             if nazwa in istniejace:
                 con.execute(ddl)
-                con.execute(f"INSERT INTO {nazwa} SELECT * FROM stara.{nazwa}")
+                # BY NAME: stara tabela może nie mieć kolumn dodanych później (np. ryzyko_wind.opis) -> NULL
+                con.execute(f"INSERT INTO {nazwa} BY NAME SELECT * FROM stara.{nazwa}")
     finally:
         con.execute("DETACH stara")
 

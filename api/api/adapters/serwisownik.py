@@ -9,11 +9,27 @@ Konwencje źródła (data/README.md, „Konwencje systemów”):
   nie rozstrzyga;
 - `serwis_czesci.koszt_netto` to tekst z eksportu: spacja tysięcy i przecinek dziesiętny (`1 234,50`). W bazie
   DECIMAL(12, 2). Tekst w innym formacie przerywa wczytywanie (ValueError), zamiast cicho dać NULL albo złą liczbę.
+
+Zapis do Serwisownika (`KlientSerwisownika`): alert o ryzyku awarii windy jako zgłoszenie
+(zadanie `ryzyko-wind`, maintenance_bc/ryzyko_dzienne.py). Atrapa: dev/serwisownik_mock/ (`pypyr serwisownik_mock`).
+Kontrakt (przyjęty w tej pracy, do potwierdzenia z zespołem Serwisownika; atrapa zachowuje się tak samo):
+- `POST {SERWISOWNIK_URL}/api/zgloszenia`: pola jak w serwis_zgloszenia (`id_budynku`, `id_urzadzenia` = id windy,
+  `typ_urzadzenia` = `winda`, `zrodlo` = `model_awarii`, `kategoria` = `przegląd`, `priorytet` = `normalny`,
+  `tresc_zgloszenia` = opis alertu jednym zdaniem, `firma_serwisowa`) + `alarm` (dzień, pozycja, ryzyko, sygnały,
+  podejrzane podzespoły z wkładami, wersja modelu) + `klucz_idempotencji`.
+- `klucz_idempotencji` = `{id_windy}:{data_alarmu}` (winda + data alarmu). Serwisownik zakłada zgłoszenie tylko
+  przy pierwszym kluczu. Ten sam klucz i ta sama treść: 200 z tym samym `id_zgloszenia` i `utworzono = false`. Ten
+  sam klucz i inna treść: 409 (`KonfliktIdempotencji`; ponowienie nic nie da). Odpowiedź 200:
+  `{"id_zgloszenia": "...", "utworzono": true|false}`. Inne błędy HTTP i sieci przechodzą dalej jako wyjątki httpx,
+  więc Inngest ponawia krok wysyłki.
+- Adres `SERWISOWNIK_URL` (domyślnie atrapa http://127.0.0.1:8103); opcjonalny `SERWISOWNIK_TOKEN` (Bearer).
 """
 
+import os
 from pathlib import Path
 
 import duckdb
+import httpx
 
 # Tabela -> kolumny czasu lokalnego (TIMESTAMP_NS w Parquecie -> TIMESTAMP).
 KOLUMNY_CZASU: dict[str, tuple[str, ...]] = {
@@ -66,6 +82,45 @@ def wczytaj(con: duckdb.DuckDBPyConnection, pliki: dict[str, Path | str]) -> dic
         con.execute(f"CREATE OR REPLACE TABLE {nazwa} AS {select_tabeli(nazwa, plik)}")
         liczby[nazwa] = con.execute(f"SELECT count(*) FROM {nazwa}").fetchone()[0]
     return liczby
+
+
+# --- zapis: alert o ryzyku awarii windy -> zgłoszenie ----------------------------------------------------------------
+
+URL_DOMYSLNY = "http://127.0.0.1:8103"
+SCIEZKA_ZGLOSZEN = "/api/zgloszenia"
+LIMIT_CZASU_S = 30.0
+
+
+class KonfliktIdempotencji(RuntimeError):
+    """Serwisownik ma już zgłoszenie z tym kluczem, ale z inną treścią."""
+
+
+def klucz_idempotencji(id_windy: str, data_alarmu: str) -> str:
+    return f"{id_windy}:{data_alarmu}"
+
+
+class KlientSerwisownika:
+    def __init__(self, url: str | None = None, http: httpx.Client | None = None, token: str | None = None):
+        self.url = (url or os.environ.get("SERWISOWNIK_URL") or URL_DOMYSLNY).rstrip("/")
+        self._http = http
+        self.token = token if token is not None else os.environ.get("SERWISOWNIK_TOKEN")
+
+    def zglos_alarm(self, zgloszenie: dict) -> dict:
+        """Wysyła zgłoszenie (pola w opisie modułu, z `alarm.id_windy` i `alarm.dzien`); zwraca odpowiedź 200."""
+        alarm = zgloszenie["alarm"]
+        tresc = {**zgloszenie, "klucz_idempotencji": klucz_idempotencji(alarm["id_windy"], alarm["dzien"])}
+        naglowki = {"Authorization": f"Bearer {self.token}"} if self.token else {}
+        klient = self._http or httpx.Client(timeout=LIMIT_CZASU_S)
+        try:
+            odp = klient.post(f"{self.url}{SCIEZKA_ZGLOSZEN}", json=tresc, headers=naglowki)
+        finally:
+            if self._http is None:
+                klient.close()
+        if odp.status_code == 409:
+            raise KonfliktIdempotencji(odp.text[:500])
+        odp.raise_for_status()
+        wynik = odp.json()
+        return {"id_zgloszenia": str(wynik["id_zgloszenia"]), "utworzono": bool(wynik["utworzono"])}
 
 
 if __name__ == "__main__":

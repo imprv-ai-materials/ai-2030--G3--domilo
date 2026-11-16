@@ -226,7 +226,7 @@ def ryzyko_windy(
 ) -> OdpowiedzRyzykaWindy:
     """Ryzyko awarii windy w 7 dni z oceny o 06:00 (zadanie `ryzyko-wind`, aktywna wersja z failure_model/current.yaml):
     ryzyko (P po kalibracji), data oceny, 3 najsilniejsze sygnały (SHAP zgrupowany po sygnałach) i podejrzane
-    podzespoły (maintenance_bc/wyjasnienie.py, podzespoly_sygnalow.yaml), alarm tego dnia, jeśli był.
+    podzespoły (suma SHAP według maintenance_bc/podzespoly.yaml), opis alertu jednym zdaniem, alarm tego dnia.
 
     404: nieznana winda albo brak oceny (dla dnia `dzien` albo żadnej).
     """
@@ -250,5 +250,6 @@ def ryzyko_windy(
         okna_24h=o["okna_24h"],
         sygnaly=o["sygnaly"],
         podzespoly=o["podzespoly"],
+        opis=o.get("opis"),
         alarm=o["alarm"],
     )

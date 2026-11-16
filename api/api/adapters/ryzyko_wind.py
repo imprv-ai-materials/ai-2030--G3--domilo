@@ -4,8 +4,9 @@
 (maintenance_bc/ryzyko_dzienne.py): `wynik` = ranking modelu (`predict`, tym wynikiem reguła wybiera alarmy),
 `p_awarii_7d` = P(awaria w 7 dni) po kalibracji (`prawdopodobienstwo`; NULL, gdy wersja go nie ma), `ranga` w dniu,
 `stoi` = ostatnie okno przed odcięciem ma `tryb = 'wylaczona'` (winda stoi, alarmu nie dostaje), `sygnaly` (JSON:
-najsilniejsze sygnały) i `podzespoly` (JSON: podejrzane podzespoły) z maintenance_bc/wyjasnienie.py. Zapis zastępuje
-cały dzień (ponowny przebieg tego dnia liczy to samo z tych samych cech).
+najsilniejsze sygnały), `podzespoly` (JSON: podejrzane podzespoły z sumą wkładów SHAP) i `opis` (zdanie alertu)
+z maintenance_bc/wyjasnienie.py. Kolumnę `opis` dopisuje `utworz` także do tabeli założonej przed jej dodaniem.
+Zapis zastępuje cały dzień (ponowny przebieg tego dnia liczy to samo z tych samych cech).
 
 `alarmy_wind`: alarmy dnia z reguły maintenance_bc/alarmy_wind.wybierz_alarmy. Pierwsza decyzja dnia zostaje:
 gdy dzień ma już alarmy, `zapisz_alarmy` ich nie zmienia (zgłoszenia mogły już pójść do Serwisownika), tylko je
@@ -36,6 +37,7 @@ CREATE TABLE IF NOT EXISTS {TABELA_RYZYKA} (
     podzespoly VARCHAR NOT NULL,
     wersja_modelu VARCHAR NOT NULL,
     id_przebiegu VARCHAR NOT NULL,
+    opis VARCHAR,
     PRIMARY KEY (dzien, id_windy)
 )
 """
@@ -68,12 +70,14 @@ KOLUMNY_RYZYKA = (
     "podzespoly",
     "wersja_modelu",
     "id_przebiegu",
+    "opis",
 )
 KOLUMNY_ALARMOW = ("dzien", "pozycja", "id_windy", "wynik", "p_awarii_7d", "wersja_modelu", "id_przebiegu")
 
 
 def utworz(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(SQL_RYZYKA)
+    con.execute(f"ALTER TABLE {TABELA_RYZYKA} ADD COLUMN IF NOT EXISTS opis VARCHAR")
     con.execute(SQL_ALARMOW)
 
 

@@ -1,6 +1,0 @@
-steps:
-  - name: pypyr.steps.cmd
-    description: Atrapa Serwisownika (zgłoszenia z alarmów wind, dev/mock_serwisownik/app.py) na porcie 8103; stan w dev/mock_serwisownik/stan.json
-    in:
-      cmd:
-        run: poetry run uvicorn app:app --app-dir dev/mock_serwisownik --host 127.0.0.1 --port 8103

@@ -1,0 +1,255 @@
+# Podzespoły windy w alertach o ryzyku awarii (maintenance_bc/wyjasnienie.py; docs/b4_ryzyko_dzienne.md).
+#
+# Lista podejrzanych podzespołów = suma wkładów SHAP (explain aktywnej wersji, dzień alarmu) wszystkich cech
+# przypisanych do podzespołu w sekcji `cechy`; na liście są podzespoły z sumą > 0, od największej.
+# Opis alertu: pierwszy podzespół, jego 2 sygnały o największym wkładzie (sekcja `sygnaly`: nazwa w zdaniu, sposób
+# opisu wartości) i `sprawdz` (co obejrzeć).
+#
+# Co jest czym (stan 2026-11-16):
+# - `cechy` (cecha -> podzespół; null = cecha kontekstu: użycie windy, temperatura maszynowni, obecność czujnika):
+#   ZAŁOŻENIE tej pracy według tego, co mierzy sygnał (features/windy/katalog.yaml). Dwa sygnały niejednoznaczne
+#   (naped_blad_poziomowania, wibracje_rms) przypisano do hamulec_liny regułą ustaloną przed oceną na teście:
+#   wariant o najwyższym trafieniu 1. podzespołu na WALIDACJI 2025-07 – 2025-12 (966 dni z awarią; warianty:
+#   poziomowanie / wibracje -> hamulec_liny / hamulec_liny 75,8%, hamulec_liny / naped 75,6%, naped / naped 69,1%,
+#   naped / hamulec_liny 69,1%; failure_model/evals/podzespoly.py --wybor).
+# - `podzespoly.*.sprawdz` i `sygnaly.*.nazwa`: teksty dla technika zaproponowane w tej pracy (dla drzwi: przykład
+#   użytkownika z 2026-11-16 „Sprawdź operator drzwi i rolki”); do potwierdzenia przez kierownika działu technicznego.
+# Spójność z modelem i katalogiem cech: api/tests/test_ryzyko_dzienne_wind.py.
+
+podzespoly:
+  drzwi: {nazwa: Drzwi, sprawdz: "operator drzwi i rolki"}
+  naped: {nazwa: Napęd, sprawdz: "silnik, przekładnię i łożyska napędu"}
+  hamulec_liny: {nazwa: Hamulec i liny, sprawdz: "hamulec, liny i prowadnice kabiny"}
+  sterownik: {nazwa: Sterownik, sprawdz: "sterownik i wersję jego oprogramowania"}
+
+# sygnał -> nazwa w zdaniu i sposób opisu wartości z dnia oceny:
+#   stosunek  = średnia z okna / norma z 30 dni (dni 15–44 przed oceną): „+38%” albo „3×”;
+#   roznica   = średnia z okna − norma (°C): „+6 °C”;
+#   liczba    = suma w ostatniej dobie (gdy norma = 0 albo brak): „12 w ostatniej dobie”;
+#   firmware  = dni od zmiany oprogramowania.
+sygnaly:
+  drzwi_ponowne_otwarcia: {nazwa: ponowne otwarcia, opis: stosunek}
+  drzwi_czas_zamykania_sr: {nazwa: czas zamykania, opis: stosunek}
+  drzwi_czas_zamykania_max: {nazwa: najdłuższy czas zamykania, opis: stosunek}
+  drzwi_bledy: {nazwa: błędy drzwi, opis: stosunek}
+  naped_prad_sr: {nazwa: prąd silnika, opis: stosunek}
+  naped_prad_max: {nazwa: szczytowy prąd silnika, opis: stosunek}
+  naped_temp_silnika: {nazwa: temperatura silnika, opis: roznica}
+  naped_temp_maszynowni: {nazwa: temperatura maszynowni, opis: roznica}
+  naped_blad_poziomowania: {nazwa: błąd poziomowania kabiny, opis: stosunek}
+  naped_bledy: {nazwa: błędy napędu, opis: stosunek}
+  wibracje_rms: {nazwa: drgania kabiny, opis: stosunek}
+  wibracje_czujnik: {nazwa: czujnik drgań, opis: brak}
+  sterownik_bledy: {nazwa: błędy sterownika, opis: stosunek}
+  sterownik_firmware: {nazwa: oprogramowanie sterownika, opis: firmware}
+  uzycie_kursy: {nazwa: liczba kursów, opis: stosunek}
+  uzycie_otwarcia_drzwi: {nazwa: otwarcia drzwi, opis: stosunek}
+  uzycie_wylaczona: {nazwa: czas wyłączenia, opis: stosunek}
+
+cechy:
+  # drzwi_ponowne_otwarcia
+  drzwi_ponowne_otwarcia_sr_24h: drzwi
+  drzwi_ponowne_otwarcia_max_24h: drzwi
+  drzwi_ponowne_otwarcia_sr_3d: drzwi
+  drzwi_ponowne_otwarcia_max_3d: drzwi
+  drzwi_ponowne_otwarcia_sr_7d: drzwi
+  drzwi_ponowne_otwarcia_max_7d: drzwi
+  drzwi_ponowne_otwarcia_norma: drzwi
+  drzwi_ponowne_otwarcia_do_normy_24h: drzwi
+  drzwi_ponowne_otwarcia_do_normy_3d: drzwi
+  drzwi_ponowne_otwarcia_do_normy_7d: drzwi
+  drzwi_ponowne_otwarcia_trend_7d: drzwi
+  # drzwi_czas_zamykania_sr
+  drzwi_czas_zamykania_sr_sr_24h: drzwi
+  drzwi_czas_zamykania_sr_max_24h: drzwi
+  drzwi_czas_zamykania_sr_sr_3d: drzwi
+  drzwi_czas_zamykania_sr_max_3d: drzwi
+  drzwi_czas_zamykania_sr_sr_7d: drzwi
+  drzwi_czas_zamykania_sr_max_7d: drzwi
+  drzwi_czas_zamykania_sr_norma: drzwi
+  drzwi_czas_zamykania_sr_do_normy_24h: drzwi
+  drzwi_czas_zamykania_sr_do_normy_3d: drzwi
+  drzwi_czas_zamykania_sr_do_normy_7d: drzwi
+  drzwi_czas_zamykania_sr_trend_7d: drzwi
+  # drzwi_czas_zamykania_max
+  drzwi_czas_zamykania_max_sr_24h: drzwi
+  drzwi_czas_zamykania_max_max_24h: drzwi
+  drzwi_czas_zamykania_max_sr_3d: drzwi
+  drzwi_czas_zamykania_max_max_3d: drzwi
+  drzwi_czas_zamykania_max_sr_7d: drzwi
+  drzwi_czas_zamykania_max_max_7d: drzwi
+  drzwi_czas_zamykania_max_norma: drzwi
+  drzwi_czas_zamykania_max_do_normy_24h: drzwi
+  drzwi_czas_zamykania_max_do_normy_3d: drzwi
+  drzwi_czas_zamykania_max_do_normy_7d: drzwi
+  drzwi_czas_zamykania_max_trend_7d: drzwi
+  # drzwi_bledy
+  drzwi_bledy_sr_24h: drzwi
+  drzwi_bledy_max_24h: drzwi
+  drzwi_bledy_sr_3d: drzwi
+  drzwi_bledy_max_3d: drzwi
+  drzwi_bledy_sr_7d: drzwi
+  drzwi_bledy_max_7d: drzwi
+  drzwi_bledy_norma: drzwi
+  drzwi_bledy_do_normy_24h: drzwi
+  drzwi_bledy_do_normy_3d: drzwi
+  drzwi_bledy_do_normy_7d: drzwi
+  drzwi_bledy_trend_7d: drzwi
+  # naped_prad_sr
+  naped_prad_sr_sr_24h: naped
+  naped_prad_sr_max_24h: naped
+  naped_prad_sr_sr_3d: naped
+  naped_prad_sr_max_3d: naped
+  naped_prad_sr_sr_7d: naped
+  naped_prad_sr_max_7d: naped
+  naped_prad_sr_norma: naped
+  naped_prad_sr_do_normy_24h: naped
+  naped_prad_sr_do_normy_3d: naped
+  naped_prad_sr_do_normy_7d: naped
+  naped_prad_sr_trend_7d: naped
+  # naped_prad_max
+  naped_prad_max_sr_24h: naped
+  naped_prad_max_max_24h: naped
+  naped_prad_max_sr_3d: naped
+  naped_prad_max_max_3d: naped
+  naped_prad_max_sr_7d: naped
+  naped_prad_max_max_7d: naped
+  naped_prad_max_norma: naped
+  naped_prad_max_do_normy_24h: naped
+  naped_prad_max_do_normy_3d: naped
+  naped_prad_max_do_normy_7d: naped
+  naped_prad_max_trend_7d: naped
+  # naped_temp_silnika
+  naped_temp_silnika_sr_24h: naped
+  naped_temp_silnika_max_24h: naped
+  naped_temp_silnika_sr_3d: naped
+  naped_temp_silnika_max_3d: naped
+  naped_temp_silnika_sr_7d: naped
+  naped_temp_silnika_max_7d: naped
+  naped_temp_silnika_norma: naped
+  naped_temp_silnika_do_normy_24h: naped
+  naped_temp_silnika_do_normy_3d: naped
+  naped_temp_silnika_do_normy_7d: naped
+  naped_temp_silnika_trend_7d: naped
+  # naped_temp_maszynowni
+  naped_temp_maszynowni_sr_24h: null
+  naped_temp_maszynowni_max_24h: null
+  naped_temp_maszynowni_sr_3d: null
+  naped_temp_maszynowni_max_3d: null
+  naped_temp_maszynowni_sr_7d: null
+  naped_temp_maszynowni_max_7d: null
+  naped_temp_maszynowni_norma: null
+  naped_temp_maszynowni_do_normy_24h: null
+  naped_temp_maszynowni_do_normy_3d: null
+  naped_temp_maszynowni_do_normy_7d: null
+  naped_temp_maszynowni_trend_7d: null
+  # naped_blad_poziomowania
+  naped_blad_poziomowania_sr_24h: hamulec_liny
+  naped_blad_poziomowania_max_24h: hamulec_liny
+  naped_blad_poziomowania_sr_3d: hamulec_liny
+  naped_blad_poziomowania_max_3d: hamulec_liny
+  naped_blad_poziomowania_sr_7d: hamulec_liny
+  naped_blad_poziomowania_max_7d: hamulec_liny
+  naped_blad_poziomowania_norma: hamulec_liny
+  naped_blad_poziomowania_do_normy_24h: hamulec_liny
+  naped_blad_poziomowania_do_normy_3d: hamulec_liny
+  naped_blad_poziomowania_do_normy_7d: hamulec_liny
+  naped_blad_poziomowania_trend_7d: hamulec_liny
+  # naped_bledy
+  naped_bledy_sr_24h: naped
+  naped_bledy_max_24h: naped
+  naped_bledy_sr_3d: naped
+  naped_bledy_max_3d: naped
+  naped_bledy_sr_7d: naped
+  naped_bledy_max_7d: naped
+  naped_bledy_norma: naped
+  naped_bledy_do_normy_24h: naped
+  naped_bledy_do_normy_3d: naped
+  naped_bledy_do_normy_7d: naped
+  naped_bledy_trend_7d: naped
+  # wibracje_rms
+  wibracje_rms_sr_24h: hamulec_liny
+  wibracje_rms_max_24h: hamulec_liny
+  wibracje_rms_sr_3d: hamulec_liny
+  wibracje_rms_max_3d: hamulec_liny
+  wibracje_rms_sr_7d: hamulec_liny
+  wibracje_rms_max_7d: hamulec_liny
+  wibracje_rms_norma: hamulec_liny
+  wibracje_rms_do_normy_24h: hamulec_liny
+  wibracje_rms_do_normy_3d: hamulec_liny
+  wibracje_rms_do_normy_7d: hamulec_liny
+  wibracje_rms_trend_7d: hamulec_liny
+  # wibracje_czujnik
+  ma_czujnik_wibracji: null
+  # sterownik_bledy
+  sterownik_bledy_sr_24h: sterownik
+  sterownik_bledy_max_24h: sterownik
+  sterownik_bledy_sr_3d: sterownik
+  sterownik_bledy_max_3d: sterownik
+  sterownik_bledy_sr_7d: sterownik
+  sterownik_bledy_max_7d: sterownik
+  sterownik_bledy_norma: sterownik
+  sterownik_bledy_do_normy_24h: sterownik
+  sterownik_bledy_do_normy_3d: sterownik
+  sterownik_bledy_do_normy_7d: sterownik
+  sterownik_bledy_trend_7d: sterownik
+  # sterownik_firmware
+  firmware_dni_od_zmiany: sterownik
+  firmware_zmiana_glowna_44d: sterownik
+  # uzycie_kursy
+  uzycie_kursy_sr_24h: null
+  uzycie_kursy_max_24h: null
+  uzycie_kursy_sr_3d: null
+  uzycie_kursy_max_3d: null
+  uzycie_kursy_sr_7d: null
+  uzycie_kursy_max_7d: null
+  uzycie_kursy_norma: null
+  uzycie_kursy_do_normy_24h: null
+  uzycie_kursy_do_normy_3d: null
+  uzycie_kursy_do_normy_7d: null
+  uzycie_kursy_trend_7d: null
+  # uzycie_otwarcia_drzwi
+  uzycie_otwarcia_drzwi_sr_24h: null
+  uzycie_otwarcia_drzwi_max_24h: null
+  uzycie_otwarcia_drzwi_sr_3d: null
+  uzycie_otwarcia_drzwi_max_3d: null
+  uzycie_otwarcia_drzwi_sr_7d: null
+  uzycie_otwarcia_drzwi_max_7d: null
+  uzycie_otwarcia_drzwi_norma: null
+  uzycie_otwarcia_drzwi_do_normy_24h: null
+  uzycie_otwarcia_drzwi_do_normy_3d: null
+  uzycie_otwarcia_drzwi_do_normy_7d: null
+  uzycie_otwarcia_drzwi_trend_7d: null
+  # uzycie_wylaczona
+  uzycie_wylaczona_sr_24h: null
+  uzycie_wylaczona_max_24h: null
+  uzycie_wylaczona_sr_3d: null
+  uzycie_wylaczona_max_3d: null
+  uzycie_wylaczona_sr_7d: null
+  uzycie_wylaczona_max_7d: null
+  uzycie_wylaczona_norma: null
+  uzycie_wylaczona_do_normy_24h: null
+  uzycie_wylaczona_do_normy_3d: null
+  uzycie_wylaczona_do_normy_7d: null
+  uzycie_wylaczona_trend_7d: null
+  ts_drzwi_czas_zamykania_rms: drzwi
+  ts_drzwi_czas_zamykania_kurtoza: drzwi
+  ts_drzwi_czas_zamykania_energia: drzwi
+  ts_drzwi_czas_zamykania_fft_dlugie: drzwi
+  ts_drzwi_czas_zamykania_fft_doba: drzwi
+  ts_drzwi_czas_zamykania_fft_pol_doby: drzwi
+  ts_drzwi_czas_zamykania_fft_krotkie: drzwi
+  ts_naped_prad_rms: naped
+  ts_naped_prad_kurtoza: naped
+  ts_naped_prad_energia: naped
+  ts_naped_prad_fft_dlugie: naped
+  ts_naped_prad_fft_doba: naped
+  ts_naped_prad_fft_pol_doby: naped
+  ts_naped_prad_fft_krotkie: naped
+  ts_wibracje_rms_rms: hamulec_liny
+  ts_wibracje_rms_kurtoza: hamulec_liny
+  ts_wibracje_rms_energia: hamulec_liny
+  ts_wibracje_rms_fft_dlugie: hamulec_liny
+  ts_wibracje_rms_fft_doba: hamulec_liny
+  ts_wibracje_rms_fft_pol_doby: hamulec_liny
+  ts_wibracje_rms_fft_krotkie: hamulec_liny

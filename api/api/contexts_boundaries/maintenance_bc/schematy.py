@@ -13,13 +13,15 @@ class Sygnal(BaseModel):
     wklad: float = Field(description="wkład sygnału w log-szansę awarii (suma SHAP jego cech); > 0 podnosi ryzyko")
     cecha: str = Field(description="cecha sygnału o największym wkładzie")
     wartosc: float | None = Field(description="wartość tej cechy w dniu oceny")
-    podzespoly: list[str]
+    podzespol: str | None = Field(
+        description="podzespół cech sygnału (maintenance_bc/podzespoly.yaml); None = kontekst"
+    )
 
 
 class Podzespol(BaseModel):
     podzespol: str
-    wklad: float = Field(description="suma wkładów sygnałów wskazujących ten podzespół")
-    sygnaly: list[str]
+    wklad: float = Field(description="suma wkładów SHAP wszystkich cech podzespołu (podzespoly.yaml); > 0")
+    sygnaly: list[str] = Field(description="sygnały podzespołu z dodatnim wkładem, od największego")
 
 
 class Alarm(BaseModel):
@@ -41,4 +43,5 @@ class OdpowiedzRyzykaWindy(BaseModel):
     okna_24h: int = Field(description="okna telemetrii z 24 h przed odcięciem (pełna doba = 144)")
     sygnaly: list[Sygnal] = Field(description="najwyżej 3 sygnały o największym dodatnim wkładzie")
     podzespoly: list[Podzespol] = Field(description="podejrzane podzespoły, od najsilniejszego wskazania")
+    opis: str | None = Field(description="opis alertu jednym zdaniem: pierwszy podzespół, sygnały, co sprawdzić")
     alarm: Alarm | None = Field(description="alarm z reguły w dniu oceny (tylko w dzień alarmu)")

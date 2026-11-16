@@ -13,11 +13,11 @@ Kroki (ctx.step.run):
    3 windy o najwyższym `predict`, przerwa 7 dni liczona także z alarmów zapisanych wcześniej w alarmy_wind). Windy,
    które o 05:50 stoją (`tryb = 'wylaczona'`), alarmu nie dostają — w treningu taki dzień nie ma wiersza w dni_wind
    (docs/b4_ryzyko_dzienne.md). Zapis w alarmy_wind; pierwsza decyzja dnia zostaje (adapters/ryzyko_wind.py).
-5. `serwisownik-<id_windy>`: osobny krok na każdy alarm — zgłoszenie w Serwisowniku (adapters/serwisownik_alarmy.py,
+5. `serwisownik-<id_windy>`: osobny krok na każdy alarm — zgłoszenie w Serwisowniku (adapters/serwisownik.py,
    idempotentne po windzie i dniu), potem `id_zgloszenia` w alarmy_wind.
 
 Ręcznie: `cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.ryzyko_dzienne [RRRR-MM-DD]`
-(wymaga atrapy Serwisownika `pypyr mock_serwisownik` albo SERWISOWNIK_URL, gdy dzień jest dniem alarmu).
+(wymaga atrapy Serwisownika `pypyr serwisownik_mock` albo SERWISOWNIK_URL, gdy dzień jest dniem alarmu).
 """
 
 import json
@@ -30,7 +30,7 @@ from typing import Any
 import inngest
 import numpy as np
 import pandas as pd
-from api.adapters import ryzyko_wind, serwisownik_alarmy
+from api.adapters import ryzyko_wind, serwisownik
 from api.adapters.duckdb_baza import SCIEZKA_BAZY, polaczenie
 from api.ai.failure_model.base import wczytaj_obecny
 from api.contexts_boundaries.maintenance_bc import alarmy_wind
@@ -73,7 +73,7 @@ def ocen(model, cechy: pd.DataFrame) -> pd.DataFrame:
     model.sprawdz_kolumny(cechy)
     wynik = np.asarray(model.predict(cechy), dtype=float)
     p = np.asarray(model.prawdopodobienstwo(cechy), dtype=float) if hasattr(model, "prawdopodobienstwo") else None
-    wyj = wyjasnij_ramke(cechy[list(model.cechy)], model.explain(cechy))
+    wyj = wyjasnij_ramke(cechy, model.explain(cechy), cechy["okna_24h"])
     df = cechy[["id_windy", "dzien", "stoi", "ostatnie_okno", "okna_24h"]].copy()
     df["wynik"] = wynik.round(8)
     df["p_awarii_7d"] = p.round(6) if p is not None else np.nan
@@ -83,6 +83,7 @@ def ocen(model, cechy: pd.DataFrame) -> pd.DataFrame:
     kolejnosc = {w: i for i, w in enumerate(cechy["id_windy"])}
     df["sygnaly"] = [json.dumps(wyj[kolejnosc[w]]["sygnaly"], ensure_ascii=False) for w in df["id_windy"]]
     df["podzespoly"] = [json.dumps(wyj[kolejnosc[w]]["podzespoly"], ensure_ascii=False) for w in df["id_windy"]]
+    df["opis"] = [wyj[kolejnosc[w]]["opis"] for w in df["id_windy"]]
     return df
 
 
@@ -153,17 +154,8 @@ def krok_alarmy(katalog: str, dzien: str, id_przebiegu: str, sciezka: Path = SCI
 
 
 def zgloszenie_alarmu(alarm: dict, ocena: dict, winda: dict) -> dict:
-    """Treść zgłoszenia do Serwisownika (deterministyczna: ten sam alarm = ta sama treść = ten sam klucz)."""
-    sygnaly = ocena["sygnaly"]
-    podzespoly = [p["podzespol"] for p in ocena["podzespoly"]]
-    p = alarm.get("p_awarii_7d")
-    opis_p = f"{p:.0%}".replace(".", ",") if p is not None else "brak"
-    tresc = (
-        f"Alarm modelu awarii wind ({ocena['wersja_modelu']}): winda {alarm['id_windy']}, pozycja {alarm['pozycja']} "
-        f"w dniu {alarm['dzien']}. Szansa awarii w 7 dni: {opis_p}. "
-        f"Podejrzane podzespoły: {', '.join(podzespoly) or 'brak wskazania'}. "
-        f"Sygnały: {', '.join(s['sygnal'] for s in sygnaly) or 'brak'}."
-    )
+    """Treść zgłoszenia do Serwisownika (deterministyczna: ten sam alarm = ta sama treść = ten sam klucz).
+    `tresc_zgloszenia` = opis alertu jednym zdaniem (wyjasnienie.opis_alertu); szczegóły w `alarm`."""
     return {
         "id_budynku": winda["id_budynku"],
         "id_urzadzenia": alarm["id_windy"],
@@ -172,22 +164,22 @@ def zgloszenie_alarmu(alarm: dict, ocena: dict, winda: dict) -> dict:
         "kategoria": "przegląd",
         "priorytet": "normalny",
         "firma_serwisowa": winda["firma_serwisowa"],
-        "tresc_zgloszenia": tresc,
+        "tresc_zgloszenia": ocena["opis"],
         "alarm": {
             "id_windy": alarm["id_windy"],
             "dzien": alarm["dzien"],
             "pozycja": int(alarm["pozycja"]),
             "wynik": alarm["wynik"],
-            "p_awarii_7d": p,
+            "p_awarii_7d": alarm.get("p_awarii_7d"),
             "wersja_modelu": ocena["wersja_modelu"],
-            "sygnaly": sygnaly,
-            "podzespoly": podzespoly,
+            "podejrzane_podzespoly": ocena["podzespoly"],
+            "sygnaly": ocena["sygnaly"],
         },
     }
 
 
 def krok_serwisownik(
-    alarm: dict, sciezka: Path = SCIEZKA_BAZY, klient: serwisownik_alarmy.KlientSerwisownika | None = None
+    alarm: dict, sciezka: Path = SCIEZKA_BAZY, klient: serwisownik.KlientSerwisownika | None = None
 ) -> dict:
     d = date.fromisoformat(alarm["dzien"])
     with polaczenie(sciezka=sciezka) as con:
@@ -197,7 +189,7 @@ def krok_serwisownik(
         ).df()
     if ocena is None or winda.empty:
         raise inngest.NonRetriableError(f"Brak oceny albo windy {alarm['id_windy']} z dnia {alarm['dzien']}")
-    odp = (klient or serwisownik_alarmy.KlientSerwisownika()).zglos_alarm(
+    odp = (klient or serwisownik.KlientSerwisownika()).zglos_alarm(
         zgloszenie_alarmu(alarm, ocena, winda.iloc[0].to_dict())
     )
     with polaczenie(tylko_odczyt=False, sciezka=sciezka) as con:
@@ -211,7 +203,7 @@ def wykonaj_ryzyko_wind(
     dzien: str | None = None,
     sciezka: Path = SCIEZKA_BAZY,
     katalog_bazowy: Path = KATALOG_DZIENNY,
-    klient: serwisownik_alarmy.KlientSerwisownika | None = None,
+    klient: serwisownik.KlientSerwisownika | None = None,
 ) -> dict:
     """Kolejność kroków; `krok(id, handler, *args)` = ctx.step.run w Inngest (w testach i CLI: wywołanie wprost)."""
     par = krok("parametry", krok_parametry, dzien, id_przebiegu, str(katalog_bazowy))
