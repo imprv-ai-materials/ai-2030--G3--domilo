@@ -158,3 +158,25 @@ SELECT count(*) FILTER (WHERE r.grupa = 'oferta') AS oferty, count(*) AS n
 FROM migawki_najemcy AS m JOIN retencja_decyzje AS r USING (id_umowy)
 WHERE m.miesiac_konca BETWEEN DATE '2026-04-01' AND DATE '2026-09-01';
 ```
+
+## v2_przezycie_cox: czas do końca najmu (2026-11-16)
+
+Liczy [`ewaluacja_v2.py`](ewaluacja_v2.py); wyniki w `versions/v2_przezycie_cox/metryki.json`, predykcje testu
+w `evals/wyniki/v2_przezycie_cox.parquet`, runy MLflow `v2_przezycie_cox` i `regula_b2b` (eksperyment `najemcy`).
+Raport: [docs/przezycie_cox.md](../../../../../docs/przezycie_cox.md).
+
+To inny kontrakt niż v1: jeden wiersz to okres umowy, cechy v1 liczone na jego początek, a target to czas do końca
+najmu (model Coxa, lifelines). Wyniku nie da się więc porównać z AUC v1 na migawkach. Baseline to reguła
+„B2B najpierw”, liczona na tym samym teście.
+
+| Wynik | C-index, najmy od 2025-01, pierwszy okres (4 506) | C-index, wszystkie okresy tych najmów (5 396) |
+|---|---:|---:|
+| Reguła „B2B najpierw” (baseline) | 0,595 (0,574–0,615) | 0,599 (0,579–0,619) |
+| Cox bez poprawek | 0,662 (0,638–0,690) | 0,655 (0,629–0,683) |
+| **v2_przezycie_cox** | **0,665** (0,640–0,694) | **0,657** (0,630–0,686) |
+| v2 tylko B2C / tylko B2B | 0,504 / 0,696 | 0,499 / 0,690 |
+
+v2 − baseline: +0,070 (+0,043 … +0,101) na pierwszym okresie. Model jest lepszy od reguły dzięki porządkowaniu
+B2B, ale wśród najemców prywatnych nie rozróżnia nikogo (C-index ≈ 0,5), podobnie jak v1 w B2C.
+`current.yaml` zostaje pusty.
+
