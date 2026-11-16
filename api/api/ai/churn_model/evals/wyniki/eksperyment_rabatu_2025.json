@@ -1,0 +1,874 @@
+{
+  "okres": "test_2025",
+  "data_konca_od": "2025-07-01",
+  "data_konca_do": "2026-03-31",
+  "dni_oferty_przed_koncem": [
+    45.0
+  ],
+  "cechy_balansu": [
+    "linia",
+    "indeksacja_ostatnia_pct",
+    "czynsz_m2",
+    "czynsz_do_podobnych",
+    "portal_logowania_3m",
+    "ankieta_dni_od_odpowiedzi",
+    "ocena_srednia_365d",
+    "nr_okresu",
+    "ankieta_ostatni_wynik",
+    "zgl_365d"
+  ],
+  "prog_gornych_35": 0.52149,
+  "zgodnosc_gorne_35_z_kwalifikuje": [
+    {
+      "gorne_35": false,
+      "kwalifikuje": false,
+      "umowy": 3052
+    },
+    {
+      "gorne_35": false,
+      "kwalifikuje": true,
+      "umowy": 25
+    },
+    {
+      "gorne_35": true,
+      "kwalifikuje": false,
+      "umowy": 26
+    },
+    {
+      "gorne_35": true,
+      "kwalifikuje": true,
+      "umowy": 1631
+    }
+  ],
+  "balans": {
+    "liczebnosc": {
+      "n": 4734,
+      "oferta": 2332,
+      "kontrola": 2402,
+      "udzial_oferty": 0.49260667511618084,
+      "p_dwumianowy_50_50": 0.31593432479451594
+    },
+    "cechy": [
+      {
+        "cecha": "linia (udział B2B)",
+        "oferta": 0.15994854202401373,
+        "kontrola": 0.16028309741881766,
+        "smd": -0.0009123075321209695,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.9749652112139996
+      },
+      {
+        "cecha": "indeksacja_ostatnia_pct",
+        "oferta": 4.246153846153846,
+        "kontrola": 4.2401065449010655,
+        "smd": 0.0034180938640337513,
+        "braki_oferta": 0.45368782161234994,
+        "braki_kontrola": 0.4529558701082431,
+        "p": 0.9307267951176104
+      },
+      {
+        "cecha": "czynsz_m2",
+        "oferta": 46.83605516220488,
+        "kontrola": 46.84982643080215,
+        "smd": -0.0015417632048056941,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.9577086484276821
+      },
+      {
+        "cecha": "czynsz_do_podobnych",
+        "oferta": 0.9967408217331374,
+        "kontrola": 0.9942216421560713,
+        "smd": 0.028137653881158922,
+        "braki_oferta": 0.006003430531732418,
+        "braki_kontrola": 0.00791007493755204,
+        "p": 0.33495297726717566
+      },
+      {
+        "cecha": "portal_logowania_3m",
+        "oferta": 11.091766723842195,
+        "kontrola": 11.255203996669442,
+        "smd": -0.01919976821560632,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.5089297646484093
+      },
+      {
+        "cecha": "ankieta_dni_od_odpowiedzi",
+        "oferta": 242.6223506743738,
+        "kontrola": 249.34304511278197,
+        "smd": -0.027579963008121364,
+        "braki_oferta": 0.5548885077186964,
+        "braki_kontrola": 0.5570358034970858,
+        "p": 0.5273553485009927
+      },
+      {
+        "cecha": "ocena_srednia_365d",
+        "oferta": 3.4185976444809634,
+        "kontrola": 3.4269178269178266,
+        "smd": -0.007859950433416687,
+        "braki_oferta": 0.4781303602058319,
+        "braki_kontrola": 0.4916736053288926,
+        "p": 0.846155705175206
+      },
+      {
+        "cecha": "nr_okresu",
+        "oferta": 1.9742710120068612,
+        "kontrola": 1.9442131557035804,
+        "smd": 0.027205807328567682,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.3495388097219615
+      },
+      {
+        "cecha": "ankieta_ostatni_wynik",
+        "oferta": 7.471098265895954,
+        "kontrola": 7.535714285714286,
+        "smd": -0.037771290972298296,
+        "braki_oferta": 0.5548885077186964,
+        "braki_kontrola": 0.5570358034970858,
+        "p": 0.3866433566352202
+      },
+      {
+        "cecha": "zgl_365d",
+        "oferta": 1.9365351629502572,
+        "kontrola": 1.9333888426311407,
+        "smd": 0.0020026458237334534,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.9450962009126281
+      }
+    ],
+    "laczny": {
+      "statystyka_lr": 7.6889249586811275,
+      "stopnie_swobody": 14,
+      "p": 0.9048946583705049
+    },
+    "dodatkowe": [
+      {
+        "cecha": "score_polityki",
+        "oferta": 0.4285849914236707,
+        "kontrola": 0.4258640299750209,
+        "smd": 0.011859519738991423,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.6832904158112365
+      },
+      {
+        "cecha": "wypowiedzenie_przed_migawka",
+        "oferta": 0.11878216123499143,
+        "kontrola": 0.1398834304746045,
+        "smd": -0.06290008527837086,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.030455425761805918
+      }
+    ],
+    "miesiace": {
+      "tabela": [
+        {
+          "miesiac_konca": "2025-07",
+          "kontrola": 289,
+          "oferta": 260
+        },
+        {
+          "miesiac_konca": "2025-08",
+          "kontrola": 243,
+          "oferta": 264
+        },
+        {
+          "miesiac_konca": "2025-09",
+          "kontrola": 259,
+          "oferta": 290
+        },
+        {
+          "miesiac_konca": "2025-10",
+          "kontrola": 300,
+          "oferta": 264
+        },
+        {
+          "miesiac_konca": "2025-11",
+          "kontrola": 303,
+          "oferta": 273
+        },
+        {
+          "miesiac_konca": "2025-12",
+          "kontrola": 268,
+          "oferta": 249
+        },
+        {
+          "miesiac_konca": "2026-01",
+          "kontrola": 281,
+          "oferta": 256
+        },
+        {
+          "miesiac_konca": "2026-02",
+          "kontrola": 225,
+          "oferta": 210
+        },
+        {
+          "miesiac_konca": "2026-03",
+          "kontrola": 234,
+          "oferta": 266
+        }
+      ],
+      "p_chi2": 0.1796699544801023
+    },
+    "segmenty": {
+      "gorne_35": {
+        "n": 1657,
+        "oferta": 817,
+        "p_dwumianowy_50_50": 0.5888949498628283,
+        "cechy": [
+          {
+            "cecha": "linia (udział B2B)",
+            "oferta": 0.23133414932680538,
+            "kontrola": 0.20952380952380953,
+            "smd": 0.052632084849973,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.284161448770191
+          },
+          {
+            "cecha": "indeksacja_ostatnia_pct",
+            "oferta": 4.234805194805195,
+            "kontrola": 4.156553398058253,
+            "smd": 0.04365570989238635,
+            "braki_oferta": 0.5287637698898409,
+            "braki_kontrola": 0.5095238095238095,
+            "p": 0.5383248457094462
+          },
+          {
+            "cecha": "czynsz_m2",
+            "oferta": 47.38962859328754,
+            "kontrola": 47.08167818483794,
+            "smd": 0.03327785027042775,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.498369550130271
+          },
+          {
+            "cecha": "czynsz_do_podobnych",
+            "oferta": 0.9943372143545102,
+            "kontrola": 0.9965091228505141,
+            "smd": -0.023981880208501727,
+            "braki_oferta": 0.008567931456548347,
+            "braki_kontrola": 0.013095238095238096,
+            "p": 0.6274843393584152
+          },
+          {
+            "cecha": "portal_logowania_3m",
+            "oferta": 11.455324357405141,
+            "kontrola": 11.697619047619048,
+            "smd": -0.027964263166178886,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.5692736092312243
+          },
+          {
+            "cecha": "ankieta_dni_od_odpowiedzi",
+            "oferta": 207.46951219512195,
+            "kontrola": 248.7030303030303,
+            "smd": -0.1739061684861574,
+            "braki_oferta": 0.598531211750306,
+            "braki_kontrola": 0.6071428571428571,
+            "p": 0.026050058256830627
+          },
+          {
+            "cecha": "ocena_srednia_365d",
+            "oferta": 3.2715876436781612,
+            "kontrola": 3.2772463768115943,
+            "smd": -0.005313987600448854,
+            "braki_oferta": 0.4320685434516524,
+            "braki_kontrola": 0.4523809523809524,
+            "p": 0.9356534979664896
+          },
+          {
+            "cecha": "nr_okresu",
+            "oferta": 1.806609547123623,
+            "kontrola": 1.8154761904761905,
+            "smd": -0.00838522107597439,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.8645441512193031
+          },
+          {
+            "cecha": "ankieta_ostatni_wynik",
+            "oferta": 7.222560975609756,
+            "kontrola": 7.3090909090909095,
+            "smd": -0.04982279139521294,
+            "braki_oferta": 0.598531211750306,
+            "braki_kontrola": 0.6071428571428571,
+            "p": 0.5229848502934065
+          },
+          {
+            "cecha": "zgl_365d",
+            "oferta": 2.130966952264382,
+            "kontrola": 2.104761904761905,
+            "smd": 0.0158589558020845,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.7469533403572257
+          }
+        ],
+        "laczny": {
+          "statystyka_lr": 10.759327867790944,
+          "stopnie_swobody": 14,
+          "p": 0.7048307438363077
+        }
+      },
+      "dolne_65": {
+        "n": 3077,
+        "oferta": 1515,
+        "p_dwumianowy_50_50": 0.40695763770631016,
+        "cechy": [
+          {
+            "cecha": "linia (udział B2B)",
+            "oferta": 0.12145214521452145,
+            "kontrola": 0.13380281690140844,
+            "smd": -0.037020465756807515,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.30481779389713537
+          },
+          {
+            "cecha": "indeksacja_ostatnia_pct",
+            "oferta": 4.2510686164229465,
+            "kontrola": 4.278270509977827,
+            "smd": -0.0154604880606978,
+            "braki_oferta": 0.4132013201320132,
+            "braki_kontrola": 0.4225352112676056,
+            "p": 0.7435816897534091
+          },
+          {
+            "cecha": "czynsz_m2",
+            "oferta": 46.53752744392467,
+            "kontrola": 46.725143029143986,
+            "smd": -0.021445469832254843,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.55207505164582
+          },
+          {
+            "cecha": "czynsz_do_podobnych",
+            "oferta": 0.998031884051896,
+            "kontrola": 0.9930013580533089,
+            "smd": 0.05653688620140692,
+            "braki_oferta": 0.0046204620462046205,
+            "braki_kontrola": 0.005121638924455826,
+            "p": 0.11802846433658389
+          },
+          {
+            "cecha": "portal_logowania_3m",
+            "oferta": 10.895709570957095,
+            "kontrola": 11.017285531370039,
+            "smd": -0.014431589702075948,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.6889820279741623
+          },
+          {
+            "cecha": "ankieta_dni_od_odpowiedzi",
+            "oferta": 258.8619718309859,
+            "kontrola": 249.6307901907357,
+            "smd": 0.03753233465916048,
+            "braki_oferta": 0.5313531353135313,
+            "braki_kontrola": 0.5300896286811779,
+            "p": 0.476000794992438
+          },
+          {
+            "cecha": "ocena_srednia_365d",
+            "oferta": 3.509185480301018,
+            "kontrola": 3.517389399912396,
+            "smd": -0.007848856983013667,
+            "braki_oferta": 0.502970297029703,
+            "braki_kontrola": 0.5128040973111395,
+            "p": 0.8786675691051954
+          },
+          {
+            "cecha": "nr_okresu",
+            "oferta": 2.064686468646865,
+            "kontrola": 2.0134443021766963,
+            "smd": 0.04568434051789226,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.20541497232083916
+          },
+          {
+            "cecha": "ankieta_ostatni_wynik",
+            "oferta": 7.585915492957747,
+            "kontrola": 7.637602179836512,
+            "smd": -0.030598392139761472,
+            "braki_oferta": 0.5313531353135313,
+            "braki_kontrola": 0.5300896286811779,
+            "p": 0.5611707291083485
+          },
+          {
+            "cecha": "zgl_365d",
+            "oferta": 1.8316831683168318,
+            "kontrola": 1.8412291933418694,
+            "smd": -0.00629304756032315,
+            "braki_oferta": 0.0,
+            "braki_kontrola": 0.0,
+            "p": 0.8615168889583755
+          }
+        ],
+        "laczny": {
+          "statystyka_lr": 7.149247020722214,
+          "stopnie_swobody": 14,
+          "p": 0.9288051508100182
+        }
+      }
+    }
+  },
+  "efekty": {
+    "wszystkie": {
+      "n_oferta": 2332,
+      "n_kontrola": 2402,
+      "przedluzone_oferta": 1472,
+      "przedluzone_kontrola": 1391,
+      "odsetek_oferta": 0.6312178387650086,
+      "odsetek_kontrola": 0.5791007493755204,
+      "ate": 0.052117089389488225,
+      "se": 0.014187873459449937,
+      "ci95": [
+        0.024309368391754647,
+        0.0799248103872218
+      ],
+      "p": 0.00023938697324400274,
+      "score_od": 0.0063,
+      "score_do": 0.9787,
+      "udzial_b2b": 0.1601182931981411,
+      "otwarte_oferty": 0.6149228130360206,
+      "ci95_bootstrap_najemcy": [
+        0.02253528902087393,
+        0.08046524222997671
+      ]
+    },
+    "gorne_35": {
+      "n_oferta": 817,
+      "n_kontrola": 840,
+      "przedluzone_oferta": 404,
+      "przedluzone_kontrola": 285,
+      "odsetek_oferta": 0.4944920440636475,
+      "odsetek_kontrola": 0.3392857142857143,
+      "ate": 0.1552063297779332,
+      "se": 0.023933878917424833,
+      "ci95": [
+        0.10829678908943802,
+        0.20211587046642837
+      ],
+      "p": 8.885173856238547e-11,
+      "score_od": 0.5216,
+      "score_do": 0.9787,
+      "udzial_b2b": 0.22027761013880506,
+      "otwarte_oferty": 0.6328029375764994,
+      "ci95_bootstrap_najemcy": [
+        0.10800880364957967,
+        0.20068751180649763
+      ]
+    },
+    "dolne_65": {
+      "n_oferta": 1515,
+      "n_kontrola": 1562,
+      "przedluzone_oferta": 1068,
+      "przedluzone_kontrola": 1106,
+      "odsetek_oferta": 0.7049504950495049,
+      "odsetek_kontrola": 0.708066581306018,
+      "ate": -0.003116086256513051,
+      "se": 0.01642030089404375,
+      "ci95": [
+        -0.035299284624149656,
+        0.029067112111123554
+      ],
+      "p": 0.8494890905201629,
+      "score_od": 0.0063,
+      "score_do": 0.5214,
+      "udzial_b2b": 0.12772180695482613,
+      "otwarte_oferty": 0.6052805280528053,
+      "ci95_bootstrap_najemcy": [
+        -0.03478318919521235,
+        0.027939012679914065
+      ]
+    }
+  },
+  "roznica_gorne_minus_dolne": {
+    "roznica": 0.15832241603444625,
+    "se": 0.029025107088258725,
+    "ci95": [
+      0.10143425149404091,
+      0.2152105805748516
+    ],
+    "p": 4.906354203582445e-08
+  },
+  "wypowiedzenia": {
+    "wszystkie": {
+      "wypowiedzenie_przed_migawka": {
+        "cecha": "wypowiedzenie_przed_migawka",
+        "oferta": 0.11878216123499143,
+        "kontrola": 0.1398834304746045,
+        "smd": -0.06290008527837086,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.030455425761805918
+      },
+      "wypowiedzenie_przed_oferta": {
+        "cecha": "wypowiedzenie_przed_oferta",
+        "oferta": 0.23413379073756432,
+        "kontrola": 0.27310574521232306,
+        "smd": -0.08964475133190959,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.0020487616352039607
+      },
+      "odchodzacy_z_wyp_przed_oferta": {
+        "oferta": 0.6325581395348837,
+        "kontrola": 0.6449060336300693
+      }
+    },
+    "gorne_35": {
+      "wypowiedzenie_przed_migawka": {
+        "cecha": "wypowiedzenie_przed_migawka",
+        "oferta": 0.15299877600979192,
+        "kontrola": 0.23095238095238096,
+        "smd": -0.19878168380920777,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 5.366326645610855e-05
+      },
+      "wypowiedzenie_przed_oferta": {
+        "cecha": "wypowiedzenie_przed_oferta",
+        "oferta": 0.3292533659730722,
+        "kontrola": 0.41904761904761906,
+        "smd": -0.18625402704590485,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.00015495126764039725
+      },
+      "odchodzacy_z_wyp_przed_oferta": {
+        "oferta": 0.648910411622276,
+        "kontrola": 0.6324324324324324
+      }
+    },
+    "dolne_65": {
+      "wypowiedzenie_przed_migawka": {
+        "cecha": "wypowiedzenie_przed_migawka",
+        "oferta": 0.10033003300330033,
+        "kontrola": 0.09090909090909091,
+        "smd": 0.03203021008833557,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.3746284456598417
+      },
+      "wypowiedzenie_przed_oferta": {
+        "cecha": "wypowiedzenie_przed_oferta",
+        "oferta": 0.18283828382838282,
+        "kontrola": 0.1946222791293214,
+        "smd": -0.030109060548270714,
+        "braki_oferta": 0.0,
+        "braki_kontrola": 0.0,
+        "p": 0.4037032699010087
+      },
+      "odchodzacy_z_wyp_przed_oferta": {
+        "oferta": 0.6174496644295302,
+        "kontrola": 0.6600877192982456
+      }
+    }
+  },
+  "wrazliwosc": {
+    "wszystkie": {
+      "bez_wyp_przed_migawka": {
+        "n_oferta": 2055,
+        "n_kontrola": 2066,
+        "przedluzone_oferta": 1471,
+        "przedluzone_kontrola": 1389,
+        "odsetek_oferta": 0.7158150851581508,
+        "odsetek_kontrola": 0.6723136495643756,
+        "ate": 0.043501435593775284,
+        "se": 0.014339621825632453,
+        "ci95": [
+          0.015396293263611176,
+          0.07160657792393939
+        ],
+        "p": 0.002416122264130902
+      },
+      "stratyfikowany_wyp_przed_migawka": {
+        "ate": 0.037565188624425455,
+        "se": 0.012503333149010002,
+        "ci95": [
+          0.01305910596566007,
+          0.06207127128319084
+        ]
+      }
+    },
+    "gorne_35": {
+      "bez_wyp_przed_migawka": {
+        "n_oferta": 692,
+        "n_kontrola": 646,
+        "przedluzone_oferta": 403,
+        "przedluzone_kontrola": 284,
+        "odsetek_oferta": 0.5823699421965318,
+        "odsetek_kontrola": 0.43962848297213625,
+        "ate": 0.14274145922439557,
+        "se": 0.027070684584196016,
+        "ci95": [
+          0.08968389240252773,
+          0.19579902604626342
+        ],
+        "p": 1.3427266904123575e-07
+      },
+      "stratyfikowany_wyp_przed_migawka": {
+        "ate": 0.11580913853067838,
+        "se": 0.021935227887764967,
+        "ci95": [
+          0.07281688187798044,
+          0.15880139518337633
+        ]
+      }
+    },
+    "dolne_65": {
+      "bez_wyp_przed_migawka": {
+        "n_oferta": 1363,
+        "n_kontrola": 1420,
+        "przedluzone_oferta": 1068,
+        "przedluzone_kontrola": 1105,
+        "odsetek_oferta": 0.7835656639765224,
+        "odsetek_kontrola": 0.778169014084507,
+        "ate": 0.005396649892015382,
+        "se": 0.015684043811544757,
+        "ci95": [
+          -0.025343511110560657,
+          0.03613681089459142
+        ],
+        "p": 0.7307820910083949
+      },
+      "stratyfikowany_wyp_przed_migawka": {
+        "ate": 0.0042081423835773615,
+        "se": 0.014201308061620382,
+        "ci95": [
+          -0.02362590995055691,
+          0.032042194717711636
+        ]
+      }
+    }
+  },
+  "rabaty": {
+    "wszystkie": {
+      "oferta": {
+        "przedluzone": 1472,
+        "z_rabatem": 1468,
+        "kwoty_rabatu": [
+          150
+        ]
+      },
+      "kontrola": {
+        "przedluzone": 1391,
+        "z_rabatem": 0,
+        "kwoty_rabatu": []
+      }
+    },
+    "gorne_35": {
+      "oferta": {
+        "przedluzone": 404,
+        "z_rabatem": 401,
+        "kwoty_rabatu": [
+          150
+        ]
+      },
+      "kontrola": {
+        "przedluzone": 285,
+        "z_rabatem": 0,
+        "kwoty_rabatu": []
+      }
+    },
+    "dolne_65": {
+      "oferta": {
+        "przedluzone": 1068,
+        "z_rabatem": 1067,
+        "kwoty_rabatu": [
+          150
+        ]
+      },
+      "kontrola": {
+        "przedluzone": 1106,
+        "z_rabatem": 0,
+        "kwoty_rabatu": []
+      }
+    }
+  },
+  "efekty_wg_kwalifikuje": {
+    "kwalifikuje": {
+      "n_oferta": 820,
+      "n_kontrola": 836,
+      "przedluzone_oferta": 406,
+      "przedluzone_kontrola": 279,
+      "odsetek_oferta": 0.4951219512195122,
+      "odsetek_kontrola": 0.33373205741626794,
+      "ate": 0.16138989380324426,
+      "se": 0.02389192072781957,
+      "ci95": [
+        0.1145625896552319,
+        0.2082171979512566
+      ],
+      "p": 1.4283652267359456e-11,
+      "score_od": 0.4867,
+      "score_do": 0.9787,
+      "udzial_b2b": 0.22161835748792272,
+      "otwarte_oferty": 0.6329268292682927
+    },
+    "nie_kwalifikuje": {
+      "n_oferta": 1512,
+      "n_kontrola": 1566,
+      "przedluzone_oferta": 1066,
+      "przedluzone_kontrola": 1112,
+      "odsetek_oferta": 0.705026455026455,
+      "odsetek_kontrola": 0.7100893997445722,
+      "ate": -0.0050629447181171905,
+      "se": 0.016401217286994813,
+      "ci95": [
+        -0.037208739903242756,
+        0.027082850467008375
+      ],
+      "p": 0.7575548951949839,
+      "score_od": 0.0063,
+      "score_do": 0.5333,
+      "udzial_b2b": 0.12703053931124106,
+      "otwarte_oferty": 0.6051587301587301
+    }
+  },
+  "roznica_kwalifikuje_minus_nie": {
+    "roznica": 0.16645283852136145,
+    "se": 0.02897971367283728,
+    "ci95": [
+      0.10965364344031742,
+      0.22325203360240548
+    ],
+    "p": 9.259099663656772e-09
+  },
+  "efekty_wg_linii": {
+    "B2C": {
+      "n_oferta": 1959,
+      "n_kontrola": 2017,
+      "przedluzone_oferta": 1390,
+      "przedluzone_kontrola": 1295,
+      "odsetek_oferta": 0.709545686574783,
+      "odsetek_kontrola": 0.6420426375805652,
+      "ate": 0.06750304899421777,
+      "se": 0.014803559297591305,
+      "ci95": [
+        0.03848860592793575,
+        0.0965174920604998
+      ],
+      "p": 5.117306445108745e-06,
+      "score_od": 0.0063,
+      "score_do": 0.9787,
+      "udzial_b2b": 0.0,
+      "otwarte_oferty": 0.6207248596222562
+    },
+    "B2B": {
+      "n_oferta": 373,
+      "n_kontrola": 385,
+      "przedluzone_oferta": 82,
+      "przedluzone_kontrola": 96,
+      "odsetek_oferta": 0.21983914209115282,
+      "odsetek_kontrola": 0.24935064935064935,
+      "ate": -0.029511507259496528,
+      "se": 0.030756798056885713,
+      "ci95": [
+        -0.08979372373076405,
+        0.03077070921177099
+      ],
+      "p": 0.33730103381034315,
+      "score_od": 0.0143,
+      "score_do": 0.9531,
+      "udzial_b2b": 1.0,
+      "otwarte_oferty": 0.5844504021447721
+    },
+    "B2C_gorne_35": {
+      "n_oferta": 628,
+      "n_kontrola": 664,
+      "przedluzone_oferta": 379,
+      "przedluzone_kontrola": 267,
+      "odsetek_oferta": 0.6035031847133758,
+      "odsetek_kontrola": 0.40210843373493976,
+      "ate": 0.20139475097843607,
+      "se": 0.02725994420033597,
+      "ci95": [
+        0.14796624212520604,
+        0.2548232598316661
+      ],
+      "p": 1.4912433963858266e-13,
+      "score_od": 0.5216,
+      "score_do": 0.9787,
+      "udzial_b2b": 0.0,
+      "otwarte_oferty": 0.6528662420382165
+    },
+    "B2C_dolne_65": {
+      "n_oferta": 1331,
+      "n_kontrola": 1353,
+      "przedluzone_oferta": 1011,
+      "przedluzone_kontrola": 1028,
+      "odsetek_oferta": 0.7595792637114951,
+      "odsetek_kontrola": 0.7597930524759793,
+      "ate": -0.0002137887644841907,
+      "se": 0.016495305276006494,
+      "ci95": [
+        -0.032543993019450455,
+        0.032116415490482074
+      ],
+      "p": 0.9896592408458887,
+      "score_od": 0.0063,
+      "score_do": 0.5214,
+      "udzial_b2b": 0.0,
+      "otwarte_oferty": 0.6055597295266717
+    },
+    "B2B_gorne_35": {
+      "n_oferta": 189,
+      "n_kontrola": 176,
+      "przedluzone_oferta": 25,
+      "przedluzone_kontrola": 18,
+      "odsetek_oferta": 0.13227513227513227,
+      "odsetek_kontrola": 0.10227272727272728,
+      "ate": 0.03000240500240499,
+      "se": 0.03359997176964007,
+      "ci95": [
+        -0.035852329547652106,
+        0.09585713955246208
+      ],
+      "p": 0.37189494383738375,
+      "score_od": 0.5218,
+      "score_do": 0.9531,
+      "udzial_b2b": 1.0,
+      "otwarte_oferty": 0.5661375661375662
+    },
+    "B2B_dolne_65": {
+      "n_oferta": 184,
+      "n_kontrola": 209,
+      "przedluzone_oferta": 57,
+      "przedluzone_kontrola": 78,
+      "odsetek_oferta": 0.30978260869565216,
+      "odsetek_kontrola": 0.37320574162679426,
+      "ate": -0.0634231329311421,
+      "se": 0.04776296285182063,
+      "ci95": [
+        -0.15703681991563503,
+        0.030190554053350832
+      ],
+      "p": 0.1842201752852538,
+      "score_od": 0.0143,
+      "score_do": 0.5199,
+      "udzial_b2b": 1.0,
+      "otwarte_oferty": 0.6032608695652174
+    }
+  },
+  "roznica_B2C_minus_B2B": {
+    "roznica": 0.0970145562537143,
+    "se": 0.03413394197260772,
+    "ci95": [
+      0.030113259337023093,
+      0.16391585317040552
+    ],
+    "p": 0.004480721959038329
+  }
+}
