@@ -23,6 +23,19 @@ contexts_boundaries/retention_bc/lista_retencyjna.py, każdy przez ctx.step.run:
 umowy za 60–66 dni) -> ryzyko-i-czas -> uplift-i-akcja (modele z churn_model/current.yaml) -> grupy-kampanii (hash
 id_umowy i nazwy kampanii) -> zapis-listy (tabela lista_retencyjna, zastępuje dzień listy). Opis:
 docs/lista_retencyjna.md.
+
+Alerty o awariach wind — trzy osobne funkcje (każda ze swoim harmonogramem, ponowieniami i zdarzeniem ręcznym;
+opis: docs/b4_ryzyko_dzienne.md):
+- `telemetra-okna` (co 10 minut albo `domilo/telemetra.okna` z opcjonalnymi `data.od`, `data.do` w ISO 8601):
+  nowe okna z Telemetry (adapters/telemetra.py) -> magazyn Parquet, idempotentnie po (id_windy, ts_utc); kroki
+  zakres -> okna-<n> (contexts_boundaries/maintenance_bc/telemetria_biezaca.py).
+- `cechy-wind` (05:50 albo `domilo/windy.cechy` z opcjonalnym `data.dzien`): cechy dnia z tych samych plików SQL co
+  trening (features/windy/cechy.py, tsfresh_cechy.py) na eksporcie + magazynie; kroki parametry -> kompletnosc
+  (czeka na okno 05:50 do 05:58) -> cechy (maintenance_bc/cechy_dzienne.py).
+- `ryzyko-wind` (06:00 albo `domilo/windy.ryzyko` z opcjonalnym `data.dzien`): ryzyko aktywną wersją z
+  failure_model/current.yaml, reguła alarmu z maintenance_bc/ (poniedziałek, 3 windy, przerwa 7 dni) i zgłoszenie
+  w Serwisowniku osobnym krokiem na alarm; kroki parametry -> ryzyko -> zapis-ryzyka -> alarmy ->
+  serwisownik-<id_windy> (maintenance_bc/ryzyko_dzienne.py).
 """
 
 import os
@@ -32,6 +45,7 @@ from typing import Any
 
 import inngest
 from api.contexts_boundaries.leasing_bc import kolejka_dzienna
+from api.contexts_boundaries.maintenance_bc import cechy_dzienne, ryzyko_dzienne, telemetria_biezaca
 from api.contexts_boundaries.retention_bc import lista_retencyjna
 from api.contexts_boundaries.valuation_bc import nocne
 
@@ -41,6 +55,12 @@ ZDARZENIE_KOLEJKI = "domilo/kolejka.doradcow"
 HARMONOGRAM_KOLEJKI = "TZ=Europe/Warsaw 30 5 * * *"
 ZDARZENIE_LISTY = "domilo/lista.retencyjna"
 HARMONOGRAM_LISTY = "TZ=Europe/Warsaw 0 7 * * 1"  # poniedziałek 07:00, po kolejce doradców (05:30)
+ZDARZENIE_OKIEN = "domilo/telemetra.okna"
+HARMONOGRAM_OKIEN = "*/10 * * * *"  # co 10 minut (okno Telemetry = 10 min)
+ZDARZENIE_CECH_WIND = "domilo/windy.cechy"
+HARMONOGRAM_CECH_WIND = "TZ=Europe/Warsaw 50 5 * * *"  # 05:50 = odcięcie cech (features/windy/cechy.py)
+ZDARZENIE_RYZYKA_WIND = "domilo/windy.ryzyko"
+HARMONOGRAM_RYZYKA_WIND = "TZ=Europe/Warsaw 0 6 * * *"  # 06:00 = moment predykcji (dni_wind)
 
 klient_inngest = inngest.Inngest(app_id="domilo", is_production=os.environ.get("INNGEST_PRODUKCJA") == "1")
 
@@ -106,4 +126,48 @@ def lista_retencyjna_tygodniowa(ctx: inngest.ContextSync) -> dict:
     return lista_retencyjna.wykonaj_liste_retencyjna(ctx.step.run, ctx.run_id, data_listy, kampania)
 
 
-FUNKCJE = [wyceny_nocne, kolejka_doradcow, lista_retencyjna_tygodniowa]
+def _pole(dane: dict | None, nazwa: str) -> str | None:
+    """Pole zdarzenia ręcznego jako tekst; dla harmonogramu (zdarzenie inngest/scheduled.timer) None."""
+    wartosc = (dane or {}).get(nazwa)
+    return str(wartosc) if wartosc else None
+
+
+def _dane(ctx: inngest.ContextSync) -> dict | None:
+    return ctx.event.data if ctx.event is not None else None
+
+
+@klient_inngest.create_function(
+    fn_id="telemetra-okna",
+    name="Telemetra: nowe okna wind do magazynu Parquet (idempotentnie po windzie i ts_utc)",
+    trigger=[inngest.TriggerCron(cron=HARMONOGRAM_OKIEN), inngest.TriggerEvent(event=ZDARZENIE_OKIEN)],
+    concurrency=[inngest.Concurrency(limit=1)],
+    retries=3,
+)
+def telemetra_okna(ctx: inngest.ContextSync) -> dict:
+    dane = _dane(ctx)
+    return telemetria_biezaca.wykonaj_telemetre_okna(ctx.step.run, _pole(dane, "od"), _pole(dane, "do"))
+
+
+@klient_inngest.create_function(
+    fn_id="cechy-wind",
+    name="Cechy wind na dzień oceny (05:50, te same pliki SQL co trening)",
+    trigger=[inngest.TriggerCron(cron=HARMONOGRAM_CECH_WIND), inngest.TriggerEvent(event=ZDARZENIE_CECH_WIND)],
+    concurrency=[inngest.Concurrency(limit=1)],
+    retries=10,  # krok kompletnosc ponawia co minutę, czekając na okno 05:50 (do 05:58)
+)
+def cechy_wind(ctx: inngest.ContextSync) -> dict:
+    return cechy_dzienne.wykonaj_cechy_wind(ctx.step.run, _pole(_dane(ctx), "dzien"))
+
+
+@klient_inngest.create_function(
+    fn_id="ryzyko-wind",
+    name="Ryzyko awarii wind (06:00): model z current.yaml, reguła alarmu, zgłoszenia w Serwisowniku",
+    trigger=[inngest.TriggerCron(cron=HARMONOGRAM_RYZYKA_WIND), inngest.TriggerEvent(event=ZDARZENIE_RYZYKA_WIND)],
+    concurrency=[inngest.Concurrency(limit=1)],
+    retries=15,  # krok ryzyko ponawia co 2 minuty, czekając na cechy dnia (do 06:30)
+)
+def ryzyko_wind(ctx: inngest.ContextSync) -> dict:
+    return ryzyko_dzienne.wykonaj_ryzyko_wind(ctx.step.run, ctx.run_id, _pole(_dane(ctx), "dzien"))
+
+
+FUNKCJE = [wyceny_nocne, kolejka_doradcow, lista_retencyjna_tygodniowa, telemetra_okna, cechy_wind, ryzyko_wind]

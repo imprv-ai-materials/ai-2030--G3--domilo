@@ -18,12 +18,20 @@ o :50 UTC (Polska ma przesunięcie w pełnych godzinach, więc 05:50 lokalnie je
 
 Opis, decyzje i liczby: docs/b4_cechy.md. Budowa: `pypyr baza` (po dni_wind) albo
 `cd api && python -m api.ai.features.windy.cechy`.
+
+Ocena dzienna (`cechy_dnia`, zadanie Inngest `cechy-wind` o 05:50, maintenance_bc/cechy_dzienne.py): ten sam SQL
+(pliki rodzin i `sql_rodziny`) dla jednego dnia i dowolnego źródła okien (`zrodlo`: relacja z kolumnami
+telemetra_windy, np. eksport + okna dopisane przez adapters/telemetra.py). Kotwice obejmują dni t−43 … t (okno normy
+i trendu), a godziny sygnałów tylko od odcięcia dnia t−43 minus 168 h, więc wynik dnia t jest taki sam jak wiersz
+tabeli cechy_windy (pilnuje tests/test_cechy_dzienne_wind.py).
 """
 
 import sys
+from datetime import date, timedelta
 from pathlib import Path
 
 import duckdb
+import pandas as pd
 
 KATALOG_SQL = Path(__file__).with_name("sql")
 TABELA = "cechy_windy"
@@ -49,19 +57,26 @@ def filtr_serwisu(bez_serwisu: bool, alias: str = "") -> str:
     return f"{alias}tryb IS DISTINCT FROM 'serwis'" if bez_serwisu else "TRUE"
 
 
-def przygotuj(con: duckdb.DuckDBPyConnection, bez_serwisu: bool = True) -> None:
+def przygotuj(
+    con: duckdb.DuckDBPyConnection,
+    bez_serwisu: bool = True,
+    zrodlo: str = "telemetra_windy",
+    dni: tuple[str, str] = (PIERWSZY_DZIEN, OSTATNI_DZIEN),
+) -> None:
     """Widok `telemetria` (bez okien serwisowych, do odcięcia ostatniego dnia) i tabela `kotwice` (winda × dzień).
-    bez_serwisu=False zostawia okna serwisowe (tylko do porównania, failure_model/evals/tryb_serwisowy.py)."""
+    bez_serwisu=False zostawia okna serwisowe (tylko do porównania, failure_model/evals/tryb_serwisowy.py).
+    zrodlo: relacja okien 10-min (kolumny telemetra_windy); dni: pierwszy i ostatni dzień kotwic (RRRR-MM-DD)."""
+    pierwszy_dzien, ostatni_dzien = dni
     con.execute(f"""
         CREATE OR REPLACE TEMP VIEW telemetria AS
         SELECT *
-        FROM telemetra_windy
+        FROM {zrodlo}
         WHERE {filtr_serwisu(bez_serwisu)}
-          AND ts_utc <= timezone('Europe/Warsaw', TIMESTAMP '{OSTATNI_DZIEN} {ODCIECIE}')
+          AND ts_utc <= timezone('Europe/Warsaw', TIMESTAMP '{ostatni_dzien} {ODCIECIE}')
         """)
     con.execute(f"""
         CREATE OR REPLACE TEMP TABLE kotwice AS
-        WITH zakres AS (SELECT id_windy, min(ts_utc) AS od FROM telemetra_windy GROUP BY id_windy)
+        WITH zakres AS (SELECT id_windy, min(ts_utc) AS od FROM {zrodlo} GROUP BY id_windy)
         SELECT
             z.id_windy,
             CAST(d.dzien AS DATE) AS dzien,
@@ -69,7 +84,7 @@ def przygotuj(con: duckdb.DuckDBPyConnection, bez_serwisu: bool = True) -> None:
             CAST(epoch(timezone('Europe/Warsaw', d.dzien + INTERVAL '{ODCIECIE}')) AS BIGINT) AS odciecie_s
         FROM zakres AS z
         CROSS JOIN generate_series(
-            TIMESTAMP '{PIERWSZY_DZIEN}', TIMESTAMP '{OSTATNI_DZIEN}', INTERVAL 1 DAY
+            TIMESTAMP '{pierwszy_dzien}', TIMESTAMP '{ostatni_dzien}', INTERVAL 1 DAY
         ) AS d(dzien)
         WHERE timezone('Europe/Warsaw', d.dzien + INTERVAL '{ODCIECIE}') >= z.od
         """)
@@ -92,8 +107,10 @@ def nazwy_cech(sygnal: str) -> list[str]:
     return pary + [f"{sygnal}_norma", *stosunki, f"{sygnal}_trend_7d"]
 
 
-def sql_rodziny(rodzina: str, sygnaly_rodziny: list[str]) -> str:
-    """Pełne zapytanie cech rodziny: wiersz na (id_windy, dzien) z `kotwice`."""
+def sql_rodziny(rodzina: str, sygnaly_rodziny: list[str], od_s: int | None = None) -> str:
+    """Pełne zapytanie cech rodziny: wiersz na (id_windy, dzien) z `kotwice`.
+    od_s: tylko okna kończące się po tej chwili (epoch s); None = cała telemetria (trening). Przy ocenie jednego dnia
+    granica = odcięcie pierwszej kotwicy − 168 h, więc żadne okno potrzebne kotwicom nie odpada."""
     godziny = ",\n        ".join(
         f"sum(CAST({s} AS DOUBLE)) AS {s}__suma, count({s}) AS {s}__n, max(CAST({s} AS DOUBLE)) AS {s}__max"
         for s in sygnaly_rodziny
@@ -137,6 +154,7 @@ godziny AS (
         CAST(floor((epoch(ts_utc) + 540) / 3600) * 3600 + 3000 AS BIGINT) AS koniec_godziny,
         {godziny}
     FROM sygnaly
+    {f"WHERE ts_utc > to_timestamp({od_s})" if od_s is not None else ""}
     GROUP BY ALL
 ),
 okna AS (
@@ -168,17 +186,24 @@ FROM normy
 """
 
 
-def zbuduj_cechy_windy(con: duckdb.DuckDBPyConnection, tabela: str = TABELA, bez_serwisu: bool = True) -> int:
-    """Zapisuje (od nowa) tabelę cech (domyślnie cechy_windy) dla wierszy dni_wind; zwraca liczbę wierszy."""
-    przygotuj(con, bez_serwisu=bez_serwisu)
+def _tabele_rodzin(con: duckdb.DuckDBPyConnection, od_s: int | None = None) -> list[str]:
+    """Tabele tymczasowe cech każdej rodziny i cech dodatkowych (po `przygotuj`); zwraca ich nazwy."""
     czesci = []
     for rodzina in RODZINY:
-        con.execute(f"CREATE OR REPLACE TEMP TABLE cechy_{rodzina} AS {sql_rodziny(rodzina, sygnaly(con, rodzina))}")
+        sql = sql_rodziny(rodzina, sygnaly(con, rodzina), od_s)
+        con.execute(f"CREATE OR REPLACE TEMP TABLE cechy_{rodzina} AS {sql}")
         czesci.append(f"cechy_{rodzina}")
         if rodzina in DODATKOWE:
             nazwa = DODATKOWE[rodzina]
             con.execute(f"CREATE OR REPLACE TEMP TABLE cechy_{nazwa} AS {sql_pliku(nazwa)}")
             czesci.append(f"cechy_{nazwa}")
+    return czesci
+
+
+def zbuduj_cechy_windy(con: duckdb.DuckDBPyConnection, tabela: str = TABELA, bez_serwisu: bool = True) -> int:
+    """Zapisuje (od nowa) tabelę cech (domyślnie cechy_windy) dla wierszy dni_wind; zwraca liczbę wierszy."""
+    przygotuj(con, bez_serwisu=bez_serwisu)
+    czesci = _tabele_rodzin(con)
     zlaczenia = "\n".join(f"LEFT JOIN {t} USING (id_windy, dzien)" for t in czesci)
     kolumny = ", ".join(f"{t}.* EXCLUDE (id_windy, dzien)" for t in czesci)
     con.execute(f"""
@@ -192,6 +217,38 @@ def zbuduj_cechy_windy(con: duckdb.DuckDBPyConnection, tabela: str = TABELA, bez
     if n != unikalne:
         raise ValueError(f"{tabela}: (id_windy, dzien) nie jest unikalne")
     return n
+
+
+def odciecie_s(dzien: date) -> int:
+    """Odcięcie (05:50 Europe/Warsaw dnia oceny) jako epoch w sekundach."""
+    return int(pd.Timestamp(f"{dzien} {ODCIECIE}").tz_localize("Europe/Warsaw").timestamp())
+
+
+def cechy_dnia(
+    con: duckdb.DuckDBPyConnection, dzien: date, zrodlo: str = "telemetra_windy", bez_serwisu: bool = True
+) -> pd.DataFrame:
+    """Cechy ręczne (kolumny cechy_windy) dla dnia oceny `dzien`: wiersz na windę z telemetrią przed odcięciem.
+
+    Te same pliki SQL i `sql_rodziny` co `zbuduj_cechy_windy`; kotwice t−43 … t (norma z dni 15–44 i trend z 7 dni
+    potrzebują wcześniejszych kotwic), wynik tylko dla dnia t. Wiersze: windy z `zrodlo` z pierwszym oknem przed
+    odcięciem dnia t (bez ograniczenia do dni_wind, którego dla przyszłych dni nie ma)."""
+    pierwszy = dzien - timedelta(days=NORMA_DNI[1] - 1)
+    przygotuj(con, bez_serwisu=bez_serwisu, zrodlo=zrodlo, dni=(pierwszy.isoformat(), dzien.isoformat()))
+    czesci = _tabele_rodzin(con, od_s=odciecie_s(pierwszy) - max(OKNA_GODZIN.values()) * 3600)
+    zlaczenia = "\n".join(f"LEFT JOIN {t} USING (id_windy, dzien)" for t in czesci)
+    kolumny = ", ".join(f"{t}.* EXCLUDE (id_windy, dzien)" for t in czesci)
+    df = con.execute(
+        f"""
+        SELECT k.id_windy, k.dzien, {kolumny}
+        FROM kotwice AS k
+        {zlaczenia}
+        WHERE k.dzien = ?
+        ORDER BY k.id_windy
+        """,
+        [dzien],
+    ).df()
+    df["dzien"] = pd.to_datetime(df["dzien"])
+    return df
 
 
 if __name__ == "__main__":

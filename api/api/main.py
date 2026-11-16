@@ -1,5 +1,8 @@
 """API Domilo: wycena lokali (POST /valuation), odczyty dla panelu rzeczoznawcy i funkcje Inngest (/api/inngest).
 
+Windy: GET /lifts/{id_windy}/risk czyta ocenę z zadania `ryzyko-wind` (06:00; tabela ryzyko_wind), nie liczy jej
+na żądanie — ryzyko liczy się samo (docs/b4_ryzyko_dzienne.md).
+
 Uruchomienie (z katalogu api/, port jak w devcontainerze):
     poetry run uvicorn api.main:app --port 8101
 Model: obecna wersja z current.yaml (valuation_model/obecny.py), wczytywana raz przy pierwszym zapytaniu.
@@ -14,7 +17,7 @@ import duckdb
 import inngest.fast_api
 import numpy as np
 import pandas as pd
-from api.adapters import kolejka_doradcow, kolejka_pominiecia, wyceny_historia
+from api.adapters import kolejka_doradcow, kolejka_pominiecia, ryzyko_wind, wyceny_historia
 from api.adapters.duckdb_baza import polaczenie
 from api.adapters.llm_client import BrakKluczaAPI
 from api.ai.features.wycena.cechy_llm import KOLUMNY_LLM
@@ -22,6 +25,7 @@ from api.ai.features.wycena.ceny_w_opisie import bez_kwot
 from api.ai.valuation_model.obecny import ObecnyModel, wczytaj_obecny
 from api.contexts_boundaries.leasing_bc import panel
 from api.contexts_boundaries.leasing_bc.schematy import KolejkaDoradcy, WynikPominiecia, ZgloszeniePominiecia
+from api.contexts_boundaries.maintenance_bc.schematy import OdpowiedzRyzykaWindy
 from api.contexts_boundaries.retention_bc import oferta_najmu, ryzyko_najmu
 from api.contexts_boundaries.retention_bc.schematy import OdpowiedzRyzyka
 from api.contexts_boundaries.valuation_bc.cechy_opisu import cechy_z_opisu
@@ -212,3 +216,39 @@ def ryzyko(
         raise HTTPException(422, str(e)) from e
     except ryzyko_najmu.NajemZakonczony as e:
         raise HTTPException(409, str(e)) from e
+
+
+@app.get("/lifts/{id_windy}/risk", response_model=OdpowiedzRyzykaWindy)
+def ryzyko_windy(
+    id_windy: str,
+    dzien: date | None = Query(None, description="dzień oceny RRRR-MM-DD; domyślnie najnowsza ocena windy"),
+    con: duckdb.DuckDBPyConnection = Depends(baza),
+) -> OdpowiedzRyzykaWindy:
+    """Ryzyko awarii windy w 7 dni z oceny o 06:00 (zadanie `ryzyko-wind`, aktywna wersja z failure_model/current.yaml):
+    ryzyko (P po kalibracji), data oceny, 3 najsilniejsze sygnały (SHAP zgrupowany po sygnałach) i podejrzane
+    podzespoły (maintenance_bc/wyjasnienie.py, podzespoly_sygnalow.yaml), alarm tego dnia, jeśli był.
+
+    404: nieznana winda albo brak oceny (dla dnia `dzien` albo żadnej).
+    """
+    if not con.execute("SELECT count(*) FROM serwis_windy WHERE id_windy = ?", [id_windy]).fetchone()[0]:
+        raise HTTPException(404, f"Nieznana winda: {id_windy}")
+    o = ryzyko_wind.ocena_windy(con, id_windy, dzien)
+    if o is None:
+        kiedy = f" z dnia {dzien}" if dzien else ""
+        raise HTTPException(404, f"Brak oceny ryzyka windy {id_windy}{kiedy} (zadanie ryzyko-wind)")
+    return OdpowiedzRyzykaWindy(
+        id_windy=id_windy,
+        dzien_oceny=o["dzien"],
+        moment_oceny=o["moment_oceny"],
+        wersja_modelu=o["wersja_modelu"],
+        ryzyko=o["p_awarii_7d"],
+        wynik_modelu=o["wynik"],
+        ranga=o["ranga"],
+        ocenione_windy=o["ocenione_windy"],
+        stoi=o["stoi"],
+        ostatnie_okno=o["ostatnie_okno"],
+        okna_24h=o["okna_24h"],
+        sygnaly=o["sygnaly"],
+        podzespoly=o["podzespoly"],
+        alarm=o["alarm"],
+    )

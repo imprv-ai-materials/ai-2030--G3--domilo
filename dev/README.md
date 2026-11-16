@@ -20,6 +20,9 @@ trzyma wspólne zmienne (długość linii, katalogi kodu i testów).
 | `pypyr kolejka [data=RRRR-MM-DD]` | zadanie kolejka-doradcow bez Inngest (te same kroki); wymaga atrapy albo `CRM_LEJEK_URL` |
 | `pypyr metabase` | panel kampanii retencyjnej w Metabase (`dev/metabase/`, port 3300): dane panelu, sterownik DuckDB, kontener, konfiguracja przez API; wypisuje adres panelu |
 | `pypyr lista_retencyjna [data=RRRR-MM-DD] [kampania=…]` | zadanie lista-retencyjna bez Inngest (te same kroki): umowy za 60–66 dni, ryzyko, uplift, akcja, grupa, zapis w `lista_retencyjna` |
+| `pypyr mock_serwisownik` | atrapa Serwisownika dla zgłoszeń z alarmów wind (`dev/mock_serwisownik/`, port 8103; `GET /api/zgloszenia`) |
+| `pypyr telemetra_okna [od=… do=…]` | zadanie telemetra-okna bez Inngest: nowe okna Telemetry (`TELEMETRA_URL`, bez niej atrapa z eksportu) do `telemetra_biezaca/` |
+| `pypyr ryzyko_wind [data=RRRR-MM-DD]` | zadania cechy-wind i ryzyko-wind bez Inngest: cechy dnia, ryzyko, `ryzyko_wind`, alarmy w `alarmy_wind` i Serwisowniku |
 
 Bez aktywnego `.venv` poprzedź polecenie `poetry run` (w devcontainerze `.venv/bin` jest w PATH).
 Kolejne pipeline'y (start API, nocne zadania, MLflow) dopisujemy razem z kodem, który uruchamiają.

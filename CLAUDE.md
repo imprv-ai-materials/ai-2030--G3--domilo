@@ -73,13 +73,17 @@ docs/                         # raporty (wnioski → tabele → SQL i kod)
 evals/porownanie.md           # model vs baseline, wszystkie cztery modele
 dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml, mock_lejek.yaml)
 ├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
+├── mock_serwisownik/         # atrapa Serwisownika: zgłoszenia z alarmów wind (port 8103; pypyr mock_serwisownik)
 ├── metabase/                 # Metabase 0.63.17 + sterownik DuckDB 1.5.6.0 (port 3300; pypyr metabase): panel kampanii
 │                             # dla marketingu; czyta Parquet z dane/ (DuckDB :memory: + widoki read_parquet), bo
 │                             # sterownik (DuckDB 1.5) nie otwiera domilo.duckdb; plugins/, stan/, dane/, .env poza gitem
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
-├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, /risk/{id_najmu}, Inngest (pypyr api)
+├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, /risk/{id_najmu},
+│                             # /lifts/{id_windy}/risk (odczyt ryzyko_wind), Inngest (pypyr api)
 ├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka),
-│                             # lista-retencyjna (pon. 07:00; pypyr lista_retencyjna)
+│                             # lista-retencyjna (pon. 07:00; pypyr lista_retencyjna); windy (docs/b4_ryzyko_dzienne.md):
+│                             # telemetra-okna (co 10 min; pypyr telemetra_okna), cechy-wind (05:50), ryzyko-wind
+│                             # (06:00; oba: pypyr ryzyko_wind) — trzy osobne funkcje
 ├── adapters/                 # połączenia z systemami zewnętrznymi
 │   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
 │   ├── serwisownik.py        # wczytanie serwis_* (TIMESTAMP lokalny, koszt_netto '1 234,50' -> DECIMAL z kontrolą formatu)
@@ -89,7 +93,11 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   ├── kolejka_pominiecia.py # tabela kolejka_pominiecia: pominięcia z CRM z powodem (POST /leads/skips)
 │   ├── kolejka_historia.py   # tabela kolejka_historia: pozycje kolejek z wariantem eksperymentu i flagą losowa (5%)
 │   ├── crm_lejek.py          # webhook kolejek do CRM, idempotentny po (id_leada, data_kolejki); atrapa: dev/mock_lejek/
-│   └── lista_retencyjna.py   # tabela lista_retencyjna: umowy za 60–66 dni z ryzykiem, upliftem, akcją i grupą kampanii
+│   ├── lista_retencyjna.py   # tabela lista_retencyjna: umowy za 60–66 dni z ryzykiem, upliftem, akcją i grupą kampanii
+│   ├── telemetra.py          # okna Telemetry: API (TELEMETRA_URL; bez niej atrapa = eksport data/), magazyn Parquet
+│   │                         # telemetra_biezaca/ (poza gitem) idempotentny po (id_windy, ts_utc), widok eksport + magazyn
+│   ├── serwisownik_alarmy.py # alarm windy -> zgłoszenie w Serwisowniku (SERWISOWNIK_URL), klucz alarm-windy:{winda}:{dzień}
+│   └── ryzyko_wind.py        # tabele ryzyko_wind (winda × dzień oceny) i alarmy_wind (pierwsza decyzja dnia zostaje)
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
 │   ├── leasing_bc/           # zapytania i doradcy (najem); kolejka_dzienna.py: kroki zadania kolejka-doradcow;
@@ -113,6 +121,11 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │                             # na ryzyku skalibrowanym izotonią na walidacji, krzywa wartości, koszt limitu;
 │                             # tryb_serwisowy.py: cechy z oknami serwisowymi (--buduj: cechy_windy_z_serwisem,
 │                             # cechy_windy_tsfresh_z_serwisem, poza pypyr baza) vs obecne, zapis v3 i current.yaml
+│                             # telemetria_biezaca.py / cechy_dzienne.py / ryzyko_dzienne.py: kroki zadań telemetra-okna,
+│                             # cechy-wind (features/windy cechy_dnia + cechy_tsfresh_dnia -> windy_dzienne/, poza gitem),
+│                             # ryzyko-wind (current.yaml, alarmy_wind.wybierz_alarmy z `poprzednie`, bez wind z tryb
+│                             # 'wylaczona' o 05:50, krok serwisownik-<id_windy>); wyjasnienie.py: 3 sygnały (SHAP po
+│                             # sygnałach) i podzespoły (podzespoly_sygnalow.yaml — założenie); docs/b4_ryzyko_dzienne.md
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
 │   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)
@@ -220,7 +233,8 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   i widok `eksperyment_tydzien` (wariant tygodnia z `kolejka_historia`).
 - **Tabele trwałe aplikacji** (nie z `data/`; przebudowa je przenosi, a brakujące tworzy puste):
   `wyceny_historia`, `kolejka_doradcow`, `kolejka_ranking` (`zrodlo_kolejki`: `zadanie` albo `symulacja_wstecz`,
-  `pypyr kolejka_wstecz`), `kolejka_pominiecia`, `kolejka_historia`, `lista_retencyjna` (klucz data_listy × id_umowy).
+  `pypyr kolejka_wstecz`), `kolejka_pominiecia`, `kolejka_historia`, `lista_retencyjna` (klucz data_listy × id_umowy),
+  `ryzyko_wind` (dzien × id_windy, ocena o 06:00), `alarmy_wind` (dzien × id_windy, `id_zgloszenia` z Serwisownika).
 - **Kolejka a eksperyment:** 5% pozycji każdej kolejki doradcy (40 → 2) jest losowych, z ziarnem `dzień:miasto:wariant`
   (ten sam dzień = ta sama kolejka, webhook idempotentny); ranga zawsze według EV. Nie zmieniaj w trakcie
   eksperymentu modelu, założeń EV, 5%, limitu wartości umowy ani zmiennych korekty.

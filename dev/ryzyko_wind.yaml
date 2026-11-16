@@ -1,0 +1,24 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - name: pypyr.steps.default
+    description: data= opcjonalna (RRRR-MM-DD); pusta = dziś w Europe/Warsaw
+    in:
+      defaults:
+        data: ""
+  - name: pypyr.steps.cmd
+    description: >
+      Zadanie cechy-wind bez Inngest (te same kroki): cechy dnia z tych samych plików SQL co trening, z eksportu
+      data/ + magazynu telemetra_biezaca/ -> windy_dzienne/<dzien>/cechy.parquet.
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.maintenance_bc.cechy_dzienne {data}
+        cwd: api
+  - name: pypyr.steps.cmd
+    description: >
+      Zadanie ryzyko-wind bez Inngest (te same kroki): ryzyko modelem z failure_model/current.yaml, tabela
+      ryzyko_wind, reguła alarmu (poniedziałek, 3 windy, przerwa 7 dni) -> alarmy_wind i zgłoszenia w Serwisowniku.
+      W dzień alarmu wymaga atrapy (pypyr mock_serwisownik) albo SERWISOWNIK_URL.
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.maintenance_bc.ryzyko_dzienne {data}
+        cwd: api

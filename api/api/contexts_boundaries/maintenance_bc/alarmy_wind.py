@@ -52,9 +52,12 @@ def wybierz_alarmy(
     przerwa_dni: int,
     dzien_alarmu: int = 0,
     prog: float | None = None,
+    poprzednie: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
     """ryzyko: kolumny id_windy, dzien, ryzyko (wiersz = winda × dzień oceny o 06:00).
     limit: najwięcej alarmów w dniu (None = bez limitu); prog: alarm tylko przy ryzyku >= prog (None = bez progu).
+    poprzednie: alarmy wysłane wcześniej (id_windy, dzien), np. z tabeli alarmy_wind przy ocenie jednego dnia —
+    liczą się do przerwy tak samo jak alarmy wybrane w tym wywołaniu.
     Zwraca alarmy: dzien, pozycja (1 = najwyższe ryzyko), id_windy, ryzyko."""
     r = ryzyko[["id_windy", "dzien", "ryzyko"]].copy()
     r["dzien"] = pd.to_datetime(r["dzien"]).dt.normalize()
@@ -62,6 +65,9 @@ def wybierz_alarmy(
     if prog is not None:
         r = r[r["ryzyko"] >= prog]
     ostatni: dict[str, pd.Timestamp] = {}
+    if poprzednie is not None and len(poprzednie):
+        p = poprzednie.assign(dzien=pd.to_datetime(poprzednie["dzien"]).dt.normalize())
+        ostatni = p.groupby("id_windy")["dzien"].max().to_dict()
     wyj = []
     for dzien, grupa in r.groupby("dzien", sort=True):
         granica = dzien - pd.Timedelta(days=przerwa_dni)

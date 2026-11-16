@@ -1,0 +1,16 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - name: pypyr.steps.default
+    description: od= i do= opcjonalne (ISO 8601); puste = od ostatniego okna w magazynie / eksporcie minus 1 h do teraz
+    in:
+      defaults:
+        od: ""
+        do: ""
+  - name: pypyr.steps.cmd
+    description: >
+      Zadanie telemetra-okna bez Inngest (te same kroki): nowe okna z Telemetry (TELEMETRA_URL; bez niej atrapa =
+      eksport z data/) -> magazyn Parquet telemetra_biezaca/ (TELEMETRA_MAGAZYN), idempotentnie po windzie i ts_utc.
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.maintenance_bc.telemetria_biezaca {od} {do}
+        cwd: api

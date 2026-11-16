@@ -47,6 +47,7 @@ def _tabele_trwale() -> dict[str, str]:
         kolejka_pominiecia,
         kolejka_ranking,
         lista_retencyjna,
+        ryzyko_wind,
         wyceny_historia,
     )
 
@@ -57,6 +58,8 @@ def _tabele_trwale() -> dict[str, str]:
         kolejka_pominiecia.TABELA: kolejka_pominiecia.SQL_TABELI,
         kolejka_historia.TABELA: kolejka_historia.SQL_TABELI,
         lista_retencyjna.TABELA: lista_retencyjna.SQL_TABELI,
+        ryzyko_wind.TABELA_RYZYKA: ryzyko_wind.SQL_RYZYKA,
+        ryzyko_wind.TABELA_ALARMOW: ryzyko_wind.SQL_ALARMOW,
     }
 
 

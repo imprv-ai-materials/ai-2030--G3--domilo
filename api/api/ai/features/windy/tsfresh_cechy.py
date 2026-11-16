@@ -16,6 +16,7 @@ Budowa: `cd api && python -m api.ai.features.windy.tsfresh_cechy` (po cechy_wind
 """
 
 import sys
+from datetime import date
 from pathlib import Path
 
 import duckdb
@@ -57,31 +58,40 @@ def nazwy_cech() -> list[str]:
     return [f"ts_{s}_{c}" for s in SYGNALY for c in ("rms", "kurtoza", "energia", *(f"fft_{p}" for p in PASMA))]
 
 
-def przygotuj(con: duckdb.DuckDBPyConnection, bez_serwisu: bool = True) -> int:
-    """Tabele tymczasowe: `ts_godziny` (winda × godzina, średnie sygnałów) i `ts_wiersze` (dni_wind z numerem).
-    bez_serwisu=False zostawia okna serwisowe (tylko do porównania, failure_model/evals/tryb_serwisowy.py)."""
+def przygotuj(
+    con: duckdb.DuckDBPyConnection,
+    bez_serwisu: bool = True,
+    zrodlo: str = "telemetra_windy",
+    wiersze: str = "dni_wind",
+    od_s: int | None = None,
+) -> int:
+    """Tabele tymczasowe: `ts_godziny` (winda × godzina, średnie sygnałów) i `ts_wiersze` (wiersze z numerem).
+    bez_serwisu=False zostawia okna serwisowe (tylko do porównania, failure_model/evals/tryb_serwisowy.py).
+    zrodlo: relacja okien 10-min (kolumny telemetra_windy); wiersze: relacja z id_windy i dzien (domyślnie dni_wind);
+    od_s: tylko okna kończące się po tej chwili (epoch s; ocena jednego dnia, cechy_tsfresh_dnia)."""
     from api.ai.features.windy.cechy import filtr_serwisu
 
     sygnaly = ",\n            ".join(f"avg({wyr}) AS {s}" for s, wyr in SYGNALY.items())
+    od = f"AND t.ts_utc > to_timestamp({od_s})" if od_s is not None else ""
     con.execute(f"""
         CREATE OR REPLACE TEMP TABLE ts_godziny AS
         SELECT
             t.id_windy,
             CAST(floor((epoch(t.ts_utc) + 540) / 3600) * 3600 + 3000 AS BIGINT) AS koniec_godziny,
             {sygnaly}
-        FROM telemetra_windy AS t
+        FROM {zrodlo} AS t
         JOIN serwis_windy AS w USING (id_windy)
-        WHERE {filtr_serwisu(bez_serwisu, "t.")}
+        WHERE {filtr_serwisu(bez_serwisu, "t.")} {od}
         GROUP BY ALL
         """)
-    con.execute("""
+    con.execute(f"""
         CREATE OR REPLACE TEMP TABLE ts_wiersze AS
         SELECT
             row_number() OVER (ORDER BY dzien, id_windy) - 1 AS nr,
             id_windy,
             dzien,
             CAST(epoch(timezone('Europe/Warsaw', dzien + INTERVAL '05:50')) AS BIGINT) AS odciecie_s
-        FROM dni_wind
+        FROM {wiersze}
         """)
     return con.execute("SELECT count(*) FROM ts_wiersze").fetchone()[0]
 
@@ -130,7 +140,9 @@ def dlugi_format(macierze: dict[str, np.ndarray], od: int) -> pd.DataFrame:
                 }
             )
         )
-    return pd.concat(czesci, ignore_index=True)
+    return (
+        pd.concat(czesci, ignore_index=True) if czesci else pd.DataFrame(columns=["id", "godzina", "kind", "wartosc"])
+    )
 
 
 def cechy_z_tsfresh(surowe: pd.DataFrame) -> pd.DataFrame:
@@ -196,6 +208,38 @@ def zbuduj_cechy_tsfresh(
     finally:
         con.unregister("ts_cechy_df")
     return con.execute(f"SELECT count(*) FROM {tabela}").fetchone()[0]
+
+
+def cechy_tsfresh_dnia(
+    con: duckdb.DuckDBPyConnection,
+    dzien: date,
+    zrodlo: str = "telemetra_windy",
+    bez_serwisu: bool = True,
+    n_jobs: int = 0,
+) -> pd.DataFrame:
+    """Cechy tsfresh (nazwy_cech()) dla dnia oceny `dzien`: wiersz na windę z telemetrią przed odcięciem 05:50.
+
+    Te same przebiegi i cechy co `zbuduj_cechy_tsfresh`, tylko z godzin z ostatnich 168 h przed odcięciem dnia."""
+    from api.ai.features.windy.cechy import odciecie_s
+
+    odciecie = odciecie_s(dzien)
+    con.execute(
+        f"""
+        CREATE OR REPLACE TEMP TABLE ts_wiersze_dnia AS
+        SELECT id_windy, CAST(? AS DATE) AS dzien
+        FROM {zrodlo}
+        GROUP BY id_windy
+        HAVING min(ts_utc) <= to_timestamp(?)
+        """,
+        [dzien, odciecie],
+    )
+    n = przygotuj(con, bez_serwisu, zrodlo, "ts_wiersze_dnia", od_s=odciecie - GODZIN * 3600)
+    dlugi = dlugi_format(przebiegi(con, 0, n), 0) if n else pd.DataFrame()
+    cechy = (wyciagnij(dlugi, n_jobs=n_jobs) if len(dlugi) else pd.DataFrame(columns=nazwy_cech())).reindex(range(n))
+    wiersze = con.execute("SELECT nr, id_windy, dzien FROM ts_wiersze ORDER BY nr").df().set_index("nr")
+    wynik = wiersze.join(cechy[nazwy_cech()]).reset_index(drop=True)
+    wynik["dzien"] = pd.to_datetime(wynik["dzien"])
+    return wynik.sort_values("id_windy").reset_index(drop=True)
 
 
 def wybierz_cechy(dane: pd.DataFrame, y: pd.Series, fdr: float = FDR) -> pd.DataFrame:
