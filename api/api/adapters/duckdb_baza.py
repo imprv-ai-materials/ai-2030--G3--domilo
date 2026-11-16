@@ -4,8 +4,8 @@ Budowa: `pypyr baza` (albo `cd api && python -m api.adapters.duckdb_baza`).
 
 Czas w bazie:
 - CRM (`crm_*`, `www_sesje`): tekst ISO 8601 z przesunięciem -> TIMESTAMPTZ (dokładny moment, bez straty).
-- Serwisownik (`serwis_*`): zostaje TIMESTAMP bez strefy = czas lokalny Europe/Warsaw, jak w źródle.
-  Godzina 02:00–03:00 w dniu 2025-10-26 jest niejednoznaczna i baza tego nie rozstrzyga.
+- Serwisownik (`serwis_*`, wczytuje `api.adapters.serwisownik`): TIMESTAMP bez strefy = czas lokalny Europe/Warsaw,
+  jak w źródle. Godzina 02:00–03:00 w dniu 2025-10-26 jest niejednoznaczna i baza tego nie rozstrzyga.
 - Telemetra (`telemetra_windy`, `telemetra_cieplo`): `ts_utc` jest w Parquecie jako TIMESTAMPTZ (UTC), bez zmian.
 `polacz()` ustawia strefę sesji Europe/Warsaw, więc porównanie TIMESTAMP z TIMESTAMPTZ traktuje TIMESTAMP
 jako czas warszawski: to poprawne dla Serwisownika, PMS i portalu.
@@ -104,9 +104,6 @@ def pliki_tabel(katalog_danych: Path = KATALOG_DANYCH) -> dict[str, Path]:
 
 def _select_tabeli(nazwa: str, sciezka_wzgledna: str) -> str:
     zamiany = [f"CAST({kol} AS TIMESTAMPTZ) AS {kol}" for kol in KOLUMNY_CZASU_CRM.get(nazwa, ())]
-    if nazwa == "serwis_czesci":
-        # Eksport z przecinkiem dziesiętnym i spacją tysięcy: '1 234,50' -> 1234.50
-        zamiany.append("CAST(replace(replace(koszt_netto, ' ', ''), ',', '.') AS DECIMAL(12, 2)) AS koszt_netto")
     replace = f" REPLACE ({', '.join(zamiany)})" if zamiany else ""
     return f"SELECT *{replace} FROM read_parquet('{sciezka_wzgledna}')"
 
@@ -124,16 +121,22 @@ def zbuduj_baze(sciezka: Path = SCIEZKA_BAZY) -> dict[str, int]:
     Tabele z data/ powstają od zera. Tabele trwałe aplikacji (`_tabele_trwale`, np. wyceny_historia) przenosimy ze
     starego pliku bazy, jeśli istnieje, bo nie da się ich odtworzyć z data/.
     """
+    from api.adapters import serwisownik
+
     sciezka = Path(sciezka)
     tymczasowa = sciezka.with_name(sciezka.name + ".tmp")
     tymczasowa.unlink(missing_ok=True)
     liczby: dict[str, int] = {}
     con = polacz(tymczasowa, tylko_odczyt=False)
     try:
-        for nazwa, plik in pliki_tabel().items():
-            wzgledna = plik.relative_to(KATALOG_REPO).as_posix()
-            con.execute(f"CREATE TABLE {nazwa} AS {_select_tabeli(nazwa, wzgledna)}")
+        pliki = {nazwa: plik.relative_to(KATALOG_REPO) for nazwa, plik in pliki_tabel().items()}
+        for nazwa, wzgledna in pliki.items():
+            if nazwa in serwisownik.TABELE:
+                continue
+            con.execute(f"CREATE TABLE {nazwa} AS {_select_tabeli(nazwa, wzgledna.as_posix())}")
             liczby[nazwa] = con.execute(f"SELECT count(*) FROM {nazwa}").fetchone()[0]
+        # Serwisownik: czas lokalny TIMESTAMP, koszt_netto z tekstu '1 234,50' (z kontrolą formatu).
+        liczby |= serwisownik.wczytaj(con, pliki)
         for nazwa in WIDOKI_TELEMETRII:
             con.execute(f"CREATE VIEW {nazwa} AS {_select_widoku(nazwa)}")
             liczby[nazwa] = con.execute(f"SELECT count(*) FROM {nazwa}").fetchone()[0]

@@ -82,6 +82,7 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │                             # lista-retencyjna (pon. 07:00; pypyr lista_retencyjna)
 ├── adapters/                 # połączenia z systemami zewnętrznymi
 │   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
+│   ├── serwisownik.py        # wczytanie serwis_* (TIMESTAMP lokalny, koszt_netto '1 234,50' -> DECIMAL z kontrolą formatu)
 │   ├── wyceny_historia.py    # tabela wyceny_historia w domilo.duckdb (przenoszona przy przebudowie bazy)
 │   ├── kolejka_doradcow.py   # tabela kolejka_doradcow (dzień × zapytanie; przenoszona przy przebudowie bazy)
 │   ├── kolejka_ranking.py    # tabela kolejka_ranking: pełny ranking dnia (zadanie / symulacja wstecz), dla panelu
@@ -116,14 +117,14 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     │   ├── wycena/
     │   ├── leady/
     │   ├── najemcy/
-    │   └── windy/
+    │   └── windy/            # zgloszenia_wind.sql/.py: zgłoszenia wind z ustaloną windą (docs/b4_historia_awarii.md)
     ├── valuation_model/      # wycena lokali z przedziałem
     ├── lead_model/           # kolejka zapytań dla doradców
     ├── churn_model/          # lista retencyjna najemców
     ├── failure_model/        # alerty o awariach wind
     │   ├── base.py           # (w każdym modelu) wspólny interfejs / definicja modelu
     │   ├── versions/         # kolejne wersje modelu
-    │   ├── evals/            # ewaluacje wersji
+    │   ├── evals/            # ewaluacje wersji (failure_model/evals/historia_awarii.py: docs/b4_historia_awarii.md)
     │   └── current.yaml      # wskazanie wersji używanej obecnie
     └── llm/
         ├── prompts/          # prompty
@@ -154,6 +155,10 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   `czas_najmu` — analiza przeżycia: najem B2C/B2B z `pms_najmy` (wprowadzenie do 2026-09-30), `miesiace` (miesiące
   kalendarzowe z ułamkiem) do wyprowadzki albo do 2026-09-30, `zdarzenie` = 1 zakończony, 0 cenzura
   (`api/api/ai/features/najemcy/czas_najmu.sql`; Kaplan-Meier: `churn_model/evals/przezycie.py`, `docs/przezycie.md`).
+  `zgloszenia_wind` — zgłoszenia Serwisownika dotyczące wind (`id_urzadzenia` = winda albo puste i typ `winda`),
+  `id_windy` z `id_urzadzenia`, a gdy puste — jedyna winda budynku, inaczej `ustalenie_windy = 'nieustalona'`
+  (`api/api/ai/features/windy/zgloszenia_wind.sql`). To nie jest target: kategoria `awaria` nie oznacza faktycznej
+  awarii (złoty zbiór, notatki: `docs/b4_historia_awarii.md`).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
@@ -173,12 +178,14 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   a w CLI uruchamiaj zapytania z katalogu głównego.
 - **Czas:** `polacz()` ustawia `TimeZone = 'Europe/Warsaw'`.
   - CRM (`crm_*.utworzono|data_statusu|data_czas`, `www_sesje.data_czas`): TIMESTAMPTZ, czyli dokładny moment.
-  - Serwisownik (`serwis_*`): TIMESTAMP bez strefy = czas lokalny Warszawy, bez zmian względem źródła. Godziny
+  - Serwisownik (`serwis_*`, `api.adapters.serwisownik`): TIMESTAMP bez strefy = czas lokalny Warszawy, ta sama
+    godzina co w źródle (Parquet: TIMESTAMP_NS, dokładność do minuty). Godziny
     2025-10-26 02:00–03:00 baza nie rozstrzyga.
   - Telemetra (`ts_utc`): TIMESTAMPTZ, tak jak w Parquecie.
   - Porównanie TIMESTAMP z TIMESTAMPTZ traktuje TIMESTAMP jako czas warszawski, co jest poprawne dla Serwisownika,
     PMS i portalu. Bez `polacz()` (np. w CLI) najpierw wykonaj `SET TimeZone = 'Europe/Warsaw'`.
-- `serwis_czesci.koszt_netto` jest w bazie liczbą DECIMAL(12,2) (w źródle tekst `1 234,50`).
+- `serwis_czesci.koszt_netto` jest w bazie liczbą DECIMAL(12,2) (w źródle tekst `1 234,50`); inny format tekstu
+  przerywa budowę bazy (`serwisownik.sprawdz_koszty`).
 - Testy: `api/tests/test_duckdb_baza.py` sprawdza liczby wierszy względem Parquetów, typy czasu i widoki.
 
 ## Narzędzia

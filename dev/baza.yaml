@@ -30,6 +30,12 @@ steps:
         run: poetry run python -m api.ai.features.najemcy.czas_najmu
         cwd: api
   - name: pypyr.steps.cmd
+    description: Tabela zgloszenia_wind (zgłoszenia Serwisownika dotyczące wind; api/api/ai/features/windy/zgloszenia_wind.sql)
+    in:
+      cmd:
+        run: poetry run python -m api.ai.features.windy.zgloszenia_wind
+        cwd: api
+  - name: pypyr.steps.cmd
     description: Modele dbt metryk (schemat metryki; api/api/data_platform/dbt, docs/kolejka_metryki.md) z testami
     in:
       cmd:
