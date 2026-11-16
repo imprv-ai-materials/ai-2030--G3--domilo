@@ -22,7 +22,7 @@ from api.ai.features.wycena.ceny_w_opisie import bez_kwot
 from api.ai.valuation_model.obecny import ObecnyModel, wczytaj_obecny
 from api.contexts_boundaries.leasing_bc import panel
 from api.contexts_boundaries.leasing_bc.schematy import KolejkaDoradcy, WynikPominiecia, ZgloszeniePominiecia
-from api.contexts_boundaries.retention_bc import ryzyko_najmu
+from api.contexts_boundaries.retention_bc import oferta_najmu, ryzyko_najmu
 from api.contexts_boundaries.retention_bc.schematy import OdpowiedzRyzyka
 from api.contexts_boundaries.valuation_bc.cechy_opisu import cechy_z_opisu
 from api.contexts_boundaries.valuation_bc.schematy import (
@@ -52,6 +52,14 @@ def obecny_model() -> ObecnyModel:
 def model_retencji() -> ryzyko_najmu.ModelCox:
     """v2_przezycie_cox (churn_model/versions); current.yaml retencji jest pusty, więc wersję wskazujemy wprost."""
     return ryzyko_najmu.wczytaj_model()
+
+
+@lru_cache(maxsize=1)
+def model_uplift() -> oferta_najmu.ModelUpliftT | None:
+    """v3_uplift_tlearner do części `oferta` w /risk; None, gdy modelu nie zbudowano (churn_model/evals/uplift.py)."""
+    if not oferta_najmu.SCIEZKA_MODELU_UPLIFT.exists():
+        return None
+    return oferta_najmu.wczytaj_model_uplift()
 
 
 def baza() -> Iterator[duckdb.DuckDBPyConnection]:
@@ -188,13 +196,16 @@ def ryzyko(
     id_najmu: str,
     con: duckdb.DuckDBPyConnection = Depends(baza),
     model: ryzyko_najmu.ModelCox = Depends(model_retencji),
+    uplift: oferta_najmu.ModelUpliftT | None = Depends(model_uplift),
 ) -> OdpowiedzRyzyka:
-    """Ryzyko odejścia i spodziewany czas do odejścia (mediana z krzywej Coxa, RMST60) dla aktywnego najmu B2C / B2B.
+    """Ryzyko odejścia i spodziewany czas do odejścia (mediana z krzywej Coxa, RMST60) dla aktywnego najmu B2C / B2B,
+    a w `oferta`: uplift (v3_uplift_tlearner), wartość oczekiwana oferty i zalecana akcja („rabat”, „bez rabatu”,
+    „nie budzić”) z jednozdaniowym uzasadnieniem (retention_bc/oferta_najmu.py, docs/ryzyko_oferta.md).
 
     404: brak najmu; 422: linia MID (poza modelem); 409: najem już zakończony. Opis: docs/przezycie_cox.md.
     """
     try:
-        return OdpowiedzRyzyka(**ryzyko_najmu.ryzyko_najmu(con, id_najmu, model))
+        return OdpowiedzRyzyka(**ryzyko_najmu.ryzyko_najmu(con, id_najmu, model, model_uplift=uplift))
     except ryzyko_najmu.NajemNieznany as e:
         raise HTTPException(404, str(e)) from e
     except ryzyko_najmu.NajemPozaModelem as e:

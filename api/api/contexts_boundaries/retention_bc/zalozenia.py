@@ -33,3 +33,9 @@ def zalozenia_oferty(sciezka: Path = SCIEZKA_ZALOZEN) -> ZalozeniaOferty:
         D=float(z["rabat_roczny_D"]["wartosc"]),
         k=float(z["koszt_kontaktu_k"]["wartosc"]),
     )
+
+
+def budzet_rabatow(sciezka: Path = SCIEZKA_ZALOZEN) -> float | None:
+    """Roczny budżet rabatów (PLN) albo None, gdy nie ustalono (wtedy /risk nie ogranicza ofert budżetem)."""
+    wartosc = wczytaj_zalozenia(sciezka).get("budzet_rabatow_rok", {}).get("wartosc")
+    return None if wartosc is None else float(wartosc)

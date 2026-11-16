@@ -91,6 +91,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   │                         # eksperyment.py (switchback: plan w parach, wariant dnia, 5% pozycji losowych;
 │   │                         # plan aktywny, gdy istnieje eksperyment_plan.yaml)
 │   ├── retention_bc/         # retencja najemców; ryzyko_najmu.py: GET /risk (v2_przezycie_cox, mediana i RMST60)
+│   │                         # oferta_najmu.py: część `oferta` w /risk (uplift v3, EV, akcja rabat / bez rabatu /
+│   │                         # nie budzić + uzasadnienie z 3 cech; poza zakresem treningu v3 -> bez rabatu;
+│   │                         # docs/ryzyko_oferta.md), przeglad_ofert.py: akcje dla aktywnych najmów i przykłady
 │   │                         # polityka_rabatow.py: EV oferty (uplift v3 × R − D × P − k, zalozenia.yaml)
 │   │                         # i polityki rabatów na rok (docs/polityka_rabatow.md)
 │   └── maintenance_bc/       # serwis i windy

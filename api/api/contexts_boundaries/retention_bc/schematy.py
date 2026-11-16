@@ -1,6 +1,7 @@
-"""Schematy API retencji (GET /risk/{id_najmu}); logika: retention_bc/ryzyko_najmu.py."""
+"""Schematy API retencji (GET /risk/{id_najmu}); logika: retention_bc/ryzyko_najmu.py i oferta_najmu.py."""
 
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -14,6 +15,41 @@ class OkresUmowy(BaseModel):
     minelo_miesiecy: float = Field(
         description="miesiące bieżącego okresu przed dniem oceny (0, gdy zaczyna się później)"
     )
+
+
+class CechaUzasadnienia(BaseModel):
+    cecha: str = Field(description="nazwa cechy modelu (macierz v3: linia jako b2b)")
+    opis: str = Field(description="opis cechy z wartością, po polsku")
+    wartosc: float | None
+    wklad_pp: float = Field(description="wkład cechy w uplift, punkty procentowe (SHAP v3 przeliczony na p)")
+
+
+class ZalozeniaOfertyApi(BaseModel):
+    R: float = Field(description="koszt odejścia najemcy, PLN (retention_bc/zalozenia.yaml)")
+    D: float = Field(description="roczny rabat dla przedłużającego z ofertą, PLN")
+    k: float = Field(description="koszt kontaktu, PLN")
+    budzet_rabatow_rok: float | None = Field(description="roczny budżet rabatów, PLN; None = nie ustalono")
+
+
+class OfertaRetencyjna(BaseModel):
+    wersja_modelu: str = Field(description="model uplift (v3_uplift_tlearner)")
+    id_umowy: str = Field(description="bieżący okres umowy, którego koniec dotyczy oferta")
+    koniec_okresu: date
+    data_decyzji: date = Field(description="cechy ze zdarzeń sprzed tego dnia: migawka (koniec − 60 dni) albo dziś")
+    p_przedluzy_z_oferta: float
+    p_przedluzy_bez_oferty: float
+    uplift: float = Field(description="p_przedluzy_z_oferta − p_przedluzy_bez_oferty")
+    ev_pln: float = Field(description="wartość oczekiwana oferty: uplift × R − D × p_przedluzy_z_oferta − k")
+    zalecana_akcja: Literal["rabat", "bez rabatu", "nie budzić"]
+    uzasadnienie: str = Field(description="jedno zdanie oparte na trzech najważniejszych cechach")
+    najwazniejsze_cechy: list[CechaUzasadnienia]
+    prog_nie_budzic: float = Field(description="uplift <= próg -> „nie budzić” (20. percentyl upliftu v3)")
+    poza_zakresem_modelu: list[str] = Field(
+        description="cechy poza zakresem danych uczących v3; niepuste -> „bez rabatu”, decyzja w dniu migawki"
+    )
+    w_budzecie: bool | None = Field(description="czy oferta mieści się w rocznym budżecie; None = nie sprawdzano")
+    zalozenia: ZalozeniaOfertyApi
+    uwagi: list[str]
 
 
 class OdpowiedzRyzyka(BaseModel):
@@ -33,3 +69,6 @@ class OdpowiedzRyzyka(BaseModel):
     rmst60_mies: float = Field(description="średnia liczba miesięcy najmu w ciągu 60 mies. od dnia oceny (RMST60)")
     horyzont_mies: float
     zalozenia: list[str]
+    oferta: OfertaRetencyjna | None = Field(
+        default=None, description="uplift, EV i zalecana akcja (None, gdy brak modelu v3_uplift_tlearner)"
+    )

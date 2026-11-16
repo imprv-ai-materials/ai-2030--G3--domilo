@@ -79,6 +79,10 @@ class ModelUpliftT:
         oferta = np.asarray(oferta, dtype=bool)
         y = np.asarray(y, dtype=float)
         X = macierz(df, self.cechy)
+        # Zakres danych uczących (poza_zakresem): model widział tylko te wartości i tylko te wzory braków
+        self.zakres_cech_ = {
+            k: {"min": float(X[k].min()), "max": float(X[k].max()), "braki": bool(X[k].isna().any())} for k in X.columns
+        }
         self.modele_, self.liczba_drzew_, self.n_ = {}, {}, {}
         for grupa, maska in (("oferta", oferta), ("kontrola", ~oferta)):
             n = liczba_drzew(X[maska], y[maska], self.parametry)
@@ -95,6 +99,49 @@ class ModelUpliftT:
     def predict(self, df: pd.DataFrame) -> np.ndarray:
         p_o, p_k = self.predict_skladowe(df)
         return p_o - p_k
+
+    def poza_zakresem(self, df: pd.DataFrame) -> list[list[str]]:
+        """Dla każdego wiersza: cechy (kolumny `macierz`) poza zakresem danych uczących, czyli brak tam, gdzie
+        w treningu braków nie było, albo wartość poniżej minimum / powyżej maksimum z treningu."""
+        X = macierz(df, self.cechy)
+        wynik = []
+        for _, wiersz in X.iterrows():
+            poza = []
+            for k, z in self.zakres_cech_.items():
+                v = wiersz[k]
+                if pd.isna(v):
+                    if not z["braki"]:
+                        poza.append(k)
+                elif v < z["min"] or v > z["max"]:
+                    poza.append(k)
+            wynik.append(poza)
+        return wynik
+
+    def wklady_upliftu(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Wkład każdej cechy (kolumny `macierz`) w uplift, w jednostkach prawdopodobieństwa, + `wklad_staly`.
+
+        SHAP z LightGBM (pred_contrib) daje wkłady w log-szansę każdego z dwóch modeli: f(x) = φ0 + Σ φ_j.
+        Przeliczamy je na prawdopodobieństwo proporcjonalnie: a_j = φ_j × (p − σ(φ0)) / (f(x) − φ0), a gdy
+        f(x) ≈ φ0, przez pochodną: a_j = φ_j × p(1 − p). Wkład w uplift = a_j(oferta) − a_j(kontrola);
+        `wklad_staly` = σ(φ0 oferta) − σ(φ0 kontrola), więc suma wierszy daje dokładnie predict().
+        """
+        X = macierz(df, self.cechy)
+        wklady, stale = {}, {}
+        for grupa, model in self.modele_.items():
+            phi = model.predict(X, pred_contrib=True)
+            phi0, czesci = phi[:, -1], phi[:, :-1]
+            f = phi.sum(axis=1)
+            p, p0 = 1 / (1 + np.exp(-f)), 1 / (1 + np.exp(-phi0))
+            mianownik = f - phi0
+            male = np.abs(mianownik) < 1e-9
+            skala = np.where(male, p * (1 - p), (p - p0) / np.where(male, 1.0, mianownik))
+            # przy małym mianowniku pochodna nie daje dokładnej sumy: resztę (p − p0 − Σ a_j) dokładamy do stałej
+            a = czesci * skala[:, None]
+            wklady[grupa] = a
+            stale[grupa] = p0 + np.where(male, p - p0 - a.sum(axis=1), 0.0)
+        wyj = pd.DataFrame(wklady["oferta"] - wklady["kontrola"], index=df.index, columns=list(X.columns))
+        wyj["wklad_staly"] = stale["oferta"] - stale["kontrola"]
+        return wyj
 
     def waznosc_cech(self) -> pd.DataFrame:
         """Udział cech w gain każdego z dwóch modeli."""

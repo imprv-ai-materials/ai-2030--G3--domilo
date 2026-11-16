@@ -21,7 +21,9 @@ import joblib
 import numpy as np
 import pandas as pd
 from api.ai.churn_model.versions.v2_przezycie_cox.model import ModelCox
+from api.ai.churn_model.versions.v3_uplift_tlearner.model import ModelUpliftT
 from api.ai.features.najemcy.cechy_okresow import cechy_okresow, okresy_umow
+from api.contexts_boundaries.retention_bc.oferta_najmu import oferta_najmu
 from dateutil.relativedelta import relativedelta
 
 SCIEZKA_MODELU = (
@@ -143,9 +145,14 @@ def wczytaj_model(sciezka: Path = SCIEZKA_MODELU) -> ModelCox:
 
 
 def ryzyko_najmu(
-    con: duckdb.DuckDBPyConnection, id_najmu: str, model: ModelCox, dzien_oceny: date = DZIEN_OCENY
+    con: duckdb.DuckDBPyConnection,
+    id_najmu: str,
+    model: ModelCox,
+    dzien_oceny: date = DZIEN_OCENY,
+    model_uplift: ModelUpliftT | None = None,
 ) -> dict:
-    """Ryzyko, mediana czasu do odejścia i RMST60 dla aktywnego najmu B2C / B2B (słownik pól OdpowiedzRyzyka)."""
+    """Ryzyko, mediana czasu do odejścia i RMST60 dla aktywnego najmu B2C / B2B (słownik pól OdpowiedzRyzyka);
+    z `model_uplift` także oferta: uplift, EV i zalecana akcja (oferta_najmu.py)."""
     najem = con.execute(SQL_NAJEM, [id_najmu]).fetchone()
     if najem is None:
         raise NajemNieznany(f"Brak najmu {id_najmu} w PMS")
@@ -192,4 +199,5 @@ def ryzyko_najmu(
         "rmst60_mies": round(krzywa.rmst(HORYZONT_MIES), 2),
         "horyzont_mies": HORYZONT_MIES,
         "zalozenia": list(ZALOZENIA_KRZYWEJ),
+        "oferta": None if model_uplift is None else oferta_najmu(con, biezacy, model_uplift, dzien_oceny),
     }

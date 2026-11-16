@@ -44,3 +44,16 @@ koszt_kontaktu_k:
     to szacunek, nie wartość z systemu.
   data: 2026-11-16
   odpowiedzialny: Joanna Michalak
+
+budzet_rabatow_rok:
+  wartosc: null  # DO UZUPEŁNIENIA: kwoty nie podano
+  jednostka: PLN na rok (spodziewany koszt rabatów = D × P(przedłuży | oferta), suma po ofertach)
+  opis: >
+    Roczny budżet rabatów retencyjnych. GET /risk zaleca „rabat” tylko wtedy, gdy EV > 0 i oferta mieści się
+    w budżecie: oferty z EV > 0 dla najmów kończących się w ciągu 365 dni idą od największego EV, aż suma
+    spodziewanych kosztów rabatu przekroczy budżet (retention_bc/oferta_najmu.py). null = budżetu nie ustalono:
+    sprawdzenie jest pomijane, a odpowiedź ma adnotację.
+  zrodlo: null  # 2026-11-16: polecenie wymaga warunku „mieści się w budżecie”, ale kwoty nie podano
+  data: null
+  odpowiedzialny: null
+
