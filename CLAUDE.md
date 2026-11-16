@@ -74,13 +74,20 @@ evals/porownanie.md           # model vs baseline, wszystkie cztery modele
 dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml, mock_lejek.yaml)
 ├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
 ├── serwisownik_mock/         # atrapa Serwisownika: zgłoszenia z alertów wind, klucz {id_windy}:{data_alarmu}
-│                             # (port 8103; pypyr serwisownik_mock; stan w stan.json poza gitem)
+│                             # (port 8103; pypyr serwisownik_mock; stan w stan.json poza gitem); /koordynator: ocena
+│                             # alertu trafny / fałszywy -> POST /lifts/alerts/feedback -> alerty_ocena
+├── grafana/                  # Grafana 12.4 (Ubuntu) + wtyczka motherduck-duckdb-datasource 0.4.6 (DuckDB 1.5.6; port
+│                             # 3400; pypyr grafana): tablica działu technicznego (docs/b4_panel_techniczny.md); czyta
+│                             # Parquet z dane/ (maintenance_bc/panel_techniczny.py) przez widoki initSql; zapytania:
+│                             # format 0/1 i ${zmienna:sqlstring}; plugins/, dashboards/ (z windy.szablon.json), dane/,
+│                             # .env poza gitem
 ├── metabase/                 # Metabase 0.63.17 + sterownik DuckDB 1.5.6.0 (port 3300; pypyr metabase): panel kampanii
 │                             # dla marketingu; czyta Parquet z dane/ (DuckDB :memory: + widoki read_parquet), bo
 │                             # sterownik (DuckDB 1.5) nie otwiera domilo.duckdb; plugins/, stan/, dane/, .env poza gitem
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 ├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, /risk/{id_najmu},
-│                             # /lifts/{id_windy}/risk (odczyt ryzyko_wind), Inngest (pypyr api)
+│                             # /lifts/{id_windy}/risk (odczyt ryzyko_wind), POST /lifts/alerts/feedback (alerty_ocena),
+│                             # Inngest (pypyr api)
 ├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka),
 │                             # lista-retencyjna (pon. 07:00; pypyr lista_retencyjna); windy (docs/b4_ryzyko_dzienne.md):
 │                             # telemetra-okna (co 10 min; pypyr telemetra_okna), cechy-wind (05:50), ryzyko-wind
@@ -98,7 +105,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   ├── lista_retencyjna.py   # tabela lista_retencyjna: umowy za 60–66 dni z ryzykiem, upliftem, akcją i grupą kampanii
 │   ├── telemetra.py          # okna Telemetry: API (TELEMETRA_URL; bez niej atrapa = eksport data/), magazyn Parquet
 │   │                         # telemetra_biezaca/ (poza gitem) idempotentny po (id_windy, ts_utc), widok eksport + magazyn
-│   └── ryzyko_wind.py        # tabele ryzyko_wind (winda × dzień oceny) i alarmy_wind (pierwsza decyzja dnia zostaje)
+│   ├── ryzyko_wind.py        # tabele ryzyko_wind (winda × dzień oceny) i alarmy_wind (pierwsza decyzja dnia zostaje)
+│   └── alerty_ocena.py       # tabela alerty_ocena: ocena alertu przez koordynatora (trafny / fałszywy, podzespół)
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
 │   ├── leasing_bc/           # zapytania i doradcy (najem); kolejka_dzienna.py: kroki zadania kolejka-doradcow;
@@ -129,7 +137,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │                             # sygnałach), podzespoły = suma SHAP według podzespoly.yaml (cecha -> podzespół, teksty
 │                             # „Sprawdź …”; założenie) i opis alertu jednym zdaniem; docs/b4_ryzyko_dzienne.md;
 │                             # windy < 44 dni telemetrii: tryb_oceny 'zapasowa' (reguła zapasowa, alarm zapasowy
-│                             # przed rankingiem modelu w limicie 3, flaga w zgłoszeniu; docs/b4_dryf_i_fallback.md)
+│                             # przed rankingiem modelu w limicie 3, flaga w zgłoszeniu; docs/b4_dryf_i_fallback.md);
+│                             # ryzyko_wstecz.py: symulacja wstecz zadań dziennych (pypyr ryzyko_wind_wstecz);
+│                             # panel_techniczny.py: dane tablicy Grafana (dev/grafana/dane/; docs/b4_panel_techniczny.md)
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
 │   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)
@@ -248,7 +258,9 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
 - **Tabele trwałe aplikacji** (nie z `data/`; przebudowa je przenosi, a brakujące tworzy puste):
   `wyceny_historia`, `kolejka_doradcow`, `kolejka_ranking` (`zrodlo_kolejki`: `zadanie` albo `symulacja_wstecz`,
   `pypyr kolejka_wstecz`), `kolejka_pominiecia`, `kolejka_historia`, `lista_retencyjna` (klucz data_listy × id_umowy),
-  `ryzyko_wind` (dzien × id_windy, ocena o 06:00), `alarmy_wind` (dzien × id_windy, `id_zgloszenia` z Serwisownika).
+  `ryzyko_wind` (dzien × id_windy, ocena o 06:00), `alarmy_wind` (dzien × id_windy, `id_zgloszenia` z Serwisownika),
+  `alerty_ocena` (dzien × id_windy: ocena koordynatora = nowe etykiety; tylko windy z alarmem, nie losowa próba).
+  `ryzyko_wind` / `alarmy_wind` zawierają symulację wstecz 2026-07-27 – 2026-09-30 (`id_przebiegu` symulacja_wstecz:*).
 - **Kolejka a eksperyment:** 5% pozycji każdej kolejki doradcy (40 → 2) jest losowych, z ziarnem `dzień:miasto:wariant`
   (ten sam dzień = ta sama kolejka, webhook idempotentny); ranga zawsze według EV. Nie zmieniaj w trakcie
   eksperymentu modelu, założeń EV, 5%, limitu wartości umowy ani zmiennych korekty.

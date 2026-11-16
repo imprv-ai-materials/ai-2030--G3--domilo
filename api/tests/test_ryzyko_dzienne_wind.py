@@ -314,6 +314,8 @@ def przebiegi(tmp_path_factory):
     kat = tmp_path_factory.mktemp("windy")
     baza = kat / "domilo.duckdb"
     shutil.copy(SCIEZKA_BAZY, baza)
+    with polaczenie(tylko_odczyt=False, sciezka=baza) as con:  # kopia ma zacząć bez historii ocen i alarmów
+        ryzyko_wind.wyczysc(con)
     krok = lambda _id, h, *a: json.loads(json.dumps(h(*a)))  # noqa: E731 — jak Inngest: wynik kroku to JSON
     klient = _Klient()
     wyniki = {}

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import httpx
 import pandas as pd
-from api.adapters import serwisownik
+from api.adapters import ryzyko_wind, serwisownik
 from api.adapters.duckdb_baza import SCIEZKA_BAZY, polaczenie
 from api.contexts_boundaries.maintenance_bc import cechy_dzienne, ryzyko_dzienne
 
@@ -31,6 +31,8 @@ def poniedzialki() -> list[date]:
 def uruchom(katalog: Path) -> None:
     baza = katalog / "domilo.duckdb"
     shutil.copy(SCIEZKA_BAZY, baza)
+    with polaczenie(tylko_odczyt=False, sciezka=baza) as con:  # kopia ma zacząć bez historii ocen i alarmów
+        ryzyko_wind.wyczysc(con)
     krok = lambda _id, h, *a: h(*a)  # noqa: E731
     klient = serwisownik.KlientSerwisownika()
     for d in poniedzialki():

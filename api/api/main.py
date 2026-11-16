@@ -17,7 +17,7 @@ import duckdb
 import inngest.fast_api
 import numpy as np
 import pandas as pd
-from api.adapters import kolejka_doradcow, kolejka_pominiecia, ryzyko_wind, wyceny_historia
+from api.adapters import alerty_ocena, kolejka_doradcow, kolejka_pominiecia, ryzyko_wind, wyceny_historia
 from api.adapters.duckdb_baza import polaczenie
 from api.adapters.llm_client import BrakKluczaAPI
 from api.ai.features.wycena.cechy_llm import KOLUMNY_LLM
@@ -25,7 +25,7 @@ from api.ai.features.wycena.ceny_w_opisie import bez_kwot
 from api.ai.valuation_model.obecny import ObecnyModel, wczytaj_obecny
 from api.contexts_boundaries.leasing_bc import panel
 from api.contexts_boundaries.leasing_bc.schematy import KolejkaDoradcy, WynikPominiecia, ZgloszeniePominiecia
-from api.contexts_boundaries.maintenance_bc.schematy import OdpowiedzRyzykaWindy
+from api.contexts_boundaries.maintenance_bc.schematy import OcenaAlertu, OdpowiedzRyzykaWindy, WynikOceny
 from api.contexts_boundaries.retention_bc import oferta_najmu, ryzyko_najmu
 from api.contexts_boundaries.retention_bc.schematy import OdpowiedzRyzyka
 from api.contexts_boundaries.valuation_bc.cechy_opisu import cechy_z_opisu
@@ -257,3 +257,32 @@ def ryzyko_windy(
         prog_zapasowy=o.get("prog_zapasowy"),
         alarm=o["alarm"],
     )
+
+
+@app.post("/lifts/alerts/feedback", response_model=WynikOceny)
+def ocena_alertu(z: OcenaAlertu, con: duckdb.DuckDBPyConnection = Depends(baza_zapis)) -> WynikOceny:
+    """Serwisownik przekazuje ocenę alertu przez koordynatora (trafny / fałszywy, opcjonalnie podzespół) ->
+    tabela alerty_ocena (adapters/alerty_ocena.py; nowe etykiety do ponownego uczenia modelu wind).
+
+    Ta sama ocena drugi raz to powtórzenie, inna to poprawka. 404: nie ma takiego alertu w alarmy_wind;
+    422: zły klucz albo wartość spoza słownika.
+    """
+    try:
+        id_windy, dzien = alerty_ocena.rozbij_klucz(z.klucz_idempotencji)
+        wynik = alerty_ocena.zapisz(
+            con,
+            alerty_ocena.Ocena(
+                id_windy=id_windy,
+                dzien=dzien,
+                ocena=z.ocena,
+                podzespol=z.podzespol,
+                komentarz=z.komentarz,
+                oceniajacy=z.oceniajacy,
+                id_zgloszenia=z.id_zgloszenia,
+            ),
+        )
+    except alerty_ocena.AlertNieznany as e:
+        raise HTTPException(404, str(e)) from e
+    except ValueError as e:
+        raise HTTPException(422, str(e)) from e
+    return WynikOceny(wynik=wynik)

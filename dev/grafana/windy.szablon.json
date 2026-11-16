@@ -1,0 +1,1063 @@
+{
+ "uid": "domilo-windy",
+ "title": "Windy — ryzyko awarii i alerty (dział techniczny)",
+ "description": "docs/b4_panel_techniczny.md; dane: dev/grafana/dane/*.parquet z domilo.duckdb (maintenance_bc/panel_techniczny.py).",
+ "tags": [
+  "domilo",
+  "windy"
+ ],
+ "timezone": "Europe/Warsaw",
+ "editable": false,
+ "graphTooltip": 1,
+ "time": {
+  "from": "__OD__",
+  "to": "__DO__"
+ },
+ "refresh": "",
+ "schemaVersion": 39,
+ "version": 1,
+ "templating": {
+  "list": [
+   {
+    "type": "query",
+    "name": "winda",
+    "label": "Winda",
+    "datasource": {
+     "type": "motherduck-duckdb-datasource",
+     "uid": "duckdb-windy"
+    },
+    "refresh": 1,
+    "sort": 0,
+    "multi": false,
+    "includeAll": false,
+    "query": "SELECT id_windy FROM windy_ryzyko ORDER BY ranga",
+    "definition": "SELECT id_windy FROM windy_ryzyko ORDER BY ranga"
+   },
+   {
+    "type": "query",
+    "name": "sygnal",
+    "label": "Sygnały",
+    "datasource": {
+     "type": "motherduck-duckdb-datasource",
+     "uid": "duckdb-windy"
+    },
+    "refresh": 1,
+    "sort": 0,
+    "multi": true,
+    "includeAll": true,
+    "current": {
+     "text": [
+      "All"
+     ],
+     "value": [
+      "$__all"
+     ]
+    },
+    "query": "SELECT etykieta FROM (SELECT DISTINCT etykieta, kolejnosc FROM sygnaly_30d) ORDER BY kolejnosc",
+    "definition": "SELECT etykieta FROM (SELECT DISTINCT etykieta, kolejnosc FROM sygnaly_30d) ORDER BY kolejnosc"
+   }
+  ]
+ },
+ "panels": [
+  {
+   "id": 1,
+   "type": "stat",
+   "title": "Dzień oceny",
+   "description": "Najnowszy dzień oceny ryzyka (zadanie ryzyko-wind) i wersja modelu z failure_model/current.yaml. Model: wersja z failure_model/current.yaml (panel_info.wersja_modelu).",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT strftime(dzien_oceny, '%Y-%m-%d') AS \"ocena o 06:00\" FROM panel_info",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": true
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Alarmy z 8 tygodni",
+   "description": "Alarmy z ostatnich 8 tygodni: dni alarmu w (ostatni dzień alarmu − 56 dni; ostatni dzień alarmu] (podsumowanie_8_tyg.od_dnia / do_dnia).",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 4,
+    "y": 0,
+    "w": 5,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT alarmy FROM podsumowanie_8_tyg",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": true
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Wynik alarmów (8 tygodni)",
+   "description": "Trafny = start awarii tej windy w 7 dni od alarmu (06:00), z historii awarii (awarie_odtworzone). W toku = okno 7 dni jeszcze otwarte względem stanu danych o awariach.",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 9,
+    "y": 0,
+    "w": 5,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT trafne AS trafne, falszywe AS \"fałszywe\", w_toku AS \"w toku\" FROM podsumowanie_8_tyg",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": true
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Precyzja (zamknięte okna)",
+   "description": "Trafne / (trafne + fałszywe); alarmy w toku pominięte.",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 14,
+    "y": 0,
+    "w": 3,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT 100 * precyzja_zamkniete AS precyzja FROM podsumowanie_8_tyg",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": true
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "unit": "percent",
+     "decimals": 1
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "Mediana wyprzedzenia",
+   "description": "Godziny od alarmu (poniedziałek 06:00) do startu awarii, trafne alarmy z ostatnich 8 tygodni. Liczba trafnych alarmów: panel „Wynik alarmów”.",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 17,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT mediana_wyprzedzenia_h AS \"mediana\" FROM podsumowanie_8_tyg",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": true
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     },
+     "decimals": 1,
+     "unit": "suffix: h"
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 6,
+   "type": "stat",
+   "title": "Ocena koordynatora",
+   "description": "Alarmy z 8 tygodni ocenione w Serwisowniku (tabela alerty_ocena) i ile ocen zgadza się z wynikiem z historii awarii.",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 21,
+    "y": 0,
+    "w": 3,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT ocenione_przez_koordynatora AS ocenione, ocena_zgodna_z_wynikiem AS \"zgodne z wynikiem\" FROM podsumowanie_8_tyg",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/.*/",
+     "values": true
+    },
+    "colorMode": "none",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "text"
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
+   "type": "geomap",
+   "title": "Ryzyko awarii w 7 dni — windy w budynkach",
+   "description": "Każdy punkt to winda (windy budynku rozstawione wokół jego adresu). Kolor: czerwony = szansa awarii w 7 dni co najmniej próg opłacalności wizyty p* z maintenance_bc/zalozenia.yaml (panel_info.prog_oplacalnosci_proc). Szary = reguła zapasowa (nowa winda, bez prawdopodobieństwa z modelu).",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 4,
+    "w": 11,
+    "h": 15
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT id_windy AS winda, budynek, miasto, lat_windy AS latitude, lon_windy AS longitude, ryzyko_proc AS \"ryzyko 7 dni\", ranga, tryb_oceny AS tryb, podzespol_1 AS \"podejrzany podzespół\", opis FROM windy_ryzyko",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": "__PROG__"
+       }
+      ]
+     },
+     "noValue": "—"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ryzyko 7 dni"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "percent"
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "view": {
+     "id": "coords",
+     "lat": 52.1,
+     "lon": 19.3,
+     "zoom": 5.6,
+     "allLayers": true
+    },
+    "controls": {
+     "showZoom": true,
+     "mouseWheelZoom": true,
+     "showAttribution": true
+    },
+    "basemap": {
+     "type": "default",
+     "name": "Mapa"
+    },
+    "layers": [
+     {
+      "type": "markers",
+      "name": "Windy",
+      "tooltip": true,
+      "location": {
+       "mode": "coords",
+       "latitude": "latitude",
+       "longitude": "longitude"
+      },
+      "config": {
+       "showLegend": true,
+       "style": {
+        "size": {
+         "fixed": 7,
+         "min": 5,
+         "max": 16,
+         "field": "ryzyko 7 dni"
+        },
+        "color": {
+         "field": "ryzyko 7 dni",
+         "fixed": "grey"
+        },
+        "opacity": 0.85,
+        "symbol": {
+         "mode": "fixed",
+         "fixed": "img/icons/marker/circle.svg"
+        }
+       }
+      }
+     }
+    ],
+    "tooltip": {
+     "mode": "details"
+    }
+   }
+  },
+  {
+   "id": 8,
+   "type": "table",
+   "title": "Windy według ryzyka (dzień oceny)",
+   "description": "Ranking modelu z dnia oceny; opis = jedno zdanie dla technika (maintenance_bc/wyjasnienie.py).",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 11,
+    "y": 4,
+    "w": 13,
+    "h": 15
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT ranga, id_windy AS winda, budynek, miasto, ryzyko_proc AS \"ryzyko 7 dni\", tryb_oceny AS tryb, CASE WHEN alarm THEN 'tak' ELSE '' END AS \"alarm dziś\", podzespol_1 AS \"podejrzany podzespół\", opis FROM windy_ryzyko ORDER BY ranga",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "footer": {
+     "show": false
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "cellOptions": {
+       "type": "auto"
+      }
+     },
+     "noValue": "—"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ryzyko 7 dni"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "percent"
+       },
+       {
+        "id": "thresholds",
+        "value": {
+         "mode": "absolute",
+         "steps": [
+          {
+           "color": "green",
+           "value": null
+          },
+          {
+           "color": "red",
+           "value": "__PROG__"
+          }
+         ]
+        }
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       },
+       {
+        "id": "custom.width",
+        "value": 100
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ranga"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 60
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "winda"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 80
+       },
+       {
+        "id": "links",
+        "value": [
+         {
+          "title": "Przebiegi sygnałów",
+          "url": "/d/domilo-windy?var-winda=${__value.raw}&${__url_time_range}"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "opis"
+      },
+      "properties": [
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto"
+        }
+       },
+       {
+        "id": "custom.inspect",
+        "value": true
+       },
+       {
+        "id": "custom.minWidth",
+        "value": 300
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "budynek"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 170
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "miasto"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 90
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "tryb"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 70
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "alarm dziś"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 80
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "podejrzany podzespół"
+      },
+      "properties": [
+       {
+        "id": "custom.width",
+        "value": 140
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": 9,
+   "type": "row",
+   "title": "Winda $winda: ryzyko i przebiegi najważniejszych sygnałów (30 dni)",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 19,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 10,
+   "type": "timeseries",
+   "title": "Ryzyko awarii w 7 dni — winda $winda",
+   "description": "Ocena codziennie o 06:00 (ryzyko_wind). Linia przerywana = próg opłacalności wizyty p*.",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 20,
+    "w": 24,
+    "h": 6
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT czas AS time, ryzyko_proc AS \"ryzyko 7 dni\" FROM ryzyko_historia WHERE id_windy = ${winda:sqlstring} ORDER BY 1",
+     "format": 0,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percent",
+     "min": 0,
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": "__PROG__"
+       }
+      ]
+     },
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 2,
+      "pointSize": 4,
+      "showPoints": "always",
+      "thresholdsStyle": {
+       "mode": "dashed"
+      },
+      "gradientMode": "scheme"
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "single"
+    }
+   }
+  },
+  {
+   "id": 11,
+   "type": "timeseries",
+   "title": "$sygnal",
+   "description": "Średnie godzinne z okien 10-min telemetrii (te same definicje sygnałów co cechy modelu, bez okien serwisowych) i norma windy: mediana średnich dobowych z dni 15–44 przed dniem oceny. Sygnały: 6 o największym udziale w ważności modelu.",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 26,
+    "w": 8,
+    "h": 8
+   },
+   "repeat": "sygnal",
+   "repeatDirection": "h",
+   "maxPerRow": 3,
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT czas AS time, wartosc AS \"wartość\", norma AS \"norma windy\" FROM sygnaly_30d WHERE id_windy = ${winda:sqlstring} AND etykieta = ${sygnal:sqlstring} ORDER BY 1",
+     "format": 0,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "showPoints": "never",
+      "spanNulls": false
+     }
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "norma windy"
+      },
+      "properties": [
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       },
+       {
+        "id": "custom.lineWidth",
+        "value": 2
+       },
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "orange"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "options": {
+    "legend": {
+     "displayMode": "list",
+     "placement": "bottom"
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 12,
+   "type": "table",
+   "title": "Historia alertów i ich wynik",
+   "description": "Alarmy z alarmy_wind (poniedziałek 06:00, 3 windy, przerwa 7 dni). Wynik z historii awarii: trafny / fałszywy / w toku; wyprzedzenie = godziny od alarmu do startu awarii. Ocena koordynatora = oznaczenie w Serwisowniku (tabela alerty_ocena).",
+   "datasource": {
+    "type": "motherduck-duckdb-datasource",
+    "uid": "duckdb-windy"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 34,
+    "w": 24,
+    "h": 13
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "motherduck-duckdb-datasource",
+      "uid": "duckdb-windy"
+     },
+     "rawSql": "SELECT strftime(dzien, '%Y-%m-%d') AS \"dzień alarmu\", id_windy AS winda, budynek, pozycja, tryb_oceny AS tryb, ryzyko_proc AS \"ryzyko 7 dni\", opis, podzespol_wskazany AS \"wskazany podzespół\", wynik, wyprzedzenie_h AS \"wyprzedzenie\", podzespol_awarii AS \"podzespół awarii\", ocena_koordynatora AS \"ocena koordynatora\", podzespol_koordynatora AS \"podzespół (koordynator)\", id_zgloszenia AS \"zgłoszenie\" FROM alerty ORDER BY dzien DESC, pozycja",
+     "format": 1,
+     "rawQuery": true,
+     "editorMode": "code"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm",
+    "footer": {
+     "show": false
+    }
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "align": "auto",
+      "cellOptions": {
+       "type": "auto"
+      }
+     },
+     "noValue": "—"
+    },
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "wynik"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "trafny": {
+            "color": "green",
+            "index": 0
+           },
+           "fałszywy": {
+            "color": "red",
+            "index": 1
+           },
+           "w toku": {
+            "color": "yellow",
+            "index": 2
+           },
+           "falszywy": {
+            "color": "red",
+            "index": 3
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-background"
+        }
+       },
+       {
+        "id": "custom.width",
+        "value": 90
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ocena koordynatora"
+      },
+      "properties": [
+       {
+        "id": "mappings",
+        "value": [
+         {
+          "type": "value",
+          "options": {
+           "trafny": {
+            "color": "green",
+            "index": 0
+           },
+           "fałszywy": {
+            "color": "red",
+            "index": 1
+           },
+           "w toku": {
+            "color": "yellow",
+            "index": 2
+           },
+           "falszywy": {
+            "color": "red",
+            "index": 3
+           }
+          }
+         }
+        ]
+       },
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "color-text"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "ryzyko 7 dni"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "percent"
+       },
+       {
+        "id": "custom.width",
+        "value": 95
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "wyprzedzenie"
+      },
+      "properties": [
+       {
+        "id": "unit",
+        "value": "suffix: h"
+       },
+       {
+        "id": "decimals",
+        "value": 1
+       },
+       {
+        "id": "custom.width",
+        "value": 105
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "opis"
+      },
+      "properties": [
+       {
+        "id": "custom.cellOptions",
+        "value": {
+         "type": "auto",
+         "wrapText": true
+        }
+       },
+       {
+        "id": "custom.width",
+        "value": 420
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byName",
+       "options": "winda"
+      },
+      "properties": [
+       {
+        "id": "links",
+        "value": [
+         {
+          "title": "Przebiegi sygnałów",
+          "url": "/d/domilo-windy?var-winda=${__value.raw}&${__url_time_range}"
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ]
+}

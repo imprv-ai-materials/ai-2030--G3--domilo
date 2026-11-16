@@ -1,0 +1,20 @@
+# Źródło danych tablicy wind: DuckDB w pamięci (wtyczka motherduck-duckdb-datasource) z widokami na pliki Parquet
+# z /dane (dev/grafana/dane/, maintenance_bc/panel_techniczny.py). Widok czyta plik przy każdym zapytaniu, więc nowe
+# dane widać bez restartu Grafany. domilo.duckdb nie jest otwierana (format 2.0, blokada zapisu zadań).
+apiVersion: 1
+datasources:
+  - name: Domilo windy (DuckDB)
+    uid: duckdb-windy
+    type: motherduck-duckdb-datasource
+    access: proxy
+    isDefault: true
+    editable: false
+    jsonData:
+      path: ""
+      initSql: >-
+        CREATE OR REPLACE VIEW windy_ryzyko AS SELECT * FROM read_parquet('/dane/windy_ryzyko.parquet');
+        CREATE OR REPLACE VIEW ryzyko_historia AS SELECT * FROM read_parquet('/dane/ryzyko_historia.parquet');
+        CREATE OR REPLACE VIEW sygnaly_30d AS SELECT * FROM read_parquet('/dane/sygnaly_30d.parquet');
+        CREATE OR REPLACE VIEW alerty AS SELECT * FROM read_parquet('/dane/alerty.parquet');
+        CREATE OR REPLACE VIEW podsumowanie_8_tyg AS SELECT * FROM read_parquet('/dane/podsumowanie_8_tyg.parquet');
+        CREATE OR REPLACE VIEW panel_info AS SELECT * FROM read_parquet('/dane/panel_info.parquet');

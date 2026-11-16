@@ -1,8 +1,9 @@
 """Schematy odpowiedzi API dla wind (GET /lifts/{id_windy}/risk)."""
 
 from datetime import date, datetime
+from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Sygnal(BaseModel):
@@ -52,3 +53,19 @@ class OdpowiedzRyzykaWindy(BaseModel):
     podzespoly: list[Podzespol] = Field(description="podejrzane podzespoły, od najsilniejszego wskazania")
     opis: str | None = Field(description="opis alertu jednym zdaniem: pierwszy podzespół, sygnały, co sprawdzić")
     alarm: Alarm | None = Field(description="alarm z reguły w dniu oceny (tylko w dzień alarmu)")
+
+
+class OcenaAlertu(BaseModel):
+    """Ocena alertu przez koordynatora z Serwisownika (POST /lifts/alerts/feedback)."""
+
+    model_config = ConfigDict(extra="forbid")
+    klucz_idempotencji: str = Field(description="klucz zgłoszenia z alertu: {id_windy}:{data_alarmu}")
+    ocena: Literal["trafny", "falszywy"]
+    podzespol: Literal["drzwi", "naped", "hamulec_liny", "sterownik", "zewnetrzna", "brak"] | None = None
+    komentarz: str | None = Field(default=None, max_length=500)
+    oceniajacy: str | None = Field(default=None, max_length=100)
+    id_zgloszenia: str | None = None
+
+
+class WynikOceny(BaseModel):
+    wynik: Literal["zapisano", "powtorzenie", "poprawka"]

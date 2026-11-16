@@ -219,3 +219,12 @@ def ocena_windy(con: duckdb.DuckDBPyConnection, id_windy: str, dzien: date | Non
             "tryb_oceny": None if pd.isna(a.get("tryb_oceny")) else str(a.get("tryb_oceny")),
         }
     return w
+
+
+def wyczysc(con: duckdb.DuckDBPyConnection) -> None:
+    """Usuwa oceny i alarmy wind (tylko na kopii bazy: testy i symulacje, które mają zacząć od pustej historii)."""
+    utworz(con)
+    con.execute(f"DELETE FROM {TABELA_ALARMOW}")
+    con.execute(f"DELETE FROM {TABELA_RYZYKA}")
+    if _istnieje(con, "alerty_ocena"):
+        con.execute("DELETE FROM alerty_ocena")

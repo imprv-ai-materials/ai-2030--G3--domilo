@@ -20,8 +20,10 @@ trzyma wspólne zmienne (długość linii, katalogi kodu i testów).
 | `pypyr kolejka [data=RRRR-MM-DD]` | zadanie kolejka-doradcow bez Inngest (te same kroki); wymaga atrapy albo `CRM_LEJEK_URL` |
 | `pypyr metabase` | panel kampanii retencyjnej w Metabase (`dev/metabase/`, port 3300): dane panelu, sterownik DuckDB, kontener, konfiguracja przez API; wypisuje adres panelu |
 | `pypyr lista_retencyjna [data=RRRR-MM-DD] [kampania=…]` | zadanie lista-retencyjna bez Inngest (te same kroki): umowy za 60–66 dni, ryzyko, uplift, akcja, grupa, zapis w `lista_retencyjna` |
-| `pypyr serwisownik_mock` | atrapa Serwisownika dla zgłoszeń z alertów wind (`dev/serwisownik_mock/`, port 8103; `GET /api/zgloszenia`) |
+| `pypyr serwisownik_mock` | atrapa Serwisownika dla zgłoszeń z alertów wind (`dev/serwisownik_mock/`, port 8103; `GET /api/zgloszenia`; ocena koordynatora: `/koordynator`, przekazuje do `POST /lifts/alerts/feedback`, wymaga `pypyr api`) |
 | `pypyr telemetra_okna [od=… do=…]` | zadanie telemetra-okna bez Inngest: nowe okna Telemetry (`TELEMETRA_URL`, bez niej atrapa z eksportu) do `telemetra_biezaca/` |
+| `pypyr ryzyko_wind_wstecz [od=… do=…]` | symulacja wstecz cechy-wind + ryzyko-wind dzień po dniu (domyślnie 2026-07-27 – 2026-09-30), z wysyłką do atrapy Serwisownika |
+| `pypyr grafana` | tablica działu technicznego w Grafanie (`dev/grafana/`, port 3400): dane z `domilo.duckdb` jako Parquet, wtyczka DuckDB, kontener, sprawdzenie zapytań |
 | `pypyr ryzyko_wind [data=RRRR-MM-DD]` | zadania cechy-wind i ryzyko-wind bez Inngest: cechy dnia, ryzyko, `ryzyko_wind`, alarmy w `alarmy_wind` i Serwisowniku |
 
 Bez aktywnego `.venv` poprzedź polecenie `poetry run` (w devcontainerze `.venv/bin` jest w PATH).

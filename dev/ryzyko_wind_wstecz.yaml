@@ -1,0 +1,17 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - name: pypyr.steps.default
+    description: od= i do= (RRRR-MM-DD); domyślnie 2026-07-27 – 2026-09-30 (8 tygodni alertów przed końcem danych + tydzień przerwy)
+    in:
+      defaults:
+        od: "2026-07-27"
+        do: "2026-09-30"
+  - name: pypyr.steps.cmd
+    description: >
+      Symulacja wstecz zadań cechy-wind + ryzyko-wind dzień po dniu (ryzyko_wind, alarmy_wind; id_przebiegu
+      symulacja_wstecz:<dzien>). Zgłoszenia alertów idą do Serwisownika: uruchom najpierw pypyr serwisownik_mock
+      (albo ustaw SERWISOWNIK_URL).
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.maintenance_bc.ryzyko_wstecz {od} {do}
+        cwd: api

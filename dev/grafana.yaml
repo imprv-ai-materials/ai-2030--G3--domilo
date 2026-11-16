@@ -1,0 +1,13 @@
+steps:
+  - name: pypyr.steps.cmd
+    description: >
+      Tablica działu technicznego w Grafanie (docs/b4_panel_techniczny.md): dane tablicy (Parquet w dev/grafana/dane/
+      z domilo.duckdb), wtyczka DuckDB, .env i tablica z szablonu, kontener Grafany (port 3400) i sprawdzenie wszystkich
+      zapytań przez API. Wymaga Dockera i ocen w ryzyko_wind (zadanie ryzyko-wind albo pypyr ryzyko_wind_wstecz).
+    in:
+      cmd:
+        - run: poetry run python -m api.contexts_boundaries.maintenance_bc.panel_techniczny
+          cwd: api
+        - poetry run python dev/grafana/konfiguruj.py --przygotuj
+        - docker compose -f dev/grafana/compose.yaml up -d
+        - poetry run python dev/grafana/konfiguruj.py --sprawdz

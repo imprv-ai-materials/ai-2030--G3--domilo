@@ -1,0 +1,29 @@
+# Grafana z tablicą działu technicznego (alerty o awariach wind; docs/b4_panel_techniczny.md).
+# Start: `pypyr grafana` (z katalogu głównego). Wtyczka DuckDB (motherduck-duckdb-datasource 0.4.6, DuckDB 1.5.6)
+# wymaga glibc, więc obraz Ubuntu; pobiera ją dev/grafana/konfiguruj.py do plugins/ (poza gitem).
+# Dane: dane/*.parquet (maintenance_bc/panel_techniczny.py), tablica: dashboards/windy.json (generowana z
+# windy.szablon.json przez konfiguruj.py), hasło administratora: .env (poza gitem). Widz bez logowania (tylko odczyt).
+name: domilo-grafana
+services:
+  grafana:
+    image: grafana/grafana:12.4.15-ubuntu
+    container_name: domilo-grafana
+    ports:
+      - "3400:3000"
+    environment:
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: motherduck-duckdb-datasource
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_HASLO_ADMINA:?brak dev/grafana/.env (uruchom konfiguruj.py)}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/dashboards/windy.json
+      GF_DATE_FORMATS_DEFAULT_TIMEZONE: Europe/Warsaw
+      GF_USERS_DEFAULT_LANGUAGE: pl-PL
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      TZ: Europe/Warsaw
+    volumes:
+      - ./plugins/motherduck-duckdb-datasource:/var/lib/grafana/plugins/motherduck-duckdb-datasource
+      - ./provisioning:/etc/grafana/provisioning:ro
+      - ./dashboards:/etc/grafana/dashboards:ro
+      - ./dane:/dane:ro
+    restart: unless-stopped

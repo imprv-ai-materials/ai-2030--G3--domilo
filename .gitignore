@@ -60,3 +60,8 @@ telemetra_biezaca/
 windy_dzienne/
 dev/serwisownik_mock/stan*.json
 dev/serwisownik_mock/stan*.tmp
+
+# Grafana (dev/grafana/): wtyczka DuckDB, tablica generowana z szablonu, dane tablicy i hasło administratora (.env)
+dev/grafana/plugins/
+dev/grafana/dashboards/
+dev/grafana/dane/

@@ -66,6 +66,8 @@ metabase = { pipeline_name = "dev/metabase" }
 serwisownik_mock = { pipeline_name = "dev/serwisownik_mock" }
 telemetra_okna = { pipeline_name = "dev/telemetra_okna" }
 ryzyko_wind = { pipeline_name = "dev/ryzyko_wind" }
+ryzyko_wind_wstecz = { pipeline_name = "dev/ryzyko_wind_wstecz" }
+grafana = { pipeline_name = "dev/grafana" }
 
 [tool.pytest.ini_options]
 pythonpath = ["api"]
