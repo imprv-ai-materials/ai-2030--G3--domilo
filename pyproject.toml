@@ -7,7 +7,7 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
-dependencies = ["duckdb (>=2.0.0,<3.0.0)", "pandas (>=3.1.1,<4.0.0)", "pyarrow (>=26.0.1,<27.0.0)", "scikit-learn (>=1.9.1,<2.0.0)", "lightgbm (>=4.7.0,<5.0.0)", "pytz (>=2026.6,<2027.0)", "mlflow (>=3.18.0,<4.0.0)", "openai (>=2,<3)", "fastapi (>=0.163.1,<0.164.0)", "uvicorn[standard] (>=0.54.0,<0.55.0)", "inngest (>=0.5.20,<0.6.0)", "autograd (>=1.5)", "autograd-gamma (>=0.3)", "formulaic (>=0.2.2)"]
+dependencies = ["duckdb (>=2.0.0,<3.0.0)", "pandas (>=3.1.1,<4.0.0)", "pyarrow (>=26.0.1,<27.0.0)", "scikit-learn (>=1.9.1,<2.0.0)", "lightgbm (>=4.7.0,<5.0.0)", "pytz (>=2026.6,<2027.0)", "mlflow (>=3.18.0,<4.0.0)", "openai (>=2,<3)", "fastapi (>=0.163.1,<0.164.0)", "uvicorn[standard] (>=0.54.0,<0.55.0)", "inngest (>=0.5.20,<0.6.0)", "autograd (>=1.5)", "autograd-gamma (>=0.3)", "formulaic (>=0.2.2)", "causalml (>=0.18.0,<0.19.0)"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

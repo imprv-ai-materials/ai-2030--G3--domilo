@@ -180,3 +180,18 @@ v2 − baseline: +0,069 (+0,042 … +0,100) na pierwszym okresie. Model jest lep
 B2B, ale wśród najemców prywatnych nie rozróżnia nikogo (C-index ≈ 0,5), podobnie jak v1 w B2C.
 `current.yaml` zostaje pusty.
 
+## v3_uplift_tlearner: komu rabat zmienia decyzję (2026-11-16)
+
+Inny kontrakt niż lista ryzyka: wynik to uplift, czyli P(przedłużenie | oferta) − P(przedłużenie | kontrola).
+Model uczony i oceniany tylko na losowym teście `test_2025` (70 / 30 według id_umowy). Szczegóły, wykresy Qini
+i SQL: [uplift.md](uplift.md); test rabatu: [docs/test_rabatu_2025.md](../../../../../docs/test_rabatu_2025.md).
+
+| Ranking (test 30%, 1 413 umów) | AUUC (p.p.) | Uplift w górnych 20% (p.p.) |
+|---|---:|---:|
+| v3_uplift_tlearner (T-learner) | +4,03 (+0,49 – +7,62) | +11,4 (+1,4 – +23,3) |
+| S-learner (causalml) | +4,82 (+1,34 – +8,47) | +18,1 (+6,8 – +29,1) |
+| **baseline: reguła górne 35% `score_polityki`** | +3,43 (+0,50 – +6,37) | +10,6 (+1,4 – +18,9) |
+
+v3 − baseline: AUUC +0,60 (−2,31 … +3,46). Ani dla v3, ani dla S-learnera nie wykazaliśmy przewagi nad regułą;
+`current.yaml` zostaje pusty.
+

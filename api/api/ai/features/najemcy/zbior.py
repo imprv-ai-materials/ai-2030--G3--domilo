@@ -7,9 +7,17 @@ Podział według miesiąca końca umowy (`miesiac_konca`):
   (najpóźniej data_do 2025-12-31 + 30 dni okna przeprowadzki = 2026-01-30) jest znany przed pierwszą migawką testu.
 `score_polityki` (retencja_decyzje) służy tylko jako punkt odniesienia; model nie może go używać
 (churn_model/base.py, KOLUMNY_ZAKAZANE).
+
+Podział dla modeli uplift (`podziel_uplift`): tylko losowy test oferty `retencja_decyzje.okres = 'test_2025'`
+(końce umów 2025-07 – 2026-03, oferta 50/50, docs/test_rabatu_2025.md). Część zależy wyłącznie od `id_umowy`:
+md5(SOL_UPLIFT + id_umowy) jako liczba z [0, 1), poniżej 0,70 = trening, reszta = test. Ta sama umowa trafia zawsze
+do tej samej części, niezależnie od kolejności wierszy i od tego, co jeszcze jest w zbiorze.
 """
 
+import hashlib
+
 import duckdb
+import numpy as np
 import pandas as pd
 from api.ai.features.najemcy.cechy import zbuduj_cechy
 
@@ -30,6 +38,27 @@ SELECT
 FROM migawki_najemcy AS m
 LEFT JOIN retencja_decyzje AS r USING (id_umowy)
 """
+
+OKRES_UPLIFT = "test_2025"
+FRAKCJA_TRENINGU_UPLIFT = 0.70
+SOL_UPLIFT = "uplift_test_2025:"
+
+
+def czesc_uplift(id_umowy: pd.Series) -> pd.Series:
+    """'trening' (ok. 70%) albo 'test' dla każdej umowy, deterministycznie z md5(SOL_UPLIFT + id_umowy)."""
+
+    def u(i: str) -> float:
+        return int(hashlib.md5((SOL_UPLIFT + i).encode("utf-8")).hexdigest()[:13], 16) / 16**13
+
+    los = id_umowy.astype(str).map(u)
+    return pd.Series(np.where(los < FRAKCJA_TRENINGU_UPLIFT, "trening", "test"), index=id_umowy.index)
+
+
+def podziel_uplift(zbior: pd.DataFrame) -> dict[str, pd.DataFrame]:
+    """Umowy z okresu test_2025 podzielone 70 / 30 według id_umowy (czesc_uplift)."""
+    t = zbior[zbior["okres"] == OKRES_UPLIFT]
+    czesc = czesc_uplift(t["id_umowy"])
+    return {nazwa: t[czesc == nazwa].reset_index(drop=True) for nazwa in ("trening", "test")}
 
 
 def wczytaj_zbior(con: duckdb.DuckDBPyConnection) -> pd.DataFrame:

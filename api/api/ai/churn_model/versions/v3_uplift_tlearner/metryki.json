@@ -1,0 +1,562 @@
+{
+  "wersja": "v3_uplift_tlearner",
+  "dane": {
+    "okres": "test_2025",
+    "podzial": "70% trening według md5(id_umowy), reszta test",
+    "czesci": {
+      "trening": {
+        "umowy": 3321,
+        "oferta": 1622,
+        "kontrola": 1699,
+        "przedluzenia_oferta": 0.6263871763255241,
+        "przedluzenia_kontrola": 0.5756327251324308,
+        "ate": 0.0507544511930933,
+        "b2b": 0.16049382716049382,
+        "data_konca_od": "2025-07-01",
+        "data_konca_do": "2026-03-31"
+      },
+      "test": {
+        "umowy": 1413,
+        "oferta": 710,
+        "kontrola": 703,
+        "przedluzenia_oferta": 0.6422535211267606,
+        "przedluzenia_kontrola": 0.5874822190611664,
+        "ate": 0.05477130206559422,
+        "b2b": 0.1592356687898089,
+        "data_konca_od": "2025-07-01",
+        "data_konca_do": "2026-03-31"
+      }
+    }
+  },
+  "cechy": [
+    "linia",
+    "miesiecy_umowy",
+    "nr_okresu",
+    "staz_dni",
+    "indeksacja_ostatnia_pct",
+    "czynsz_m2",
+    "czynsz_do_podobnych",
+    "plat_liczba_90d",
+    "plat_spoznione_90d",
+    "plat_zalegle_na_migawke",
+    "plat_max_opoznienie_90d",
+    "plat_srednie_opoznienie_90d",
+    "zgl_90d",
+    "zgl_365d",
+    "zgl_otwarte_na_migawke",
+    "ocena_srednia_365d",
+    "ocena_min_365d",
+    "ocena_liczba_365d",
+    "ankieta_ostatni_wynik",
+    "ankieta_dni_od_odpowiedzi",
+    "ankieta_brak_wyniku",
+    "ankiety_bez_odpowiedzi_365d",
+    "portal_miesiace_3m",
+    "portal_logowania_3m",
+    "portal_odslony_oferty_3m",
+    "liczba_wind",
+    "windy_awarie_90d",
+    "windy_awarie_90d_na_winde"
+  ],
+  "parametry": {
+    "objective": "binary",
+    "metric": "binary_logloss",
+    "learning_rate": 0.03,
+    "num_leaves": 15,
+    "min_child_samples": 50,
+    "feature_fraction": 0.8,
+    "bagging_fraction": 0.8,
+    "bagging_freq": 1,
+    "lambda_l2": 1.0,
+    "seed": 42,
+    "deterministic": true,
+    "force_row_wise": true,
+    "num_threads": 4,
+    "verbose": -1
+  },
+  "liczba_drzew": {
+    "T_oferta": 97,
+    "T_kontrola": 67,
+    "S": 79
+  },
+  "prog_reguly_score": 0.5182,
+  "regula_udzial_na_tescie": 0.36447275300778487,
+  "test": {
+    "v3_uplift_tlearner": {
+      "auuc": 0.0402792493758673,
+      "auuc_minus_losowo": 0.01289359834307019,
+      "ate": 0.05477130206559422,
+      "uplift_gora_20": 0.11369315342328834,
+      "qini_20": 0.028329292969767383,
+      "uplift_gora_35": 0.07959597280334729,
+      "qini_35": 0.008939554825396184
+    },
+    "s_learner_causalml": {
+      "auuc": 0.04821472802166216,
+      "auuc_minus_losowo": 0.020829076988865047,
+      "ate": 0.05477130206559422,
+      "uplift_gora_20": 0.1812474889513861,
+      "qini_20": 0.015145953959890218,
+      "uplift_gora_35": 0.1438508262033832,
+      "qini_35": 0.04224049846733319
+    },
+    "regula_gorne_35_score": {
+      "auuc": 0.03431575328899605,
+      "auuc_minus_losowo": 0.0069301022561989375,
+      "ate": 0.05477130206559422,
+      "uplift_gora_20": 0.10550527903469081,
+      "qini_20": 0.01855987943293174,
+      "uplift_gora_35": 0.1055052790346907,
+      "qini_35": 0.032479789007630544
+    },
+    "score_polityki_ciagly": {
+      "auuc": 0.03866932425619446,
+      "auuc_minus_losowo": 0.01128367322339735,
+      "ate": 0.05477130206559422,
+      "uplift_gora_20": 0.10269865067466266,
+      "qini_20": 0.01570693005830146,
+      "uplift_gora_35": 0.10333681598537287,
+      "qini_35": 0.035969587081521884
+    }
+  },
+  "bootstrap": {
+    "przedzialy": {
+      "v3_uplift_tlearner": {
+        "auuc": [
+          0.0048960851343063634,
+          0.07621347454937932
+        ],
+        "auuc_minus_losowo": [
+          -0.010069689266087594,
+          0.03728517751879641
+        ],
+        "ate": [
+          0.0039839249637108175,
+          0.10426688703081967
+        ],
+        "uplift_gora_20": [
+          0.014266359301552255,
+          0.23333983593437377
+        ],
+        "qini_20": [
+          -0.0051013314968799605,
+          0.06891271912510695
+        ],
+        "uplift_gora_35": [
+          0.002155305169139144,
+          0.16838802177542886
+        ],
+        "qini_35": [
+          -0.034298849800814386,
+          0.0534687340854826
+        ]
+      },
+      "s_learner_causalml": {
+        "auuc": [
+          0.01336588511979526,
+          0.08471653229495267
+        ],
+        "auuc_minus_losowo": [
+          -0.0025780107861740503,
+          0.04467987076359447
+        ],
+        "ate": [
+          0.0039839249637108175,
+          0.10426688703081967
+        ],
+        "uplift_gora_20": [
+          0.06764341640387969,
+          0.291400002363982
+        ],
+        "qini_20": [
+          -0.021230430043461097,
+          0.04726493567663092
+        ],
+        "uplift_gora_35": [
+          0.06484399658253613,
+          0.23135268734517644
+        ],
+        "qini_35": [
+          -0.0030960894423321546,
+          0.08632969818828815
+        ]
+      },
+      "regula_gorne_35_score": {
+        "auuc": [
+          0.005008993893070948,
+          0.06374728914405524
+        ],
+        "auuc_minus_losowo": [
+          -0.011380430996228038,
+          0.024654336016542988
+        ],
+        "ate": [
+          0.0039839249637108175,
+          0.10426688703081967
+        ],
+        "uplift_gora_20": [
+          0.01375307664719979,
+          0.18864835553466555
+        ],
+        "qini_20": [
+          -0.002843658615569186,
+          0.039977885268491546
+        ],
+        "uplift_gora_35": [
+          0.013753076647199738,
+          0.18833260099932586
+        ],
+        "qini_35": [
+          -0.004976402577246075,
+          0.06972052243989355
+        ]
+      },
+      "score_polityki_ciagly": {
+        "auuc": [
+          0.006368401178980475,
+          0.07057034570054987
+        ],
+        "auuc_minus_losowo": [
+          -0.011729027853025384,
+          0.03352623785104391
+        ],
+        "ate": [
+          0.0039839249637108175,
+          0.10426688703081967
+        ],
+        "uplift_gora_20": [
+          -0.009174951559571239,
+          0.2153315456955094
+        ],
+        "qini_20": [
+          -0.010990626304291713,
+          0.04493374602490128
+        ],
+        "uplift_gora_35": [
+          0.008977944630688005,
+          0.18891546504996864
+        ],
+        "qini_35": [
+          -0.004949924764929566,
+          0.07229211682780488
+        ]
+      }
+    },
+    "roznice": {
+      "v3_uplift_tlearner_minus_regula_gorne_35_score": {
+        "auuc": [
+          -0.023101017083513177,
+          0.034643800723655846
+        ],
+        "auuc_minus_losowo": [
+          -0.023101017083513177,
+          0.034643800723655846
+        ],
+        "ate": [
+          0.0,
+          0.0
+        ],
+        "uplift_gora_20": [
+          -0.10393479676890273,
+          0.13920001163339263
+        ],
+        "qini_20": [
+          -0.025841363344264096,
+          0.055186201359367915
+        ],
+        "uplift_gora_35": [
+          -0.1138038871929016,
+          0.07648243279999742
+        ],
+        "qini_35": [
+          -0.07549987842378145,
+          0.027523301828655193
+        ]
+      },
+      "s_learner_causalml_minus_regula_gorne_35_score": {
+        "auuc": [
+          -0.014986250110435842,
+          0.043235514302482625
+        ],
+        "auuc_minus_losowo": [
+          -0.014986250110435842,
+          0.043235514302482625
+        ],
+        "ate": [
+          0.0,
+          0.0
+        ],
+        "uplift_gora_20": [
+          -0.05051452247443171,
+          0.19034291368259906
+        ],
+        "qini_20": [
+          -0.043182547127129385,
+          0.032850353729517605
+        ],
+        "uplift_gora_35": [
+          -0.05497783693066699,
+          0.13839090578658697
+        ],
+        "qini_35": [
+          -0.04279363674302643,
+          0.06433250135249398
+        ]
+      },
+      "v3_uplift_tlearner_minus_s_learner_causalml": {
+        "auuc": [
+          -0.021586768797640696,
+          0.005585974982838069
+        ],
+        "auuc_minus_losowo": [
+          -0.021586768797640696,
+          0.005585974982838069
+        ],
+        "ate": [
+          0.0,
+          0.0
+        ],
+        "uplift_gora_20": [
+          -0.1473046184920103,
+          0.03443807966255758
+        ],
+        "qini_20": [
+          -0.014372343783677088,
+          0.054072540407241784
+        ],
+        "uplift_gora_35": [
+          -0.12708074870512973,
+          0.0025065818631927676
+        ],
+        "qini_35": [
+          -0.07317165799436111,
+          0.001960430741528295
+        ]
+      },
+      "v3_uplift_tlearner_minus_score_polityki_ciagly": {
+        "auuc": [
+          -0.029870438992517442,
+          0.03512530751052886
+        ],
+        "auuc_minus_losowo": [
+          -0.029870438992517442,
+          0.03512530751052886
+        ],
+        "ate": [
+          0.0,
+          0.0
+        ],
+        "uplift_gora_20": [
+          -0.12683086794677462,
+          0.1568866631535475
+        ],
+        "qini_20": [
+          -0.029685361518991107,
+          0.05972671486723721
+        ],
+        "uplift_gora_35": [
+          -0.1147075333167745,
+          0.08220699163435533
+        ],
+        "qini_35": [
+          -0.07810858573752913,
+          0.026917967327508768
+        ]
+      }
+    }
+  },
+  "kwintyle": [
+    {
+      "ranking": "v3_uplift_tlearner",
+      "kwintyl": 1,
+      "n_oferta": 145,
+      "n_kontrola": 138,
+      "uplift_przewidywany": 0.2219745931986723,
+      "uplift_obserwowany": 0.11369315342328834,
+      "ci95_od": 0.0077396834731886105,
+      "ci95_do": 0.21964662337338808
+    },
+    {
+      "ranking": "v3_uplift_tlearner",
+      "kwintyl": 2,
+      "n_oferta": 130,
+      "n_kontrola": 152,
+      "uplift_przewidywany": 0.1245689640088478,
+      "uplift_obserwowany": 0.06295546558704457,
+      "ci95_od": -0.04614062234218157,
+      "ci95_do": 0.17205155351627072
+    },
+    {
+      "ranking": "v3_uplift_tlearner",
+      "kwintyl": 3,
+      "n_oferta": 145,
+      "n_kontrola": 138,
+      "uplift_przewidywany": 0.060842973796940134,
+      "uplift_obserwowany": 0.18135932033983004,
+      "ci95_od": 0.07006123405095607,
+      "ci95_do": 0.292657406628704
+    },
+    {
+      "ranking": "v3_uplift_tlearner",
+      "kwintyl": 4,
+      "n_oferta": 137,
+      "n_kontrola": 145,
+      "uplift_przewidywany": -0.015448141135638938,
+      "uplift_obserwowany": 0.03141203121067204,
+      "ci95_od": -0.08460829245392039,
+      "ci95_do": 0.14743235487526446
+    },
+    {
+      "ranking": "v3_uplift_tlearner",
+      "kwintyl": 5,
+      "n_oferta": 153,
+      "n_kontrola": 130,
+      "uplift_przewidywany": -0.1503463572202922,
+      "uplift_obserwowany": -0.0997988939165409,
+      "ci95_od": -0.21588860283291259,
+      "ci95_do": 0.01629081499983079
+    },
+    {
+      "ranking": "s_learner_causalml",
+      "kwintyl": 1,
+      "n_oferta": 131,
+      "n_kontrola": 152,
+      "uplift_przewidywany": 0.11082161277651009,
+      "uplift_obserwowany": 0.1812474889513861,
+      "ci95_od": 0.07231848506752901,
+      "ci95_do": 0.29017649283524316
+    },
+    {
+      "ranking": "s_learner_causalml",
+      "kwintyl": 2,
+      "n_oferta": 146,
+      "n_kontrola": 136,
+      "uplift_przewidywany": 0.06954732890722884,
+      "uplift_obserwowany": 0.1220789685737308,
+      "ci95_od": 0.013742676015700866,
+      "ci95_do": 0.23041526113176072
+    },
+    {
+      "ranking": "s_learner_causalml",
+      "kwintyl": 3,
+      "n_oferta": 159,
+      "n_kontrola": 124,
+      "uplift_przewidywany": 0.03746552568920117,
+      "uplift_obserwowany": 0.08455061878677217,
+      "ci95_od": -0.018150816169326886,
+      "ci95_do": 0.18725205374287124
+    },
+    {
+      "ranking": "s_learner_causalml",
+      "kwintyl": 4,
+      "n_oferta": 127,
+      "n_kontrola": 155,
+      "uplift_przewidywany": 0.0037544538996403965,
+      "uplift_obserwowany": -0.09509779019558035,
+      "ci95_od": -0.2080357603491046,
+      "ci95_do": 0.01784017995794389
+    },
+    {
+      "ranking": "s_learner_causalml",
+      "kwintyl": 5,
+      "n_oferta": 147,
+      "n_kontrola": 136,
+      "uplift_przewidywany": -0.049688683081442565,
+      "uplift_obserwowany": -0.09768907563025209,
+      "ci95_od": -0.21017852772187984,
+      "ci95_do": 0.014800376461375678
+    }
+  ],
+  "korelacje_spearmana_test": {
+    "v3_uplift_tlearner": {
+      "v3_uplift_tlearner": 1.0,
+      "s_learner_causalml": 0.8056,
+      "regula_gorne_35_score": -0.016,
+      "score_polityki_ciagly": -0.0266
+    },
+    "s_learner_causalml": {
+      "v3_uplift_tlearner": 0.8056,
+      "s_learner_causalml": 1.0,
+      "regula_gorne_35_score": -0.0004,
+      "score_polityki_ciagly": -0.0011
+    },
+    "regula_gorne_35_score": {
+      "v3_uplift_tlearner": -0.016,
+      "s_learner_causalml": -0.0004,
+      "regula_gorne_35_score": 1.0,
+      "score_polityki_ciagly": 0.8336
+    },
+    "score_polityki_ciagly": {
+      "v3_uplift_tlearner": -0.0266,
+      "s_learner_causalml": -0.0011,
+      "regula_gorne_35_score": 0.8336,
+      "score_polityki_ciagly": 1.0
+    }
+  },
+  "przewidywany_uplift_test": {
+    "v3_uplift_tlearner": {
+      "srednia": 0.04830957142014192,
+      "p10": -0.1294729148548572,
+      "p90": 0.2128271021372436,
+      "udzial_ujemnych": 0.32625619249823073
+    },
+    "s_learner_causalml": {
+      "srednia": 0.03437683342199941,
+      "p10": -0.04038695873207649,
+      "p90": 0.10650258056113002,
+      "udzial_ujemnych": 0.18966737438075018
+    }
+  },
+  "waznosc_cech_T": [
+    {
+      "cecha": "b2b",
+      "udzial_oferta": 0.2974351881990367,
+      "udzial_kontrola": 0.3031832481527643
+    },
+    {
+      "cecha": "portal_logowania_3m",
+      "udzial_oferta": 0.1484464683334562,
+      "udzial_kontrola": 0.07784973570863188
+    },
+    {
+      "cecha": "czynsz_do_podobnych",
+      "udzial_oferta": 0.08906870964428884,
+      "udzial_kontrola": 0.102333967223285
+    },
+    {
+      "cecha": "indeksacja_ostatnia_pct",
+      "udzial_oferta": 0.08337819271099192,
+      "udzial_kontrola": 0.11114714449947803
+    },
+    {
+      "cecha": "czynsz_m2",
+      "udzial_oferta": 0.08286829758392707,
+      "udzial_kontrola": 0.09338741286936818
+    },
+    {
+      "cecha": "ankieta_ostatni_wynik",
+      "udzial_oferta": 0.04405588815740167,
+      "udzial_kontrola": 0.022520848266935435
+    },
+    {
+      "cecha": "windy_awarie_90d_na_winde",
+      "udzial_oferta": 0.03320302530573701,
+      "udzial_kontrola": 0.020379027784470902
+    },
+    {
+      "cecha": "ankieta_dni_od_odpowiedzi",
+      "udzial_oferta": 0.032520690462570376,
+      "udzial_kontrola": 0.039537639761100425
+    },
+    {
+      "cecha": "ocena_srednia_365d",
+      "udzial_oferta": 0.0321992550571672,
+      "udzial_kontrola": 0.0312948175826361
+    },
+    {
+      "cecha": "zgl_365d",
+      "udzial_oferta": 0.029874199256081,
+      "udzial_kontrola": 0.037439789865302636
+    }
+  ]
+}
