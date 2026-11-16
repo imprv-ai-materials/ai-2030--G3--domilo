@@ -2,7 +2,8 @@
 
 - `p`: szansa na umowę po kontakcie (skalibrowany model kolejki, ai/lead_model/evals/kalibracja.md).
 - czynsz: mediana czynszu katalogowego linii w mieście (`czynsz_mediana_pln` w zalozenia.yaml), PLN / mies. / lokal.
-- czas najmu: średni czas zakończonych najmów linii (`czas_najmu_mies`), miesiące; wartość zaniżona (opis w YAML).
+- czas najmu: `czas_najmu_mies`, miesiące; od 2026-11-16 B2C i B2B = RMST60 z krzywej Kaplana-Meiera, MID = średnia
+  z zakończonych najmów (opis i źródło w YAML).
 - liczba lokali: `crm_leady.liczba_lokali` (podawana tylko w zapytaniach B2B; brak = 1 lokal).
 Linia i miasto to `linia_pref` i `miasto` z zapytania. Para bez lokali danej linii w mieście (Łódź/MID) bierze czynsz
 i czas linii z `czynsz_mediana_pln.zastepstwo`.

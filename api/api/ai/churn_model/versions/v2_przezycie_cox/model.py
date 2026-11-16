@@ -28,6 +28,7 @@ import pandas as pd
 from api.ai.churn_model.base import KOLUMNY_ZAKAZANE
 from api.ai.features.najemcy.cechy import KOLUMNY_CECH
 from lifelines import CoxPHFitter
+from scipy.optimize import brentq
 
 POMINIETE_Z_V1 = ("windy_awarie_90d_na_winde", "nr_okresu")
 ZAMIANY = {"linia": "b2b", "indeksacja_ostatnia_pct": "indeksacja_powyzej_6", "staz_dni": "staz_lat"}
@@ -123,24 +124,63 @@ class ModelCox:
             cluster_col="klaster",
             **opcje,
         )
+        self.baza_kp_ = self._baza_kalbfleisch_prentice(df)
         self.liczba_okresow_ = int(len(okresy))
         self.liczba_zdarzen_ = int(okresy["zdarzenie"].sum())
         return self
+
+    def _baza_kalbfleisch_prentice(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Skumulowany hazard bazowy Kalbfleischa-Prentice'a (-Σ log α_j) na warstwę, przy tych samych β i centrowaniu.
+
+        W każdym czasie zdarzenia t_j α_j rozwiązuje Σ_{zdarzenia} θ_i / (1 - α^θ_i) = Σ_{ryzyko} θ_i,
+        θ_i = exp((z_i - średnia)·β); S(t | x) = Π_{t_j <= t} α_j^θ(x). W odróżnieniu od Breslowa nie zakłada ciągłego
+        czasu, więc zgadza się z Kaplanem-Meierem także przy wielu zdarzeniach w jednym dniu (koniec umowy)."""
+        beta = self.cph_.params_
+        theta = np.exp(((df[beta.index] - self.cph_._norm_mean.reindex(beta.index)) * beta).sum(axis=1)).to_numpy()
+        start = df["start"].to_numpy() if "start" in df else np.zeros(len(df))
+        czas, zdarzenie = df["czas"].to_numpy(), df["zdarzenie"].to_numpy().astype(bool)
+        klucze = df[self.warstwy[0]].to_numpy() if self.warstwy else np.zeros(len(df))
+        kolumny = {}
+        for warstwa in np.unique(klucze):
+            w = klucze == warstwa
+            czasy_zd = np.unique(czas[w & zdarzenie])
+            H = []
+            for tj in czasy_zd:
+                ryzyko = theta[w & (start < tj) & (czas >= tj)].sum()
+                th_d = theta[w & zdarzenie & (czas == tj)]
+
+                def f(x: float) -> float:  # α = exp(-x); Σ_D θ / (1 - α^θ) - Σ_R θ, przy θ = 1: α = 1 - d / n
+                    return float(np.sum(th_d / -np.expm1(-x * th_d))) - ryzyko
+
+                x = brentq(f, 1e-12, 50.0)  # f maleje: +∞ przy x -> 0, (Σ_D θ - Σ_R θ) <= 0 przy dużym x
+                H.append(x)
+            kolumny[warstwa] = pd.Series(np.cumsum(H), index=czasy_zd)
+        bazowa = pd.DataFrame(kolumny).sort_index().ffill().fillna(0.0)
+        bazowa.columns = list(kolumny)
+        return bazowa
 
     def ramka_treningu(self, okresy: pd.DataFrame) -> pd.DataFrame:
         """Ramka w formacie z fit (do reszt Schoenfelda; tylko bez interakcji czasu)."""
         return self._ramka(okresy).drop(columns=["start"])
 
-    def ryzyko(self, okresy: pd.DataFrame, horyzont: float = HORYZONT_RYZYKA) -> np.ndarray:
-        """1 - S(horyzont | cechy z początku okresu): ryzyko końca najmu w `horyzont` mies. od początku okresu.
+    def skumulowany_hazard(self, X: pd.DataFrame, czasy, metoda: str = "kp") -> np.ndarray:
+        """H(t | x) dla cech po `macierz` (wiersze) i czasów od początku okresu (kolumny): macierz n × len(czasy).
 
-        S(h) = exp(-sum po przedziałach czasu [od, do) z (H0_warstwy(do) - H0_warstwy(od)) × exp((z - średnia)·β)),
-        gdzie z to cechy z interakcjami właściwymi dla przedziału. Bez interakcji jest to wynik
-        CoxPHFitter.predict_survival_function (sprawdza test)."""
-        X = self.macierz(okresy)
+        H(t) = suma po przedziałach [od, do) z (H0_warstwy(min(t, do)) - H0_warstwy(min(t, od))) × exp((z - średnia)·β),
+        gdzie z to cechy z interakcjami właściwymi dla przedziału (cecha × 1[od >= próg]); S(t | x) = exp(-H(t | x)).
+        metoda="kp" (domyślna): H0 Kalbfleischa-Prentice'a (`baza_kp_`, _baza_kalbfleisch_prentice).
+        metoda="breslow": H0 z lifelines (Breslow), czyli S = exp(-H) jak predict_survival_function. Breslow zakłada
+        ciągły czas; tu większość zdarzeń wypada w jednym dniu (koniec umowy), więc zawyża przeżycie
+        (docs/przezycie_cox.md, sekcja „Kalibracja”)."""
+        if metoda not in ("kp", "breslow"):
+            raise ValueError(f"Nieznana metoda: {metoda}")
+        czasy = np.atleast_1d(np.asarray(czasy, dtype=float))
         beta = self.cph_.params_
         srednie = self.cph_._norm_mean.reindex(beta.index)
-        bazowa = self.cph_.baseline_cumulative_hazard_.sort_index().ffill().fillna(0.0)
+        if metoda == "kp":
+            bazowa = self.baza_kp_
+        else:
+            bazowa = self.cph_.baseline_cumulative_hazard_.sort_index().ffill().fillna(0.0)
         if self.warstwy:
             if len(self.warstwy) > 1:
                 raise NotImplementedError("Obsługiwana jest jedna kolumna warstw")
@@ -151,23 +191,29 @@ class ModelCox:
             nr_kolumny = nr_kolumny.astype(int).to_numpy()
         else:
             nr_kolumny = np.zeros(len(X), dtype=int)
-        czasy = bazowa.index.to_numpy()
-        wartosci = bazowa.to_numpy()
+        t_bazowe, wartosci = bazowa.index.to_numpy(), bazowa.to_numpy()
 
-        def H0(t: float) -> np.ndarray:
-            i = np.searchsorted(czasy, t, side="right") - 1
-            return np.zeros(len(X)) if i < 0 else wartosci[i, nr_kolumny]
+        def H0(t: np.ndarray) -> np.ndarray:
+            i = np.searchsorted(t_bazowe, t, side="right") - 1
+            w = np.where((i >= 0)[:, None], wartosci[np.clip(i, 0, None)], 0.0)  # len(t) × warstwy
+            return w[:, nr_kolumny].T  # n × len(t)
 
-        progi = sorted({p for p in self.interakcje_czasu.values() if p < horyzont})
-        granice = [0.0, *progi, horyzont]
-        H = np.zeros(len(X))
+        progi = sorted(set(self.interakcje_czasu.values()))
+        granice = [0.0, *progi, np.inf]
+        H = np.zeros((len(X), len(czasy)))
         for od, do in zip(granice[:-1], granice[1:]):
             Z = X.copy()
             for cecha, prog in self.interakcje_czasu.items():
                 Z[f"{cecha}_po_{prog:g}"] = Z[cecha] * float(od >= prog)
             lp = ((Z[beta.index] - srednie) * beta).sum(axis=1).to_numpy()
-            H += (H0(do) - H0(od)) * np.exp(lp)
-        return 1.0 - np.exp(-H)
+            H += (H0(np.minimum(czasy, do)) - H0(np.minimum(czasy, od))) * np.exp(lp)[:, None]
+        return H
+
+    def ryzyko(self, okresy: pd.DataFrame, horyzont: float = HORYZONT_RYZYKA, metoda: str = "kp") -> np.ndarray:
+        """1 - S(horyzont | cechy z początku okresu): ryzyko końca najmu w `horyzont` mies. od początku okresu.
+
+        metoda="breslow" bez interakcji z czasem to wynik CoxPHFitter.predict_survival_function (sprawdza test)."""
+        return 1.0 - np.exp(-self.skumulowany_hazard(self.macierz(okresy), [horyzont], metoda)[:, 0])
 
     def hazard_ratio(self) -> pd.DataFrame:
         """HR = exp(coef) z 95% przedziałem (odporne błędy standardowe, klaster = najemca) i p."""

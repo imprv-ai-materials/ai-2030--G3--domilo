@@ -173,10 +173,10 @@ najmu (model Coxa, lifelines). Wyniku nie da się więc porównać z AUC v1 na m
 |---|---:|---:|
 | Reguła „B2B najpierw” (baseline) | 0,595 (0,574–0,615) | 0,599 (0,579–0,619) |
 | Cox bez poprawek | 0,662 (0,638–0,690) | 0,655 (0,629–0,683) |
-| **v2_przezycie_cox** | **0,665** (0,640–0,694) | **0,657** (0,630–0,686) |
-| v2 tylko B2C / tylko B2B | 0,504 / 0,696 | 0,499 / 0,690 |
+| **v2_przezycie_cox** | **0,664** (0,639–0,692) | **0,656** (0,629–0,685) |
+| v2 tylko B2C / tylko B2B | 0,501 / 0,696 | 0,496 / 0,690 |
 
-v2 − baseline: +0,070 (+0,043 … +0,101) na pierwszym okresie. Model jest lepszy od reguły dzięki porządkowaniu
+v2 − baseline: +0,069 (+0,042 … +0,100) na pierwszym okresie. Model jest lepszy od reguły dzięki porządkowaniu
 B2B, ale wśród najemców prywatnych nie rozróżnia nikogo (C-index ≈ 0,5), podobnie jak v1 w B2C.
 `current.yaml` zostaje pusty.
 

@@ -17,6 +17,8 @@ dla modeli `glowny` i `warstwy`; progi p: 0,05 i Bonferroni 0,05 / liczba cech. 
 dla cech kluczowych, czyli HR „w trakcie okresu” i „na końcu okresu” (exp(β + β_po), wariancja sumy z macierzy
 kowariancji); większość zdarzeń ma ten sam czas (koniec umowy), więc test z rangą czasu słabo widzi takie naruszenie.
 C-index (Harrell): czas od początku okresu i zdarzenie z okresy_umow.sql, wynik = ryzyko 1 - S(12 mies.).
+Kalibracja: średnie przewidywane S(12) (baza Kalbfleischa-Prentice'a, domyślna, i Breslowa z lifelines) wobec
+Kaplana-Meiera w grupach: zbiór × linia × pierwszy okres / przedłużenie, tylko umowy 12-miesięczne.
 Baseline: reguła „B2B najpierw” (wynik = 1 dla B2B, 0 dla B2C; remisy liczą się jako 0,5).
 95% przedziały: bootstrap klastrów (najemców), 1 000 losowań, te same dla modelu i baseline.
 Zapis: versions/v2_przezycie_cox/{model.joblib, metryki.json}, evals/wyniki/v2_przezycie_cox.parquet,
@@ -144,6 +146,32 @@ def wykres_schoenfeld(model: ModelCox, okresy: pd.DataFrame, cechy: list[str], s
     plt.close(fig)
 
 
+def kalibracja(model: ModelCox, zbiory_: dict[str, pd.DataFrame]) -> list[dict]:
+    """Średnie przewidywane S(12) (KP i Breslow) wobec Kaplana-Meiera S(12) w grupach umów 12-miesięcznych."""
+    from api.ai.churn_model.evals.przezycie import krzywa_km, przezycie_po
+
+    wiersze = []
+    for nazwa, d in zbiory_.items():
+        for linia in ("B2C", "B2B"):
+            for pierwszy in (True, False):
+                x = d[(d["linia"] == linia) & (d["miesiecy_umowy"] == 12) & ((d["nr_okresu"] == 1) == pierwszy)]
+                if len(x) < 50:
+                    continue
+                km = przezycie_po(krzywa_km(x.rename(columns={"czas": "miesiace"})), 12)
+                wiersze.append(
+                    {
+                        "zbior": nazwa,
+                        "linia": linia,
+                        "okres": "pierwszy" if pierwszy else "przedluzenie",
+                        "okresy": int(len(x)),
+                        "km_S12": km,
+                        "kp_S12": float(1 - model.ryzyko(x).mean()),
+                        "breslow_S12": float(1 - model.ryzyko(x, metoda="breslow").mean()),
+                    }
+                )
+    return wiersze
+
+
 def _hr(model: ModelCox) -> dict:
     return model.hazard_ratio().to_dict("index")
 
@@ -247,6 +275,7 @@ def main(z_mlflow: bool = True) -> dict:
         },
         "diagnostyka_hr_w_trakcie_i_na_koncu_okresu": hr_okres,
         "c_index": oceny,
+        "kalibracja_S12": kalibracja(modele["v2"], {"trening": tr, "test": test}),
     }
     KATALOG_WERSJI.mkdir(parents=True, exist_ok=True)
     joblib.dump(modele["v2"], KATALOG_WERSJI / "model.joblib")

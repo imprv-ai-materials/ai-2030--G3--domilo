@@ -14,9 +14,9 @@ predykcje testu: `api/api/ai/churn_model/evals/wyniki/v2_przezycie_cox.parquet`,
 2. Efekt B2B dotyczy prawie wyłącznie decyzji na końcu umowy. W trakcie okresu firmy nie zrywają najmu częściej
    (HR 0,80; 0,48–1,34), a na końcu umowy odchodzą 3,27 razy częściej (2,82–3,80). Jedno „2,84” uśrednia te dwie
    sytuacje, więc w następnej wersji B2B powinno mieć osobny efekt dla każdej z nich.
-3. Model porządkuje nowe najmy (od 2025-01) lepiej niż reguła „B2B najpierw”: C-index 0,665 wobec 0,595
-   (różnica +0,070; 95%: +0,043 … +0,101). Cała przewaga pochodzi jednak z porządkowania klientów B2B. Wśród
-   najemców prywatnych C-index wynosi 0,504, czyli tyle co losowanie. Na początku najmu nasze dane prawie nic
+3. Model porządkuje nowe najmy (od 2025-01) lepiej niż reguła „B2B najpierw”: C-index 0,664 wobec 0,595
+   (różnica +0,069; 95%: +0,042 … +0,100). Cała przewaga pochodzi jednak z porządkowania klientów B2B. Wśród
+   najemców prywatnych C-index wynosi 0,501, czyli tyle co losowanie. Na początku najmu nasze dane prawie nic
    nie mówią o kliencie prywatnym (brak historii płatności, zgłoszeń i ankiet).
 4. Dla Domilo: wysokość indeksacji to jedyna z badanych dźwigni, na którą firma ma wpływ, i wiąże się z wyraźnie
    krótszym najmem. Nie jest to jednak dowód przyczyny: indeksacje powyżej 6% dawano głównie w latach 2022–2023
@@ -116,7 +116,7 @@ nie trzeba. Proponujemy też warstwę albo cechę roku przedłużenia, bo indeks
 
 ## C-index na najmach rozpoczętych od 2025-01
 
-Harrell C: czas i zdarzenie z okresu, wynik = ryzyko 1 − S(12 mies.). Baseline: reguła „B2B najpierw” (B2B = 1,
+Harrell C: czas i zdarzenie z okresu, wynik = ryzyko 1 − S(12 mies.) z bazą Kalbfleischa-Prentice'a (sekcja „Kalibracja”). Baseline: reguła „B2B najpierw” (B2B = 1,
 B2C = 0). 95% przedział z bootstrapu najemców (1 000 losowań, te same dla wszystkich wyników).
 
 | Wynik | Test: pierwszy okres (4 506 najmów) | Test: wszystkie okresy (5 396) |
@@ -124,19 +124,75 @@ B2C = 0). 95% przedział z bootstrapu najemców (1 000 losowań, te same dla wsz
 | Baseline: reguła „B2B najpierw” | 0,595 (0,574–0,615) | 0,599 (0,579–0,619) |
 | Cox główny (bez poprawek) | 0,662 (0,638–0,690) | 0,655 (0,629–0,683) |
 | Cox z warstwami | 0,661 (0,637–0,689) | 0,654 (0,627–0,683) |
-| **v2_przezycie_cox** | **0,665** (0,640–0,694) | **0,657** (0,630–0,686) |
-| v2 − baseline | +0,070 (+0,043 … +0,101) | +0,058 (+0,030 … +0,090) |
-| v2 − Cox główny | +0,003 (−0,003 … +0,008) | +0,002 (−0,004 … +0,008) |
-| v2 tylko B2C / tylko B2B | 0,504 / 0,696 | 0,499 / 0,690 |
+| **v2_przezycie_cox** | **0,664** (0,639–0,692) | **0,656** (0,629–0,685) |
+| v2 − baseline | +0,069 (+0,042 … +0,100) | +0,057 (+0,029 … +0,089) |
+| v2 − Cox główny | +0,002 (−0,003 … +0,006) | +0,001 (−0,004 … +0,006) |
+| v2 tylko B2C / tylko B2B | 0,501 / 0,696 | 0,496 / 0,690 |
 
 Poprawki proporcjonalności nie zmieniają jakości rankingu (różnica v2 − model główny obejmuje 0). Służą temu, żeby
 HR dało się uczciwie odczytać.
+
+## Kalibracja: czy przewidywane przeżycie zgadza się z danymi
+
+C-index sprawdza tylko kolejność. Do mediany i RMST potrzebna jest też poprawna skala. Lifelines liczy przeżycie
+jako S(t | x) = exp(−H(t | x)) z bazą Breslowa, co zakłada ciągły czas. Tutaj 1 497 z 1 707 zdarzeń treningu
+wypada w jednym dniu (koniec umowy), więc ten wzór zawyża przeżycie. Dlatego v2 liczy przeżycie z bazą
+**Kalbfleischa-Prentice'a**: w każdym czasie zdarzenia α_j rozwiązuje Σ_zdarzenia θ/(1 − α^θ) = Σ_ryzyko θ, a
+S(t | x) = Π α_j^θ(x). β się nie zmienia. C-index przesunął się o 0,001 (0,665 → 0,664 na pierwszym okresie).
+
+Średnie przewidywane S(12) wobec Kaplana-Meiera, umowy 12-miesięczne (`metryki.json`, klucz `kalibracja_S12`):
+
+| Zbiór | Linia | Okres | Okresy | Kaplan-Meier | v2, baza KP | Baza Breslowa |
+|---|---|---|---:|---:|---:|---:|
+| trening | B2C | pierwszy | 3 952 | 0,654 | **0,651** | 0,731 |
+| trening | B2C | przedłużenie | 4 833 | 0,683 | **0,705** | 0,775 |
+| trening | B2B | pierwszy | 768 | 0,278 | **0,294** | 0,407 |
+| trening | B2B | przedłużenie | 395 | 0,223 | **0,411** | 0,516 |
+| test (najmy od 2025) | B2C | pierwszy | 3 022 | 0,622 | **0,649** | 0,729 |
+| test (najmy od 2025) | B2B | pierwszy | 865 | 0,152 | **0,285** | 0,397 |
+
+Baza KP usuwa błąd wynikający z metody, ale zostają dwa problemy:
+- **Przedłużenia B2B** (0,411 wobec 0,223). Model ma jeden HR dla B2B, a efekt dotyczy tylko końca umowy (sekcja
+  o proporcjonalności). To kolejny argument za v3 z interakcją B2B × koniec okresu.
+- **Dryf B2B.** Pierwsze 12-miesięczne umowy B2B, które przetrwały pierwszy rok: 29,7% z 2023 r., 21,2% z 2024 r.,
+  15,2% z 2025 r. Model uczony do 2024 r. tego nie widzi.
+
+Dla B2C rozjazd na teście wynosi 2,7 p.p.
+
+## API: `GET /risk/{id_najmu}`
+
+Endpoint w `api/api/main.py`, logika w `retention_bc/ryzyko_najmu.py`. Zwraca dla aktywnego najmu B2C / B2B:
+- ryzyko z modelu (1 − S(12) od początku bieżącego okresu);
+- szansę końca w bieżącym okresie;
+- przeżycie po 12 i 24 mies. od dnia oceny;
+- **spodziewany czas do odejścia** (mediana);
+- **RMST60** (średnia liczba miesięcy najmu w ciągu najbliższych 5 lat).
+
+Kody błędów: 404 (brak najmu), 422 (linia MID), 409 (najem zakończony).
+
+Krzywa najemcy od dnia oceny (2026-09-30) składa się z okresów. Najpierw reszta bieżącego okresu: S₀(e + u) / S₀(e),
+gdzie e to miesiące, które już minęły. Potem kolejne przedłużenia po 12 mies. Założenia wykonawcy (zwracane
+w polu `zalozenia`):
+- cechy przyszłych okresów są jak w bieżącym, a staż rośnie;
+- przyszłe indeksacje wynoszą ≤ 6%;
+- przedłużenie podpisane na okres po dniu oceny oznacza pewne przeżycie do jego początku.
+
+Przykłady (`ryzyko_najmu(polacz(), id, wczytaj_model())`):
+
+| Najem | Linia | Bieżący okres | Szansa końca w okresie | S(12) | S(24) | Mediana do odejścia | RMST60 |
+|---|---|---|---:|---:|---:|---:|---:|
+| N000020 | B2C | 8., od 2026-09-22 | 0,183 | 0,817 | 0,676 | 47,7 mies. | 42,1 mies. |
+| N002675 | B2B | 4., od 2026-01-12 (minęło 8,6 mies.) | 0,234 | 0,758 | 0,584 | 27,4 mies. | 31,9 mies. |
+| N020712 | B2C | 1., od 2026-10-30 (po dniu oceny) | 0,358 | 0,980 | 0,630 | 25,0 mies. | 31,1 mies. |
+
+Dla B2B mediana i RMST60 są zawyżone (tabela kalibracji). W B2C model słabo rozróżnia najemców (C-index 0,501),
+więc wynik dla klienta prywatnego jest bliski średniej dla podobnych umów.
 
 ## SQL i kod
 
 ```bash
 cd api && poetry run python -m api.ai.churn_model.evals.ewaluacja_v2    # model, metryki.json, wykres, MLflow
-cd api && poetry run pytest tests/test_churn_cox.py                      # okresy, ryzyko vs lifelines, interakcje
+cd api && poetry run pytest tests/test_churn_cox.py tests/test_ryzyko_najmu.py  # okresy, KP, interakcje, /risk
 ```
 
 - Okresy: [`api/api/ai/features/najemcy/okresy_umow.sql`](../api/api/ai/features/najemcy/okresy_umow.sql)

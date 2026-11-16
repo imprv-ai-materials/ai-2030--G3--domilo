@@ -5,8 +5,10 @@ a test (api/tests/test_leasing_wartosc.py) sprawdza, że YAML zgadza się z dany
 
     cd api && poetry run python -m api.contexts_boundaries.leasing_bc.zalozenia_z_danych
 
-- `czas_najmu_mies`: średni czas zakończonych najmów (`pms_najmy` z `data_wyprowadzenia`) według linii, w miesiącach
-  (dni / 30,4375). Zaniżony: pomija trwające najmy, które są dłuższe (do zastąpienia krzywą przeżycia, Retencja).
+- `czas_najmu_mies` (od 2026-11-16, polecenie użytkownika): B2C i B2B = RMST do 60 miesięcy z krzywej Kaplana-Meiera
+  na tabeli `czas_najmu` (trwające najmy jako cenzura; churn_model/evals/przezycie_grupy.py, docs/przezycie.md);
+  MID = średni czas zakończonych najmów (dni / 30,4375), bo `czas_najmu` nie obejmuje linii MID. Dawna naiwna średnia
+  dla wszystkich linii zostaje w wyniku jako `czas_najmu_naiwny` (porównanie).
 - `czynsz_mediana_pln`: mediana `pms_lokale.czynsz_katalogowy` dla linii w każdym mieście (miasto z `pms_budynki`).
   To stan na dzień eksportu (2026-09-30), nie czynsz z chwili zapytania.
 - `godziny_doradcow`: godziny z `crm_grafik` w ostatnich 12 miesiącach przed eksportem, według miasta doradcy
@@ -56,6 +58,16 @@ ORDER BY miasto
 """
 
 LINIE = ("B2B", "B2C", "MID")
+LINIE_RMST = ("B2B", "B2C")
+HORYZONT_RMST = 60
+
+
+def rmst_linii(con: duckdb.DuckDBPyConnection, horyzont: float = HORYZONT_RMST) -> dict[str, float]:
+    """RMST do `horyzont` mies. z Kaplana-Meiera na czas_najmu (B2C, B2B), zaokrąglone do 0,01 mies."""
+    from api.ai.churn_model.evals.przezycie_grupy import metryki_km
+
+    czasy = con.execute("SELECT linia, miesiace, zdarzenie FROM czas_najmu").df()
+    return {li: round(metryki_km(czasy[czasy["linia"] == li], horyzont)["rmst_km"], 2) for li in LINIE_RMST}
 
 
 def policz(con: duckdb.DuckDBPyConnection) -> dict:
@@ -66,7 +78,11 @@ def policz(con: duckdb.DuckDBPyConnection) -> dict:
     miasta = sorted(czynsz["miasto"].unique())
     mediany = {(r.miasto, r.linia): float(r.mediana_czynszu) for r in czynsz.itertuples()}
     return {
-        "czas_najmu_mies": {r.linia: round(r.sredni_czas_dni / DNI_W_MIESIACU, 2) for r in czas.itertuples()},
+        "czas_najmu_mies": {
+            **{r.linia: round(r.sredni_czas_dni / DNI_W_MIESIACU, 2) for r in czas.itertuples()},
+            **rmst_linii(con),
+        },
+        "czas_najmu_naiwny": {r.linia: round(r.sredni_czas_dni / DNI_W_MIESIACU, 2) for r in czas.itertuples()},
         "czas_najmu_szczegoly": czas.to_dict("records"),
         "czynsz_mediana_pln": {m: {li: mediany.get((m, li)) for li in LINIE} for m in miasta},
         "czynsz_lokale": {f"{r.miasto}/{r.linia}": int(r.lokale) for r in czynsz.itertuples()},

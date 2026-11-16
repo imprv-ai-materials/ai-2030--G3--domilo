@@ -74,7 +74,7 @@ evals/porownanie.md           # model vs baseline, wszystkie cztery modele
 dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml, mock_lejek.yaml)
 ├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
-├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, Inngest (pypyr api)
+├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, /risk/{id_najmu}, Inngest (pypyr api)
 ├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka)
 ├── adapters/                 # połączenia z systemami zewnętrznymi
 │   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
@@ -90,7 +90,7 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   │                         # kolejka_wstecz.py (ranking wstecz), panel.py (GET /team/dashboard), pominiecia.py,
 │   │                         # eksperyment.py (switchback: plan w parach, wariant dnia, 5% pozycji losowych;
 │   │                         # plan aktywny, gdy istnieje eksperyment_plan.yaml)
-│   ├── retention_bc/         # retencja najemców
+│   ├── retention_bc/         # retencja najemców; ryzyko_najmu.py: GET /risk (v2_przezycie_cox, mediana i RMST60)
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)

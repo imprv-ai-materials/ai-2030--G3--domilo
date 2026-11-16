@@ -22,6 +22,8 @@ from api.ai.features.wycena.ceny_w_opisie import bez_kwot
 from api.ai.valuation_model.obecny import ObecnyModel, wczytaj_obecny
 from api.contexts_boundaries.leasing_bc import panel
 from api.contexts_boundaries.leasing_bc.schematy import KolejkaDoradcy, WynikPominiecia, ZgloszeniePominiecia
+from api.contexts_boundaries.retention_bc import ryzyko_najmu
+from api.contexts_boundaries.retention_bc.schematy import OdpowiedzRyzyka
 from api.contexts_boundaries.valuation_bc.cechy_opisu import cechy_z_opisu
 from api.contexts_boundaries.valuation_bc.schematy import (
     Czynnik,
@@ -44,6 +46,12 @@ inngest.fast_api.serve(app, klient_inngest, FUNKCJE)
 @lru_cache(maxsize=1)
 def obecny_model() -> ObecnyModel:
     return wczytaj_obecny()
+
+
+@lru_cache(maxsize=1)
+def model_retencji() -> ryzyko_najmu.ModelCox:
+    """v2_przezycie_cox (churn_model/versions); current.yaml retencji jest pusty, więc wersję wskazujemy wprost."""
+    return ryzyko_najmu.wczytaj_model()
 
 
 def baza() -> Iterator[duckdb.DuckDBPyConnection]:
@@ -173,3 +181,23 @@ def panel_kierownika(con: duckdb.DuckDBPyConnection = Depends(baza)) -> dict:
         return panel.dane_panelu(con)
     except duckdb.CatalogException as e:
         raise HTTPException(503, f"Brak modeli dbt panelu (uruchom: pypyr baza): {e}") from e
+
+
+@app.get("/risk/{id_najmu}", response_model=OdpowiedzRyzyka)
+def ryzyko(
+    id_najmu: str,
+    con: duckdb.DuckDBPyConnection = Depends(baza),
+    model: ryzyko_najmu.ModelCox = Depends(model_retencji),
+) -> OdpowiedzRyzyka:
+    """Ryzyko odejścia i spodziewany czas do odejścia (mediana z krzywej Coxa, RMST60) dla aktywnego najmu B2C / B2B.
+
+    404: brak najmu; 422: linia MID (poza modelem); 409: najem już zakończony. Opis: docs/przezycie_cox.md.
+    """
+    try:
+        return OdpowiedzRyzyka(**ryzyko_najmu.ryzyko_najmu(con, id_najmu, model))
+    except ryzyko_najmu.NajemNieznany as e:
+        raise HTTPException(404, str(e)) from e
+    except ryzyko_najmu.NajemPozaModelem as e:
+        raise HTTPException(422, str(e)) from e
+    except ryzyko_najmu.NajemZakonczony as e:
+        raise HTTPException(409, str(e)) from e

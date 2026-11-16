@@ -27,19 +27,23 @@ cennik_llm:
 
 czas_najmu_mies:
   wartosc:
-    B2B: 16.5
-    B2C: 19.01
+    B2B: 18.39
+    B2C: 28.86
     MID: 4.51
-  jednostka: miesiące (średnia liczba dni najmu / 30,4375)
+  jednostka: miesiące (B2B, B2C, miesiące kalendarzowe RMST60; MID, średnia liczba dni / 30,4375)
   opis: >
-    Spodziewany czas najmu według linii = średni czas zakończonych najmów (pms_najmy z data_wyprowadzenia,
-    najem = ciągły pobyt najemcy w lokalu z przedłużeniami). Zakończonych najmów: B2B 2 990, B2C 7 640, MID 5 481
-    (od 2019-04, rekordy sprzed 2023-03-01 to import). UWAGA: wartość zaniżona — średnia pomija trwające najmy,
-    które są dłuższe; do zastąpienia krzywą przeżycia w projekcie Retencja.
+    Spodziewany czas najmu według linii. B2C i B2B = RMST do 60 miesięcy (pole pod krzywą Kaplana-Meiera, czyli średnia
+    liczba miesięcy najmu w ciągu pierwszych 5 lat) z tabeli czas_najmu: najmy B2C 12 735, B2B 4 191, trwające najmy
+    to obserwacje cenzurowane na 2026-09-30, więc nie zaniżają wyniku jak średnia z zakończonych. RMST ucina czas
+    na 60 miesiącach, więc to dolna granica pełnej średniej. MID = średni czas 5 481 zakończonych najmów (bez zmian),
+    bo czas_najmu nie obejmuje linii MID. Poprzednie naiwne średnie z zakończonych (do 2026-11-15): B2B 16.5,
+    B2C 19.01 (różnica: docs/przezycie.md, sekcja „Grupy”).
   zrodlo: >
-    metoda: polecenie użytkownika w czacie 2026-11-15 („średnia z zakończonych najmów”); wartości: data/pms/pms_najmy,
-    SQL_CZAS_NAJMU w leasing_bc/zalozenia_z_danych.py
-  data: 2026-09-30  # stan danych (dzień eksportu)
+    metoda: polecenie użytkownika w czacie 2026-11-16 („spodziewany czas najmu B2C i B2B z RMST zamiast naiwnych
+    średnich”); wartości: tabela czas_najmu (api/api/ai/features/najemcy/czas_najmu.sql) i
+    churn_model/evals/przezycie_grupy.py (metryki_km, horyzont 60), funkcja rmst_linii w
+    leasing_bc/zalozenia_z_danych.py; MID: SQL_CZAS_NAJMU tamże (metoda z 2026-11-15)
+  data: 2026-09-30  # stan danych (dzień eksportu); wartości B2C / B2B obowiązują od 2026-11-16
   odpowiedzialny: Natalia
 
 czynsz_mediana_pln:

@@ -241,3 +241,55 @@ def zebrane_w_dniu(g, kolejnosc, kolumna, frakcje):   # g = zapytania jednego dn
     return np.interp(frakcje * len(g), np.arange(len(g) + 1), narastajaco)
 # krzywa(f) = Σ_dni zebrane_w_dniu(f) / Σ wartości okna; górne 10% = krzywa(0,10)
 ```
+
+## Aktualizacja 2026-11-16: czas najmu z RMST60 zamiast średniej z zakończonych
+
+Od 2026-11-16 `czas_najmu_mies` w `leasing_bc/zalozenia.yaml` to dla B2C i B2B RMST do 60 miesięcy z krzywej
+Kaplana-Meiera (B2C 28,86 zamiast 19,01; B2B 18,39 zamiast 16,5), a MID bez zmian (4,51). Liczby: `docs/przezycie.md`,
+sekcja „Grupy”. Wyniki z poprzednich sekcji (np. 43,3% wartości umów) liczono jeszcze na starych wartościach.
+
+**Wnioski.**
+- EV każdego zapytania B2C rośnie o 51,8%, a B2B o 11,5%.
+- Kolejka przesuwa się w stronę klientów prywatnych. W kolejce z 2026-11-17 zapytania B2C zajmują 253 z 418 miejsc
+  zależnych od EV zamiast 230, a B2B 163 zamiast 182.
+- 24 zapytania wchodzą do kolejek, a 24 z nich wypadają.
+- Zapytania MID z Łodzi też zyskują 51,8%. W Łodzi nie ma lokali MID, więc ich czynsz i czas najmu biorą
+  z linii B2C (`zastepstwo` w YAML).
+- Zmiana zadziała przy następnym uruchomieniu zadania kolejka-doradcow (05:30), bo `wartosc_oczekiwana` czyta YAML.
+
+**Ranking z 2026-11-17** (2 360 zapytań w rankingu zadania, 418 miejsc według EV, czyli bez 22 pozycji losowych):
+
+| Linia | Zapytania | Suma EV przed (zł) | Suma EV po (zł) | Zmiana | Miejsca w kolejkach przed | po |
+|---|---:|---:|---:|---:|---:|---:|
+| B2B | 274 | 3 168 947 | 3 531 936 | +11,5% | 182 | 163 |
+| B2C | 1 267 | 4 027 681 | 6 114 617 | +51,8% | 230 | 253 |
+| MID | 819 | 892 256 | 929 337 | +4,2% (tylko Łódź) | 6 | 2 |
+| Razem | 2 360 | 8 088 884 | 10 575 890 | +30,7% | 418 | 418 |
+
+**10 przykładowych zapytań z kolejek doradców 2026-11-17** (w każdej linii najwyższe pozycje; ranga = miejsce
+w rankingu miasta według EV; „losowa” = jedna z 5% pozycji losowych eksperymentu, niezależnych od EV):
+
+| Doradca / pozycja | Zapytanie | Miasto | Linia | Lokale | p | EV przed (zł) | EV po (zł) | Zmiana | Ranga przed → po |
+|---|---|---|---|---:|---:|---:|---:|---:|---|
+| D06 / 3 | L161548 | Poznań | B2C | 1 | 0,474 | 17 198 | 26 109 | +8 911 (+51,8%) | 3 → 2 |
+| D09 / 3 | L160324 | Kraków | B2C | 1 | 0,420 | 17 983 | 27 301 | +9 318 (+51,8%) | 6 → 5 |
+| D03 / 4 (losowa) | L160556 | Warszawa | B2C | 1 | 0,016 | 763 | 1 158 | +395 (+51,8%) | 682 → 643 |
+| D05 / 4 | L159857 | Wrocław | B2C | 1 | 0,420 | 16 624 | 25 238 | +8 614 (+51,8%) | 7 → 4 |
+| D01 / 1 | L160439 | Warszawa | B2B | 6 | 0,231 | 71 122 | 79 268 | +8 147 (+11,5%) | 1 → 1 |
+| D02 / 1 | L156143 | Warszawa | B2B | 5 | 0,231 | 59 268 | 66 057 | +6 789 (+11,5%) | 2 → 2 |
+| D03 / 1 | L160948 | Warszawa | B2B | 5 | 0,198 | 50 812 | 56 632 | +5 820 (+11,5%) | 3 → 3 |
+| D04 / 1 | L159646 | Kraków | B2B | 4 | 0,179 | 33 861 | 37 739 | +3 879 (+11,5%) | 1 → 1 |
+| D11 / 5 (losowa) | L160951 | Łódź | MID | 1 | 0,020 | 719 | 1 091 | +373 (+51,8%) | 133 → 133 |
+| D10 / 30 | L160837 | Wrocław | MID | 1 | 0,326 | 4 808 | 4 808 | 0 (0,0%) | 58 → 84 |
+
+Brak `liczba_lokali` w zapytaniu oznacza 1 lokal. Wrocławskie zapytanie MID zachowuje EV, ale spada o 26 miejsc,
+bo zapytania B2C przed nim zyskały. Na górze kolejek w Warszawie i Krakowie zostają duże zapytania B2B z kilkoma
+lokalami: ich EV nadal jest najwyższe.
+
+**Kod.** `cd api && poetry run python -m api.ai.lead_model.evals.ev_czas_najmu`
+([`ev_czas_najmu.py`](../api/api/ai/lead_model/evals/ev_czas_najmu.py), wynik:
+`api/api/ai/lead_model/evals/wyniki/ev_czas_najmu.json`). „Przed” i „po” liczy `zalozenia_z_danych.policz`
+(`czas_najmu_naiwny` i `czas_najmu_mies`). EV „przed” odtwarza `ev_pln` zapisane przez zadanie z dokładnością do
+0,13 zł (zaokrąglenia). Ranking pochodzi z `kolejka_ranking` (`zrodlo_kolejki = 'zadanie'`, najnowszy dzień) z linią
+i lokalami z `crm_leady`. Pozycje losowe i liczba miejsc według EV pochodzą z `kolejka_historia` (`losowa`).
+

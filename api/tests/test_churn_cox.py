@@ -84,7 +84,7 @@ def test_ryzyko_bez_interakcji_jak_lifelines():
     X = m.macierz(okresy)
     # przy warstwach lifelines grupuje kolumny wyniku według warstwy, więc wyrównujemy po indeksie
     oczekiwane = 1 - m.cph_.predict_survival_function(X, times=[12.0])[X.index].to_numpy()[0]
-    np.testing.assert_allclose(m.ryzyko(okresy), oczekiwane, rtol=1e-6)
+    np.testing.assert_allclose(m.ryzyko(okresy, metoda="breslow"), oczekiwane, rtol=1e-6)
 
 
 def test_ryzyko_bez_warstw_jak_lifelines():
@@ -93,7 +93,7 @@ def test_ryzyko_bez_warstw_jak_lifelines():
     X = m.macierz(okresy)
     # przy warstwach lifelines grupuje kolumny wyniku według warstwy, więc wyrównujemy po indeksie
     oczekiwane = 1 - m.cph_.predict_survival_function(X, times=[12.0])[X.index].to_numpy()[0]
-    np.testing.assert_allclose(m.ryzyko(okresy), oczekiwane, rtol=1e-6)
+    np.testing.assert_allclose(m.ryzyko(okresy, metoda="breslow"), oczekiwane, rtol=1e-6)
 
 
 def test_hr_odzyskane_i_interakcja_bliska_zeru():
@@ -123,3 +123,33 @@ def test_cechy_bez_kolumn_zakazanych():
     with pytest.raises(ValueError):
         ModelCox(cechy=(*CECHY, "odejdzie"))
     assert "nr_okresu" not in CECHY and "windy_awarie_90d_na_winde" not in CECHY
+
+
+def test_kp_przy_jednym_skoku_daje_1_minus_d_przez_n():
+    """Wszystkie zdarzenia w jednym dniu, cecha bez wpływu: Kalbfleisch-Prentice daje średnio S(12) = 1 - d / n
+    jak Kaplan-Meier, a Breslow (exp(-d / n)) zawyża przeżycie."""
+    okresy = _okresy(n=3000, ziarno=3)
+    okresy["czas"] = 12.0
+    okresy["zdarzenie"] = (np.arange(len(okresy)) % 3 == 0).astype(int)  # 1 000 z 3 000
+    m = ModelCox(cechy=("czynsz_m2",), warstwy=(), interakcje_czasu={}).fit(okresy)
+    assert m.ryzyko(okresy).mean() == pytest.approx(1 / 3, abs=0.01)
+    assert m.ryzyko(okresy, metoda="breslow").mean() == pytest.approx(1 - np.exp(-1 / 3), abs=0.01)
+
+
+def test_kp_zgodny_z_kaplanem_meierem_w_grupach():
+    """Dwie grupy z dyskretnym skokiem na końcu okresu (jak B2C / B2B): średnie S(12) z KP blisko KM w każdej grupie."""
+    rng = np.random.default_rng(5)
+    okresy = _okresy(n=4000, ziarno=5)
+    b2b = (okresy["linia"] == "B2B").to_numpy()
+    odchodzi = rng.random(len(okresy)) < np.where(b2b, 0.74, 1 / 3)
+    okresy["miesiecy_umowy"] = 12.0
+    okresy["czas"] = 12.0
+    okresy["zdarzenie"] = odchodzi.astype(int)
+    m = ModelCox(cechy=("b2b", "miesiecy_umowy"), interakcje_czasu={}).fit(okresy)
+    r = m.ryzyko(okresy)
+    rb = m.ryzyko(okresy, metoda="breslow")
+    for grupa in (b2b, ~b2b):
+        # β z Efrona przy remisach jest przybliżeniem, więc tolerancja 2 p.p.; Breslow myli się kilka razy bardziej
+        blad_kp = abs(r[grupa].mean() - okresy["zdarzenie"][grupa].mean())
+        assert blad_kp < 0.02
+        assert abs(rb[grupa].mean() - okresy["zdarzenie"][grupa].mean()) > 3 * blad_kp
