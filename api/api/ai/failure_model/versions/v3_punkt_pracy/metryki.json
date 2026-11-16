@@ -1,0 +1,58 @@
+{
+  "wariant_cech": "bez serwisu",
+  "model_bazowy": "v2b_lgbm_czas_winda",
+  "liczba_drzew": 111,
+  "punkt_pracy": {
+    "alarmy_na_tydzien": 3,
+    "dzien_alarmu": 0,
+    "przerwa_dni": 7
+  },
+  "kalibracja": "IsotonicRegression na walidacji 2025-07-01 – 2025-12-31",
+  "test_3_alarmy": {
+    "alarmy": 114.0,
+    "trafne": 56.0,
+    "awarie": 322.0,
+    "zlapane": 57.0,
+    "awarie_sygnal": 216.0,
+    "zlapane_sygnal": 52.0,
+    "precyzja": 0.49122807017543857,
+    "czulosc": 0.17701863354037267,
+    "czulosc_sygnal": 0.24074074074074073,
+    "mediana_wyprzedzenia_h": 85.08333333333334
+  },
+  "test_3_alarmy_wartosc_pln": 116300.0,
+  "test_ranking": {
+    "wiersze": 36774,
+    "windy": 140,
+    "dodatnie": 2205,
+    "odsetek_dodatnich": 0.059960841899167894,
+    "roc_auc": 0.772954482110084,
+    "roc_auc_lo": 0.7430302405753613,
+    "roc_auc_hi": 0.802906815358243,
+    "pr_auc": 0.352199442644625,
+    "pr_auc_lo": 0.3047965954502635,
+    "pr_auc_hi": 0.4011516448208302,
+    "pr_auc_do_odsetka": 5.873824174065051
+  },
+  "porownanie_trybu_serwisowego": {
+    "precyzja_z_minus_bez": 0.0,
+    "precyzja_ci": [
+      -0.06140350877192985,
+      0.06140350877192985
+    ]
+  },
+  "p_test_srednia": 0.06142686834572599,
+  "baseline_3_alarmy": {
+    "alarmy": 114.0,
+    "trafne": 50.0,
+    "awarie": 322.0,
+    "zlapane": 51.0,
+    "awarie_sygnal": 216.0,
+    "zlapane_sygnal": 44.0,
+    "precyzja": 0.43859649122807015,
+    "czulosc": 0.15838509316770186,
+    "czulosc_sygnal": 0.2037037037037037,
+    "mediana_wyprzedzenia_h": 82.5
+  },
+  "odsetek_awarii_test": 0.059960841899167894
+}

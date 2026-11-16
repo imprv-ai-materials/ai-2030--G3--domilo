@@ -110,7 +110,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │                             # ryzyku, przerwa 7 dni; zalozenia.yaml), punkt_pracy.py: ocena na teście v2b
 │                             # (precyzja, czułość, wyprzedzenie tydzień po tygodniu; docs/b4_punkt_pracy.md);
 │                             # wartosc_alarmow.py: PLN alarmów (trafny = skuteczność × koszt awarii − wizyta), p*
-│                             # na ryzyku skalibrowanym izotonią na walidacji, krzywa wartości, koszt limitu
+│                             # na ryzyku skalibrowanym izotonią na walidacji, krzywa wartości, koszt limitu;
+│                             # tryb_serwisowy.py: cechy z oknami serwisowymi (--buduj: cechy_windy_z_serwisem,
+│                             # cechy_windy_tsfresh_z_serwisem, poza pypyr baza) vs obecne, zapis v3 i current.yaml
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
 │   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)
@@ -132,7 +134,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     ├── failure_model/        # alerty o awariach wind
     │   ├── base.py           # (w każdym modelu) wspólny interfejs / definicja modelu; wind: ModelWind,
     │   │                     # KOLUMNY_ZAKAZANE (target, przyszła awaria, id_windy / id_budynku / dzien)
-    │   ├── versions/         # kolejne wersje modelu (wind: v2_lgbm_losowy = przestroga, v2b_lgbm_czas_winda)
+    │   ├── versions/         # kolejne wersje modelu (wind: v2_lgbm_losowy = przestroga, v2b_lgbm_czas_winda,
+│   │                     # v3_punkt_pracy = v2b + izotonia + punkt pracy; base.wczytaj_obecny())
     │   ├── evals/            # ewaluacje wersji (failure_model/evals/historia_awarii.py: docs/b4_historia_awarii.md;
     │   │                     # ewaluacja_v2.py + porownanie.md: losowy podział vs czas + 28 wind poza treningiem)
     │   └── current.yaml      # wskazanie wersji używanej obecnie
@@ -202,7 +205,11 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   Model wind (`features/windy/zbior.py` składa dni_wind + cechy): **v2b_lgbm_czas_winda** (trening 2023-03 – 2025-06,
   walidacja 2025-07 – 12, test 2026-01-01 – 09-22, 28 wind poza treningiem) test PR-AUC 0,352, ROC AUC 0,773;
   `v2_lgbm_losowy` (losowe wiersze 80/20) 0,763 / 0,968 to **przeciek** (te same awarie w treningu i teście) —
-  nigdy nie oceniaj modelu wind losowym podziałem wierszy (`failure_model/evals/porownanie.md`). `current.yaml` pusty.
+  nigdy nie oceniaj modelu wind losowym podziałem wierszy (`failure_model/evals/porownanie.md`). `current.yaml`:
+  `v3_punkt_pracy` (od 2026-11-16; v2b + kalibracja izotoniczna na walidacji; `predict` = ranking,
+  `prawdopodobienstwo` = P(awaria 7 dni)). Okna `tryb = 'serwis'` (tylko w dni konserwacji z `serwis_harmonogram`,
+  08:10–16:30) nie zmieniają precyzji modelu przy 3 alarmach, ale bez filtra reguła-baseline traci 12,3 pp
+  (`docs/b4_punkt_pracy.md` T12–T15); `cechy.py` / `tsfresh_cechy.py` mają `bez_serwisu` (domyślnie True).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu

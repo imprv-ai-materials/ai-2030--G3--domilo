@@ -57,8 +57,11 @@ def nazwy_cech() -> list[str]:
     return [f"ts_{s}_{c}" for s in SYGNALY for c in ("rms", "kurtoza", "energia", *(f"fft_{p}" for p in PASMA))]
 
 
-def przygotuj(con: duckdb.DuckDBPyConnection) -> int:
-    """Tabele tymczasowe: `ts_godziny` (winda × godzina, średnie sygnałów) i `ts_wiersze` (dni_wind z numerem)."""
+def przygotuj(con: duckdb.DuckDBPyConnection, bez_serwisu: bool = True) -> int:
+    """Tabele tymczasowe: `ts_godziny` (winda × godzina, średnie sygnałów) i `ts_wiersze` (dni_wind z numerem).
+    bez_serwisu=False zostawia okna serwisowe (tylko do porównania, failure_model/evals/tryb_serwisowy.py)."""
+    from api.ai.features.windy.cechy import filtr_serwisu
+
     sygnaly = ",\n            ".join(f"avg({wyr}) AS {s}" for s, wyr in SYGNALY.items())
     con.execute(f"""
         CREATE OR REPLACE TEMP TABLE ts_godziny AS
@@ -68,7 +71,7 @@ def przygotuj(con: duckdb.DuckDBPyConnection) -> int:
             {sygnaly}
         FROM telemetra_windy AS t
         JOIN serwis_windy AS w USING (id_windy)
-        WHERE t.tryb IS DISTINCT FROM 'serwis'
+        WHERE {filtr_serwisu(bez_serwisu, "t.")}
         GROUP BY ALL
         """)
     con.execute("""
@@ -164,20 +167,27 @@ def wyciagnij(dlugi: pd.DataFrame, n_jobs: int = 0) -> pd.DataFrame:
     return cechy_z_tsfresh(surowe)
 
 
-def zbuduj_cechy_tsfresh(con: duckdb.DuckDBPyConnection, n_jobs: int = 0, porcja: int = WIERSZY_W_PORCJI) -> int:
-    """Zapisuje (od nowa) tabelę cechy_windy_tsfresh (id_windy, dzien + nazwy_cech()); zwraca liczbę wierszy."""
-    n = przygotuj(con)
+def zbuduj_cechy_tsfresh(
+    con: duckdb.DuckDBPyConnection,
+    n_jobs: int = 0,
+    porcja: int = WIERSZY_W_PORCJI,
+    tabela: str = TABELA,
+    bez_serwisu: bool = True,
+) -> int:
+    """Zapisuje (od nowa) tabelę cech tsfresh (domyślnie cechy_windy_tsfresh: id_windy, dzien + nazwy_cech());
+    zwraca liczbę wierszy."""
+    n = przygotuj(con, bez_serwisu=bez_serwisu)
     czesci = []
     for od in range(0, n, porcja):
         do = min(od + porcja, n)
         cechy = wyciagnij(dlugi_format(przebiegi(con, od, do), od), n_jobs=n_jobs)
         czesci.append(cechy.reindex(range(od, do)))
-        print(f"{TABELA}: {do:,} / {n:,}".replace(",", " "), file=sys.stderr)
+        print(f"{tabela}: {do:,} / {n:,}".replace(",", " "), file=sys.stderr)
     wszystkie = pd.concat(czesci)[nazwy_cech()].rename_axis("nr").reset_index()
     con.register("ts_cechy_df", wszystkie)
     try:
         con.execute(f"""
-            CREATE OR REPLACE TABLE {TABELA} AS
+            CREATE OR REPLACE TABLE {tabela} AS
             SELECT r.id_windy, r.dzien, c.* EXCLUDE (nr)
             FROM ts_wiersze AS r
             JOIN ts_cechy_df AS c USING (nr)
@@ -185,7 +195,7 @@ def zbuduj_cechy_tsfresh(con: duckdb.DuckDBPyConnection, n_jobs: int = 0, porcja
             """)
     finally:
         con.unregister("ts_cechy_df")
-    return con.execute(f"SELECT count(*) FROM {TABELA}").fetchone()[0]
+    return con.execute(f"SELECT count(*) FROM {tabela}").fetchone()[0]
 
 
 def wybierz_cechy(dane: pd.DataFrame, y: pd.Series, fdr: float = FDR) -> pd.DataFrame:

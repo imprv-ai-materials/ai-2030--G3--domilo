@@ -1,9 +1,12 @@
-# Punkt pracy alarmów wind: 3 alarmy w poniedziałek, wartość w PLN i koszt limitu (v2b_lgbm_czas_winda, test 2026)
+# Punkt pracy alarmów wind: 3 alarmy w poniedziałek, wartość w PLN, koszt limitu i tryb serwisowy (test 2026)
 
 Stan: 2026-11-16, baza `domilo.duckdb` (eksport 2026-09-30). Model `v2b_lgbm_czas_winda` (zapisany
 `model.joblib`, bez douczania; [porownanie.md](../api/api/ai/failure_model/evals/porownanie.md)), okres testowy
 2026-01-01 – 2026-09-22, czyli 38 poniedziałków od 2026-01-05 do 2026-09-21. Reguła:
 `api/api/contexts_boundaries/maintenance_bc/alarmy_wind.py`, stałe od użytkownika: `maintenance_bc/zalozenia.yaml`.
+Aktywna wersja (`ai/failure_model/current.yaml`): **`v3_punkt_pracy`** = ten sam model co `v2b_lgbm_czas_winda`
+(cechy bez okien serwisowych) + kalibracja izotoniczna na walidacji + opis punktu pracy (3 alarmy, poniedziałek,
+przerwa 7 dni); jej wyniki na teście to wiersze „model” w T1–T11.
 
 ## Wnioski
 
@@ -18,15 +21,18 @@ Stan: 2026-11-16, baza `domilo.duckdb` (eksport 2026-09-30). Model `v2b_lgbm_cza
 3. Gdyby alarm dostawała każda winda z ryzykiem co najmniej p* (po kalibracji), dział miałby średnio 7,7 alarmu
    tygodniowo (od 2 do 15), z precyzją 34,0% i wartością 147 450 PLN. **Limit 3 alarmów kosztuje więc 31 150 PLN
    w teście, ok. 42,6 tys. PLN rocznie** (przy skuteczności wizyty 0,70–0,95: 31–66 tys. PLN rocznie). Więcej
-   niż ok. 15 alarmów tygodniowo przynosi już stratę.
+   niż ok. 15 alarmów tygodniowo przynosi już stratę. Bez przerwy 7 dni wartość przy p* rośnie do 261 300 PLN, ale
+   tylko przy założeniu, że wizyta nie zmienia ryzyka windy w następnym tygodniu (dane tego nie pokazują).
 4. Prosta reguła „drzwi częściej otwierają się ponownie niż zwykle” przy tym samym limicie daje 50 trafnych alarmów
    i 95 900 PLN, model 56 i 116 300 PLN. Różnica (+20 400 PLN, 95% CI −6 800 … +47 600 PLN; precyzja +5,3 pp,
    −1,8 … +12,3 pp) mieści się w granicach przypadku, więc **nie możemy powiedzieć, że model jest lepszy od
    reguły**. Działają inaczej: reguła łapie więcej awarii drzwi (43 wobec 34), model awarie napędu (12 wobec 0)
    i hamulca/lin (4 wobec 0).
-5. Przerwa 7 dni dla tej samej windy jest kosztowna: przy p* bez przerwy wartość rośnie do 261 300 PLN (10,9 alarmu
-   tygodniowo). Ten wynik zakłada jednak, że wizyta nie zmienia ryzyka windy w kolejnym tygodniu, czego dane
-   historyczne (bez wizyt po alarmach) nie pokazują; decyzja o przerwie należy do działu technicznego.
+5. Okna trybu serwisowego (konserwacja: technik jeździ windą i wielokrotnie otwiera drzwi) nie zmieniają wyniku
+   modelu: z nimi w cechach też daje 56 trafnych z 114 alarmów (różnica 0,0 pp, 95% CI −6,1 … +6,1 pp); zmienia
+   37 alarmów, ale z tą samą liczbą trafnych. Prostą regułę drzwi te okna psują: jej precyzja spada z 43,9% do
+   31,6% (−12,3 pp, −20,2 … −4,4 pp), bo wskazuje windy tuż po konserwacji. Filtr zostaje, a aktywną wersją jest
+   `v3_punkt_pracy` (ten sam model + kalibracja).
 
 ## Definicje i decyzje
 
@@ -68,6 +74,17 @@ Stan: 2026-11-16, baza `domilo.duckdb` (eksport 2026-09-30). Model `v2b_lgbm_cza
   154 400 PLN) wybrano na teście, więc jest optymistyczne; p* ustalono z góry z kosztów i walidacji.
 - **Skala roku** = wartość w teście × 52 / 38 (52 poniedziałki z alarmem w roku; decyzja metodyczna). Test obejmuje
   styczeń – wrzesień, więc sezonowość października – grudnia nie jest w nim widoczna.
+- **Tryb serwisowy (wariant porównawczy):** cechy ręczne i tsfresh przeliczone bez warunku `tryb IS DISTINCT FROM
+  'serwis'` (`bez_serwisu=False` w `features/windy/cechy.py` i `tsfresh_cechy.py`; tabele `cechy_windy_z_serwisem`,
+  `cechy_windy_tsfresh_z_serwisem`, poza `pypyr baza`). Te same wiersze, ten sam podział, te same 179 kolumn (lista
+  tsfresh z `tsfresh_wybrane.yaml` bez ponownej selekcji) i te same parametry LightGBM. Wariant obecny uczony
+  ponownie daje dokładnie te same wyniki co zapisany `v2b_lgbm_czas_winda` (maks. różnica 0,0; 111 drzew), wariant
+  z serwisem ma 113 drzew. Reguła wyboru ustalona przed porównaniem: okna serwisowe wchodzą do cech tylko wtedy, gdy
+  precyzja przy 3 alarmach rośnie, a 95% CI różnicy nie obejmuje 0. Najbliższa konserwacja = najbliższa
+  `data_wykonania` z `serwis_harmonogram` (wszystkie typy) przed dniem alarmu albo od niego; okna serwisowe w danych
+  są tylko w dniach wykonania (8 475 z 8 475 dni z oknami serwisowymi), w godzinach 08:10–16:30, czyli po alarmie
+  o 06:00 tego samego dnia. 5 przykładów = pierwsze 5 różnych alarmów według daty (reguła ustalona przed obejrzeniem
+  listy).
 - **95% CI:** bootstrap tygodni (10 000 losowań 38 tygodni ze zwracaniem, te same dla modelu i baseline). Tygodnie
   nie są całkiem niezależne (przerwa łączy sąsiednie tygodnie), więc przedziały są przybliżone.
 
@@ -260,6 +277,106 @@ surowy 0,773). Granica 0,191 = p*.
 | **razem test** | 36 774 | 0,0614 | 0,0600 | 5286 |
 | walidacja (dopasowanie) | 20 433 | 0,0575 | 0,0575 | — |
 
+### T12. Tryb serwisowy: co zmienia w danych testu
+
+W teście 11 281 z 36 774 wierszy (30,7%) ma okno serwisowe w 7 dniach przed 05:50, w poniedziałki 1 606 z 5 286.
+Te wiersze mają nieco mniej awarii w 7 dni (5,64% wobec 6,15% bez serwisu w tygodniu). Okna serwisowe zmieniają
+167 ze 179 cech choć w jednym wierszu testu; najczęściej stosunki do normy i normy (norma z dni 15–44 prawie zawsze
+obejmuje jedną comiesięczną konserwację). 10 cech o największym odsetku zmienionych wierszy:
+
+| cecha | odsetek wierszy testu z inną wartością |
+|---|---:|
+| `wibracje_rms_do_normy_7d` | 74,0% |
+| `uzycie_otwarcia_drzwi_do_normy_7d` | 68,2% |
+| `wibracje_rms_do_normy_3d` | 67,1% |
+| `uzycie_kursy_do_normy_7d` | 64,0% |
+| `wibracje_rms_do_normy_24h` | 63,6% |
+| `wibracje_rms_norma` | 61,7% |
+| `drzwi_ponowne_otwarcia_do_normy_7d` | 61,6% |
+| `naped_prad_sr_do_normy_7d` | 60,0% |
+| `uzycie_otwarcia_drzwi_do_normy_3d` | 60,0% |
+| `naped_prad_max_do_normy_7d` | 59,9% |
+
+Telemetria w godzinach 08:00–16:59 (pora konserwacji), średnio na okno 10 min:
+
+| tryb | okna | kursy | otwarcia drzwi | ponowne otwarcia | czas zamykania drzwi (s) | prąd silnika (A) | wibracje RMS (mg) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| normalny | 9 850 159 | 2,061 | 4,742 | 0,212 | 3,272 | 11,733 | 18,077 |
+| serwis | 68 894 | 7,001 | 22,343 | 5,427 | 3,573 | 12,988 | 27,643 |
+
+W trybie serwisowym ponownych otwarć drzwi jest ok. 26 razy więcej niż w normalnej pracy, a czas zamykania drzwi
+różni się mało (3,57 s wobec 3,27 s).
+
+### T13. Ranking na teście w obu wariantach cech (95% CI: bootstrap wind)
+
+| wariant cech | ranking | ROC AUC | PR-AUC |
+|---|---|---|---|
+| bez serwisu (obecny) | model | 0,773 (0,743–0,803) | 0,352 (0,305–0,401) |
+| z serwisem | model | 0,776 (0,745–0,806) | 0,348 (0,301–0,398) |
+| bez serwisu (obecny) | baseline: reguła drzwi | 0,636 (0,611–0,661) | 0,238 (0,200–0,279) |
+| z serwisem | baseline: reguła drzwi | 0,632 (0,609–0,655) | 0,199 (0,166–0,232) |
+
+### T14. Reguła 3 alarmów w obu wariantach cech
+
+„z serwisem w 7 dniach” = alarmy windy, która miała okno serwisowe w 7 dniach przed alarmem. Różnice „z − bez”:
+bootstrap tygodni (10 000 losowań, te same dla obu wariantów).
+
+| wariant cech | ranking | alarmy | trafne | precyzja | złapane awarie | czułość | czułość z sygnałem | mediana wyprzedzenia (h) | alarmy z serwisem w 7 dniach | wartość w teście (PLN) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| bez serwisu (obecny) | model | 114 | 56 | 49,1% | 57 | 17,7% | 24,1% | 85,1 | 33 | 116 300 |
+| z serwisem | model | 114 | 56 | 49,1% | 57 | 17,7% | 23,1% | 84,0 | 32 | 116 300 |
+| bez serwisu (obecny) | baseline: reguła drzwi | 114 | 50 | 43,9% | 51 | 15,8% | 20,4% | 82,5 | 29 | 95 900 |
+| z serwisem | baseline: reguła drzwi | 114 | 36 | 31,6% | 36 | 11,2% | 14,8% | 59,6 | 61 | 48 300 |
+
+| ranking | precyzja: z − bez | 95% CI | czułość: z − bez | 95% CI |
+|---|---:|---|---:|---|
+| model | +0,0 pp | −6,1 pp … +6,1 pp | +0,0 pp | −2,2 pp … +2,4 pp |
+| baseline: reguła drzwi | −12,3 pp | −20,2 pp … −4,4 pp | −4,7 pp | −7,5 pp … −1,9 pp |
+
+Alarmy, które są tylko w jednym wariancie (dla modelu wspólnych jest 77 ze 114; korelacja Spearmana wyników modelu
+w obu wariantach na teście 0,909):
+
+| alarm tylko w wariancie | alarmy | trafne | precyzja | z oknem serwisowym w 7 dniach przed alarmem | mediana dni od ostatniej konserwacji |
+|---|---:|---:|---:|---:|---:|
+| tylko bez serwisu | 37 | 18 | 48,6% | 10 | 14,0 |
+| tylko z serwisem | 37 | 18 | 48,6% | 9 | 18,0 |
+| baseline, tylko bez serwisu | 53 | 20 | 37,7% | 11 | — |
+| baseline, tylko z serwisem | 53 | 6 | 11,3% | 43 | — |
+
+Ważność cech (udział w gain, 5 pierwszych): bez serwisu `drzwi_czas_zamykania_max_do_normy_24h` 19,3%,
+`drzwi_ponowne_otwarcia_do_normy_24h` 8,2%, `naped_temp_silnika_do_normy_24h` 7,3%, `naped_prad_max_do_normy_24h`
+5,8%, `naped_blad_poziomowania_do_normy_7d` 3,6%; z serwisem `drzwi_czas_zamykania_max_do_normy_24h` 21,6%,
+`naped_temp_silnika_do_normy_24h` 7,5%, `naped_prad_max_do_normy_24h` 5,0%, `drzwi_czas_zamykania_max_trend_7d` 4,8%,
+`naped_blad_poziomowania_do_normy_7d` 3,3% — ponowne otwarcia wypadają z pierwszej piątki.
+
+### T15. Pięć alarmów różnych między wariantami (pierwsze według daty) i najbliższa konserwacja
+
+„pozycja” = miejsce windy w rankingu tego poniedziałku (alarm dostają miejsca 1–3, o ile przerwa nie blokuje windy);
+dni od alarmu: − przed, + po alarmie.
+
+| poniedziałek | winda | alarm tylko w wariancie | pozycja: bez / z serwisem | trafny | okna serwisowe w 7 dniach (w tym 24 h) | najbliższa konserwacja (typ, dni od alarmu) | ostatnia przed alarmem |
+|---|---|---|---|---|---:|---|---|
+| 2026-01-12 | B02-W4 | z serwisem | 5 / 1 | nie | 0 (0) | 2026-01-14 (przeglad_dodatkowy, +2) | 2025-12-25 (konserwacja_30d) |
+| 2026-01-12 | B29-W1 | bez serwisu | 2 / 6 | tak (127 h, drzwi) | 0 (0) | 2026-01-22 (konserwacja_30d, +10) | 2025-12-25 (konserwacja_30d) |
+| 2026-01-26 | B01-W3 | z serwisem | 4 / 3 | tak (26 h, naped) | 8 (0) | 2026-01-21 (konserwacja_30d, -5) | 2026-01-21 (konserwacja_30d) |
+| 2026-01-26 | B19-W4 | bez serwisu | 3 / 5 | tak (95 h, naped) | 0 (0) | 2026-02-03 (konserwacja_30d, +8) | 2026-01-13 (przeglad_dodatkowy) |
+| 2026-02-02 | B09-W2 | bez serwisu | 4 / 6 | tak (90 h, naped) | 0 (0) | 2026-02-11 (konserwacja_30d, +9) | 2026-01-13 (konserwacja_30d) |
+
+**Skąd różnica.** Tylko w jednym z pięciu przykładów okno serwisowe trafiło w tydzień przed alarmem: B01-W3
+(2026-01-26) miała konserwację 2026-01-21 (8 okien serwisowych) i w wariancie z serwisem awansowała z 4. na 3. miejsce;
+jej alarm okazał się trafny (awaria napędu po 26 h). W pozostałych czterech tygodniach nie było konserwacji przed
+alarmem (ostatnia 13–20 dni wcześniej), a najbliższa była 2–10 dni po alarmie, więc nie mogła wpłynąć na cechy.
+Te alarmy różnią się, bo wariant z serwisem to inny model: okna serwisowe zmieniają normy (dni 15–44) i stosunki do
+normy u prawie wszystkich wind, model uczy się na nich innych drzew (113 zamiast 111) i przestawia windy z okolic
+granicy 3 alarmów (w przykładach miejsca 1–6) (np. B02-W4: 5. → 1. miejsce, fałszywy alarm; B29-W1: 2. → 6., utracony trafny).
+To samo widać na wszystkich 74 różnych alarmach: tylko 19 z nich (10 + 9) miało okno serwisowe w 7 dniach przed
+alarmem, a oba warianty mają wśród nich po 18 trafnych z 37. Wygląda na to, że model sam nauczył się pomijać konserwację: w treningu
+każda winda ma ją co miesiąc, a skoki ponownych otwarć po konserwacji nie zapowiadają awarii (wiersze z serwisem
+w tygodniu mają nawet mniej awarii), więc w wariancie z serwisem ponowne otwarcia tracą wagę na rzecz czasu
+zamykania drzwi, który w trybie serwisowym prawie się nie zmienia (ważność cech wyżej). Reguła drzwi się nie uczy: bez filtra
+53 jej alarmy zmieniają się, z tego 43 trafiają w windy z konserwacją w ostatnim tygodniu i tylko 6 z 53 jest
+trafnych (11,3%).
+
 ## SQL i kod
 
 Powtórzenie (z katalogu głównego; potrzebna baza z `dni_wind`, `cechy_windy`, `cechy_windy_tsfresh`, `pypyr baza`):
@@ -267,8 +384,19 @@ Powtórzenie (z katalogu głównego; potrzebna baza z `dni_wind`, `cechy_windy`,
 ```bash
 cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.punkt_pracy   # tabele T1–T6 (ok. 1,5 min)
 cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.wartosc_alarmow  # T7–T11 + wykres (ok. 1 min)
-poetry run pytest tests/test_alarmy_wind.py                                         # reguła, przerwa, próg, miary, PLN
+cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.tryb_serwisowy --buduj   # tabele wariantu (~2 min)
+cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.tryb_serwisowy --zapisz  # T12–T15, v3, current.yaml
+poetry run pytest tests/test_alarmy_wind.py tests/test_failure_model_v3.py          # reguła, PLN, v3, current.yaml
 ```
+
+- Tryb serwisowy: `api/api/contexts_boundaries/maintenance_bc/tryb_serwisowy.py` — `zbuduj_wariant` (cechy bez filtra:
+  `zbuduj_cechy_windy(con, tabela=..., bez_serwisu=False)`, `zbuduj_cechy_tsfresh(..., bez_serwisu=False)`;
+  warunek `features/windy/cechy.filtr_serwisu`), `dane` (`zbior.wczytaj_zbior(con, tabela_cech, tabela_tsfresh)`,
+  kontrola tych samych wierszy i kolumn), `naucz` (ModelLGBMCzasWinda, `podzial_czas_winda`), `roznice_cech`,
+  `bootstrap`, `opisz_alarmy` (konserwacja przed / po alarmie). Zapis `--zapisz`: `versions/v3_punkt_pracy/`
+  (`model.joblib`, `metryki.json`), `current.yaml`, run MLflow `v3_punkt_pracy` w eksperymencie `windy`.
+- Wersja: `api/api/ai/failure_model/versions/v3_punkt_pracy/model.py` (`ModelPunktPracy`: `predict` = ranking modelu
+  bazowego, `prawdopodobienstwo` = izotonia, `punkt_pracy`, `bez_serwisu`); odczyt: `failure_model/base.wczytaj_obecny()`.
 
 - Wartość: `api/api/contexts_boundaries/maintenance_bc/wartosc_alarmow.py` — `ekonomia(z, skutecznosc)` (wartość
   trafnego / fałszywego alarmu i p*), `wartosc(trafne, alarmy, ekon)`, `kalibruj` (`IsotonicRegression` na walidacji),
@@ -332,4 +460,47 @@ for dzien, grupa in r.groupby("dzien", sort=True):
     wolne = grupa[[not (w in ostatni and ostatni[w] >= granica) for w in grupa["id_windy"]]]
     wybrane = wolne.sort_values(["ryzyko", "id_windy"], ascending=[False, True]).head(limit)
     ...                                                   # zapis alarmów, ostatni[w] = dzien
+```
+
+### Tryb serwisowy (T12–T15)
+
+```sql
+-- okna serwisowe w 7 dniach (i 24 h) przed odcięciem 05:50 dnia oceny (SQL_SERWIS_7D)
+WITH s AS (SELECT id_windy, ts_utc FROM telemetra_windy WHERE tryb = 'serwis')
+SELECT d.id_windy, d.dzien,
+    count(s.ts_utc) AS okna_serwisu_7d,
+    count(s.ts_utc) FILTER (s.ts_utc > timezone('Europe/Warsaw', d.dzien + INTERVAL '05:50') - INTERVAL 24 HOUR)
+        AS okna_serwisu_24h
+FROM dni_wind AS d
+LEFT JOIN s
+    ON s.id_windy = d.id_windy
+   AND s.ts_utc > timezone('Europe/Warsaw', d.dzien + INTERVAL '05:50') - INTERVAL 168 HOUR
+   AND s.ts_utc <= timezone('Europe/Warsaw', d.dzien + INTERVAL '05:50')
+WHERE d.dzien BETWEEN '2026-01-01' AND '2026-09-22'
+GROUP BY d.id_windy, d.dzien;
+
+-- konserwacje i przeglądy wykonane (SQL_HARMONOGRAM)
+SELECT id_windy, CAST(data_wykonania AS DATE) AS data_wykonania, typ
+FROM serwis_harmonogram WHERE data_wykonania IS NOT NULL;
+
+-- dni z oknami serwisowymi a dni wykonania z harmonogramu (wynik: 8 475 dni, 68 894 okna, 8 475 z wykonaniem,
+-- mediana 8 okien dziennie, okna 08:10–16:30)
+WITH s AS (
+    SELECT id_windy, CAST(timezone('Europe/Warsaw', ts_utc) AS DATE) AS d, count(*) AS n,
+        min(strftime(timezone('Europe/Warsaw', ts_utc), '%H:%M')) AS od,
+        max(strftime(timezone('Europe/Warsaw', ts_utc), '%H:%M')) AS do_
+    FROM telemetra_windy WHERE tryb = 'serwis' GROUP BY 1, 2
+),
+h AS (SELECT DISTINCT id_windy, CAST(data_wykonania AS DATE) AS d FROM serwis_harmonogram)
+SELECT count(*), sum(n),
+    count(*) FILTER (EXISTS (SELECT 1 FROM h WHERE h.id_windy = s.id_windy AND h.d = s.d)),
+    median(n), min(od), max(do_)
+FROM s;
+
+-- telemetria według trybu w godzinach 08–16 czasu Warszawy (T12)
+SELECT tryb, count(*), avg(kursy), avg(otwarcia_drzwi), avg(ponowne_otwarcia), avg(czas_zamykania_drzwi_sr_s),
+    avg(prad_silnika_sr_a), avg(wibracje_rms_mg)
+FROM telemetra_windy
+WHERE strftime(timezone('Europe/Warsaw', ts_utc), '%H') BETWEEN '08' AND '16'
+GROUP BY 1;
 ```

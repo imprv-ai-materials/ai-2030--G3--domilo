@@ -1,0 +1,18 @@
+# Wersja modelu alertów o awariach wind używana obecnie (katalog w versions/); base.wczytaj_obecny().
+wersja: v3_punkt_pracy
+model: versions/v3_punkt_pracy/model.joblib
+klasa: api.ai.failure_model.versions.v3_punkt_pracy.model.ModelPunktPracy
+ustalono: '2026-11-16'
+regula_wyboru: 'Polecenie użytkownika z 2026-11-16: „zapisz aktywną wersję jako versions/v3_punkt_pracy/ i ustaw ją w current.yaml”.
+  Wariant cech wybrany regułą ustaloną przed porównaniem (maintenance_bc/tryb_serwisowy.py): okna serwisowe zostają w cechach
+  tylko wtedy, gdy precyzja przy 3 alarmach rośnie, a 95% CI różnicy nie obejmuje 0. Wybrano: bez serwisu.'
+punkt_pracy: 'maintenance_bc/alarmy_wind.wybierz_alarmy: 3 windy o najwyższym ryzyku (`predict`) w poniedziałek 06:00, przerwa
+  7 dni (maintenance_bc/zalozenia.yaml); prawdopodobieństwo awarii w 7 dni: `prawdopodobienstwo` (izotonia na walidacji),
+  próg opłacalności p* w maintenance_bc/wartosc_alarmow.py'
+uzasadnienie: 'Test 2026-01-05 – 2026-09-21 (38 poniedziałków), 3 alarmy / tydzień: 114 alarmów, 56 trafnych (precyzja 49,1%),
+  czułość 17,7%, wartość 116 300 PLN; ranking: ROC AUC 0,773, PR-AUC 0,352. Baseline (reguła drzwi_ponowne_otwarcia_do_normy_24h)
+  przy 3 alarmach: precyzja 43,9%; przewaga modelu w precyzji i PLN niepotwierdzona (docs/b4_punkt_pracy.md). Cechy z oknami
+  serwisowymi: precyzja modelu z − bez +0,0 pp (95% CI −6,1 pp … +6,1 pp).'
+ograniczenia: Model bazowy uczony na danych do 2025-06. Przewaga nad regułą drzwi przy 3 alarmach nie jest potwierdzona
+  (95% CI obejmuje 0). Kalibracja na tej samej walidacji, która wybrała liczbę drzew.
+poprzednia: brak (current.yaml był pusty)

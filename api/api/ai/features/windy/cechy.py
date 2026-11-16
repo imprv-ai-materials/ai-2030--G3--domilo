@@ -44,13 +44,19 @@ def sql_pliku(nazwa: str) -> str:
     return (KATALOG_SQL / f"{nazwa}.sql").read_text(encoding="utf-8").strip().rstrip(";")
 
 
-def przygotuj(con: duckdb.DuckDBPyConnection) -> None:
-    """Widok `telemetria` (bez okien serwisowych, do odcięcia ostatniego dnia) i tabela `kotwice` (winda × dzień)."""
+def filtr_serwisu(bez_serwisu: bool, alias: str = "") -> str:
+    """Warunek SQL wykluczający okna `tryb = 'serwis'` (bez_serwisu=False: wariant porównawczy, warunek pusty)."""
+    return f"{alias}tryb IS DISTINCT FROM 'serwis'" if bez_serwisu else "TRUE"
+
+
+def przygotuj(con: duckdb.DuckDBPyConnection, bez_serwisu: bool = True) -> None:
+    """Widok `telemetria` (bez okien serwisowych, do odcięcia ostatniego dnia) i tabela `kotwice` (winda × dzień).
+    bez_serwisu=False zostawia okna serwisowe (tylko do porównania, failure_model/evals/tryb_serwisowy.py)."""
     con.execute(f"""
         CREATE OR REPLACE TEMP VIEW telemetria AS
         SELECT *
         FROM telemetra_windy
-        WHERE tryb IS DISTINCT FROM 'serwis'
+        WHERE {filtr_serwisu(bez_serwisu)}
           AND ts_utc <= timezone('Europe/Warsaw', TIMESTAMP '{OSTATNI_DZIEN} {ODCIECIE}')
         """)
     con.execute(f"""
@@ -162,9 +168,9 @@ FROM normy
 """
 
 
-def zbuduj_cechy_windy(con: duckdb.DuckDBPyConnection) -> int:
-    """Zapisuje (od nowa) tabelę cechy_windy dla wierszy dni_wind; zwraca liczbę wierszy."""
-    przygotuj(con)
+def zbuduj_cechy_windy(con: duckdb.DuckDBPyConnection, tabela: str = TABELA, bez_serwisu: bool = True) -> int:
+    """Zapisuje (od nowa) tabelę cech (domyślnie cechy_windy) dla wierszy dni_wind; zwraca liczbę wierszy."""
+    przygotuj(con, bez_serwisu=bez_serwisu)
     czesci = []
     for rodzina in RODZINY:
         con.execute(f"CREATE OR REPLACE TEMP TABLE cechy_{rodzina} AS {sql_rodziny(rodzina, sygnaly(con, rodzina))}")
@@ -176,15 +182,15 @@ def zbuduj_cechy_windy(con: duckdb.DuckDBPyConnection) -> int:
     zlaczenia = "\n".join(f"LEFT JOIN {t} USING (id_windy, dzien)" for t in czesci)
     kolumny = ", ".join(f"{t}.* EXCLUDE (id_windy, dzien)" for t in czesci)
     con.execute(f"""
-        CREATE OR REPLACE TABLE {TABELA} AS
+        CREATE OR REPLACE TABLE {tabela} AS
         SELECT d.id_windy, d.dzien, {kolumny}
         FROM dni_wind AS d
         {zlaczenia}
         ORDER BY d.dzien, d.id_windy
         """)
-    n, unikalne = con.execute(f"SELECT count(*), count(DISTINCT (id_windy, dzien)) FROM {TABELA}").fetchone()
+    n, unikalne = con.execute(f"SELECT count(*), count(DISTINCT (id_windy, dzien)) FROM {tabela}").fetchone()
     if n != unikalne:
-        raise ValueError(f"{TABELA}: (id_windy, dzien) nie jest unikalne")
+        raise ValueError(f"{tabela}: (id_windy, dzien) nie jest unikalne")
     return n
 
 

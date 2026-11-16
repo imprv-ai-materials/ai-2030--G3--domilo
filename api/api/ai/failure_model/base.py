@@ -19,6 +19,10 @@ from pathlib import Path
 import joblib
 import numpy as np
 import pandas as pd
+import yaml
+
+KATALOG_MODELU = Path(__file__).resolve().parent
+SCIEZKA_CURRENT = KATALOG_MODELU / "current.yaml"
 
 KOLUMNY_KLUCZA = ("id_windy", "dzien")
 KOLUMNY_ZAKAZANE = frozenset(
@@ -81,3 +85,14 @@ class ModelWind(ABC):
         if not isinstance(model, ModelWind):
             raise TypeError(f"{sciezka} nie zawiera modelu wind")
         return model
+
+
+def wczytaj_obecny(sciezka_current: Path = SCIEZKA_CURRENT) -> ModelWind:
+    """Wersja wskazana w current.yaml (pole `model`, ścieżka względem failure_model/). Pusty = błąd (nie zgadujemy)."""
+    current = yaml.safe_load(Path(sciezka_current).read_text(encoding="utf-8")) or {}
+    if not current.get("model"):
+        raise ValueError("failure_model/current.yaml: brak wersji (żadna wersja nie jest aktywna)")
+    model = ModelWind.wczytaj(Path(sciezka_current).parent / current["model"])
+    if model.wersja != current.get("wersja"):
+        raise ValueError(f"current.yaml wskazuje {current.get('wersja')}, a plik zawiera {model.wersja}")
+    return model
