@@ -127,9 +127,12 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     │   ├── evals/            # ewaluacje wersji (failure_model/evals/historia_awarii.py: docs/b4_historia_awarii.md)
     │   └── current.yaml      # wskazanie wersji używanej obecnie
     └── llm/
+        ├── ekstrakcja_awarii.py # awaria windy z notatek (prompt awaria_v1, schemat schemas/awaria.py): wejście =
+        │                     # zgłoszenie + wszystkie notatki, bez kategorii; wynik features/windy/awarie_llm/*.parquet
         ├── prompts/          # prompty
         ├── schemas/          # schematy odpowiedzi
-        └── cache/            # cache odpowiedzi LLM (poza gitem)
+        └── cache/            # cache odpowiedzi LLM (poza gitem; klucz sha256(wersja promptu + wejście),
+                              # klient adapters/llm_client.py)
 ui/                           # Next.js (port 3100; pnpm --dir ui dev): panel rzeczoznawcy i /zespol (kierownik najmu)
 ```
 
