@@ -1,0 +1,30 @@
+opis: Cechy tsfresh istotne na treningu (wygenerowane przez tsfresh_cechy.wybierz_cechy;
+  nie edytuj).
+trening:
+  od: '2023-03-01'
+  do: '2025-06-30'
+test: 'calculate_relevance_table: Mann-Whitney, Benjamini-Yekutieli'
+fdr: 0.05
+wybrane:
+- ts_wibracje_rms_rms
+- ts_wibracje_rms_energia
+- ts_wibracje_rms_fft_pol_doby
+- ts_wibracje_rms_fft_krotkie
+- ts_drzwi_czas_zamykania_rms
+- ts_drzwi_czas_zamykania_energia
+- ts_drzwi_czas_zamykania_fft_krotkie
+- ts_drzwi_czas_zamykania_fft_dlugie
+- ts_drzwi_czas_zamykania_fft_pol_doby
+- ts_drzwi_czas_zamykania_fft_doba
+- ts_drzwi_czas_zamykania_kurtoza
+odrzucone:
+- ts_wibracje_rms_fft_dlugie
+- ts_wibracje_rms_kurtoza
+- ts_wibracje_rms_fft_doba
+- ts_naped_prad_fft_krotkie
+- ts_naped_prad_rms
+- ts_naped_prad_energia
+- ts_naped_prad_kurtoza
+- ts_naped_prad_fft_pol_doby
+- ts_naped_prad_fft_dlugie
+- ts_naped_prad_fft_doba

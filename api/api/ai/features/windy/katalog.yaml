@@ -1,0 +1,82 @@
+# Katalog cech modelu „awaria windy w ciągu 7 dni” (wiersz = dni_wind: winda × dzień oceny, ocena o 06:00).
+# Wszystkie cechy liczone tylko z okien telemetrii zakończonych najpóźniej o 05:50 Europe/Warsaw dnia oceny,
+# bez okien z tryb = 'serwis'. Opis i liczby: docs/b4_cechy.md (ręczne), docs/b4_tsfresh.md (tsfresh).
+# Spójność katalogu z kodem pilnuje api/tests/test_katalog_windy.py.
+
+tabele:
+  cechy_windy:
+    kod: api/api/ai/features/windy/cechy.py + sql/<rodzina>.sql
+    kolumny: "<sygnal>_<statystyka> (15 sygnałów × 11 statystyk) + cechy dodatkowe"
+  cechy_windy_tsfresh:
+    kod: api/api/ai/features/windy/tsfresh_cechy.py
+    kolumny: "ts_<sygnal>_<statystyka> (3 sygnały × 7 statystyk)"
+    selekcja: api/api/ai/features/windy/tsfresh_wybrane.yaml  # wynik selekcji na treningu (generowany)
+
+cechy_reczne:
+  statystyki:
+    sr_24h: średnia z okien 10-min z wartością w ostatnich 24 h przed odcięciem (dokładne godziny)
+    max_24h: maksimum z okien w ostatnich 24 h
+    sr_3d: średnia z 72 h
+    max_3d: maksimum z 72 h
+    sr_7d: średnia ze 168 h
+    max_7d: maksimum ze 168 h
+    norma: mediana średnich dobowych (sr_24h) z dni 15–44 przed oceną; NULL przy < 20 dniach z wartością
+    do_normy_24h: sr_24h / norma (NULL, gdy norma = 0 albo NULL)
+    do_normy_3d: sr_3d / norma
+    do_normy_7d: sr_7d / norma
+    trend_7d: nachylenie prostej średnich dobowych z 7 dni (jednostka sygnału na dobę); NULL przy < 5 dniach
+  sygnaly:
+    drzwi_ponowne_otwarcia: {rodzina: drzwi, zrodlo: ponowne_otwarcia, jednostka: liczba na okno 10 min}
+    drzwi_czas_zamykania_sr: {rodzina: drzwi, zrodlo: czas_zamykania_drzwi_sr_s, jednostka: s, uwagi: pusty w oknach bez jazdy}
+    drzwi_czas_zamykania_max: {rodzina: drzwi, zrodlo: czas_zamykania_drzwi_max_s, jednostka: s}
+    drzwi_bledy:
+      rodzina: drzwi
+      zrodlo: bledy_drzwi
+      jednostka: liczba na okno 10 min
+      uwagi: Liftar LF-5 od 2025-11-17 liczy błąd drzwi podwójnie (E07|E17); norma prawie zawsze 0
+    naped_prad_sr: {rodzina: naped, zrodlo: prad_silnika_sr_a, jednostka: A, uwagi: tylko okna z jazdą}
+    naped_prad_max: {rodzina: naped, zrodlo: prad_silnika_max_a, jednostka: A}
+    naped_temp_silnika: {rodzina: naped, zrodlo: temp_silnika_c, jednostka: °C}
+    naped_temp_maszynowni: {rodzina: naped, zrodlo: temp_maszynowni_c, jednostka: °C, uwagi: tło (otoczenie)}
+    naped_blad_poziomowania: {rodzina: naped, zrodlo: blad_poziomowania_sr_mm, jednostka: mm}
+    naped_bledy: {rodzina: naped, zrodlo: bledy_napedu, jednostka: liczba na okno 10 min, uwagi: norma prawie zawsze 0}
+    wibracje_rms:
+      rodzina: wibracje
+      zrodlo: wibracje_rms_mg
+      jednostka: mg
+      uwagi: NULL przed serwis_windy.czujnik_wibracji_od (bez uzupełniania); tylko okna z jazdą
+    sterownik_bledy: {rodzina: sterownik, zrodlo: bledy_sterownika, jednostka: liczba na okno 10 min, uwagi: norma prawie zawsze 0}
+    uzycie_kursy: {rodzina: uzycie, zrodlo: kursy, jednostka: liczba na okno 10 min}
+    uzycie_otwarcia_drzwi: {rodzina: uzycie, zrodlo: otwarcia_drzwi, jednostka: liczba na okno 10 min}
+    uzycie_wylaczona: {rodzina: uzycie, zrodlo: "tryb = 'wylaczona'", jednostka: udział okien (0–1)}
+  dodatkowe:
+    ma_czujnik_wibracji: 1, gdy czujnik wibracji zamontowany przed odcięciem (serwis_windy.czujnik_wibracji_od)
+    firmware_dni_od_zmiany: dni od ostatniej zmiany firmware w telemetrii do odcięcia; NULL bez zmiany
+    firmware_zmiana_glowna_44d: 1, gdy w ostatnich 44 dniach zmieniła się wersja główna firmware (np. LF-4 -> LF-5)
+
+cechy_tsfresh:
+  przebieg: >-
+    168 godzinnych średnich sygnału (godziny kończące się o :50 UTC) przed odcięciem 05:50; puste godziny
+    uzupełnione interpolacją liniową; przebieg z < 84 godzinami z wartością pominięty (cechy NULL).
+  biblioteka: tsfresh 0.21.2, extract_features z default_fc_parameters = tsfresh_cechy.FC_PARAMETERS
+  statystyki:
+    rms: {tsfresh: root_mean_square, opis: pierwiastek ze średniej kwadratów przebiegu}
+    kurtoza: {tsfresh: kurtosis, opis: kurtoza (G2, Fisher-Pearson) — „ostrość” skoków w przebiegu}
+    energia: {tsfresh: abs_energy, opis: suma kwadratów 168 wartości}
+    fft_dlugie: {tsfresh: fft_coefficient abs, opis: "udział k = 1–6 (okres 168–28 h) w energii widma bez składowej stałej"}
+    fft_doba: {tsfresh: fft_coefficient abs, opis: "udział k = 7 (okres 24 h)"}
+    fft_pol_doby: {tsfresh: fft_coefficient abs, opis: "udział k = 8–14 (okres 21–12 h)"}
+    fft_krotkie: {tsfresh: fft_coefficient abs, opis: "udział k = 15–84 (okres 11,2–2 h)"}
+  sygnaly:
+    drzwi_czas_zamykania: {zrodlo: czas_zamykania_drzwi_sr_s, jednostka: s}
+    naped_prad: {zrodlo: prad_silnika_sr_a, jednostka: A}
+    wibracje_rms: {zrodlo: wibracje_rms_mg, jednostka: mg, uwagi: NULL przed montażem czujnika}
+  selekcja:
+    dane: trening dzien 2023-03-01 – 2025-06-30 (tylko)
+    metoda: >-
+      tsfresh calculate_relevance_table (Mann-Whitney, Benjamini-Yekutieli, fdr 0,05), osobno wibracje (wiersze
+      z czujnikiem) i reszta; test zakłada niezależne wiersze, a sąsiednie dni mają wspólne 6 z 7 dni przebiegu,
+      więc p-wartości są zaniżone (selekcja raczej zbyt łagodna)
+    wynik_2026_11_16: >-
+      11 z 21 wybranych: wszystkie 7 cech czasu zamykania drzwi, wibracje rms, energia, fft_pol_doby, fft_krotkie;
+      żadna cecha prądu silnika (lista: tsfresh_wybrane.yaml)

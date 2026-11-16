@@ -120,7 +120,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     │   └── windy/            # zgloszenia_wind.sql/.py: zgłoszenia wind z ustaloną windą (docs/b4_historia_awarii.md);
     │                         # awarie_odtworzone.sql/.py + serie_przestoju.sql: awarie z LLM i startem z telemetrii;
     │                         # dni_wind.sql/.py: target awaria_7d (docs/b4_target.md); cechy.py + sql/: cechy_windy
-    │                         # (docs/b4_cechy.md)
+    │                         # (docs/b4_cechy.md); tsfresh_cechy.py: cechy_windy_tsfresh (docs/b4_tsfresh.md);
+    │                         # katalog.yaml: opis wszystkich cech wind
     ├── valuation_model/      # wycena lokali z przedziałem
     ├── lead_model/           # kolejka zapytań dla doradców
     ├── churn_model/          # lista retencyjna najemców
@@ -185,6 +186,13 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   montażem NULL + `ma_czujnik_wibracji`; `firmware_dni_od_zmiany`, `firmware_zmiana_glowna_44d`. **Pułapka:**
   Liftar LF-5 od 2025-11-17 raportuje błąd drzwi parą `E07|E17` (błędy ×2–3 bez wzrostu awarii;
   `docs/b4_cechy.md`).
+  `cechy_windy_tsfresh` — tsfresh 0.21 z 168 godzinnych średnich przed 05:50 (czas zamykania drzwi, prąd, wibracje):
+  RMS, kurtoza, energia, udziały pasm FFT (k 1–6 / 7 = doba / 8–14 / 15–84); puste godziny interpolowane, < 84 h
+  z wartością -> NULL (`features/windy/tsfresh_cechy.py`, ok. 1,5 min; `extract_features` z `n_jobs=0` — szybsze
+  niż procesy i działa ze skryptem ze stdin). Selekcja tylko na treningu 2023-03 – 2025-06 -> `tsfresh_wybrane.yaml`;
+  opis wszystkich cech wind: `features/windy/katalog.yaml` (spójność: `tests/test_katalog_windy.py`).
+  Porównanie (`failure_model/evals/tsfresh_porownanie.py`, `docs/b4_tsfresh.md`, MLflow `windy`): test od 2025-07-08
+  (przerwa 7 dni po treningu = okno targetu).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
@@ -221,6 +229,7 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   lifelines 0.30.3 deklaruje `pandas < 3`, więc nie ma jej w `pyproject.toml` (są jej zależności): instaluje ją
   `pypyr install` przez `pip install --no-deps lifelines==0.30.3`.
   `pytz` jest potrzebny, bo bez niego DuckDB nie zwraca do Pythona kolumn TIMESTAMPTZ.
+  tsfresh 0.21.2 (cechy przebiegów wind, `features/windy/tsfresh_cechy.py`).
   causalml 0.18 (S-learner `BaseSClassifier` w ewaluacji uplift); jej `get_qini` nie obsługuje remisów, więc krzywe
   Qini liczy `churn_model/evals/metryki_uplift.py`.
   dbt-core 1.12 + dbt-duckdb 1.11 (grupa dev); profil w `api/api/data_platform/dbt/profiles.yml` ustawia

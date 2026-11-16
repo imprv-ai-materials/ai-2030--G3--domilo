@@ -54,6 +54,12 @@ steps:
         run: poetry run python -m api.ai.features.windy.cechy
         cwd: api
   - name: pypyr.steps.cmd
+    description: Tabela cechy_windy_tsfresh (tsfresh z 7-dniowych przebiegów godzinowych; api/api/ai/features/windy/tsfresh_cechy.py; ok. 1,5 min)
+    in:
+      cmd:
+        run: poetry run python -m api.ai.features.windy.tsfresh_cechy
+        cwd: api
+  - name: pypyr.steps.cmd
     description: Modele dbt metryk (schemat metryki; api/api/data_platform/dbt, docs/kolejka_metryki.md) z testami
     in:
       cmd:
