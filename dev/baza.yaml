@@ -42,6 +42,12 @@ steps:
         run: poetry run python -m api.ai.features.windy.awarie_odtworzone
         cwd: api
   - name: pypyr.steps.cmd
+    description: Tabela dni_wind (target awaria_7d, winda × dzień; api/api/ai/features/windy/dni_wind.sql; pomijana bez awarie_odtworzone)
+    in:
+      cmd:
+        run: poetry run python -m api.ai.features.windy.dni_wind
+        cwd: api
+  - name: pypyr.steps.cmd
     description: Modele dbt metryk (schemat metryki; api/api/data_platform/dbt, docs/kolejka_metryki.md) z testami
     in:
       cmd:

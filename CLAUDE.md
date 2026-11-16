@@ -171,6 +171,11 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   = koniec ostatniego okna z kursami > 0 przed serią ≥ 3 okien bez kursów / `tryb = wylaczona`, zaczętą do 24 h
   przed pierwszym zgłoszeniem; `zrodlo_startu` = telemetria / brak_serii / brak_telemetrii; `czas_awarii` = start
   albo pierwsze zgłoszenie (`api/api/ai/features/windy/awarie_odtworzone.sql`, `docs/b4_historia_awarii.md` R10–R14).
+  `dni_wind` — target modelu wind: winda × dzień 2023-03-01 – 2026-09-22 (w zakresie telemetrii windy), predykcja
+  o 06:00 Europe/Warsaw, `awaria_7d` = start awarii z `awarie_odtworzone` w (06:00 t; 06:00 t+7]; bez dni, w których
+  o 06:00 winda stoi z powodu awarii; `id_awarii`, `podzespol`, `liczba_awarii_7d`, `godziny_do_startu` to przyszłość,
+  nie cechy (`api/api/ai/features/windy/dni_wind.sql`, `docs/b4_target.md`). Różnice godzin licz jako
+  `epoch(a) − epoch(b)`: `TIMESTAMPTZ − TIMESTAMPTZ` w DuckDB 2.0 daje dni kalendarzowe (zmiana czasu = ±1 h błędu).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
