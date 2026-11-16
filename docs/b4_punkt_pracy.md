@@ -1,4 +1,4 @@
-# Punkt pracy alarmów wind: 3 alarmy w poniedziałek (v2b_lgbm_czas_winda, okres testowy 2026)
+# Punkt pracy alarmów wind: 3 alarmy w poniedziałek, wartość w PLN i koszt limitu (v2b_lgbm_czas_winda, test 2026)
 
 Stan: 2026-11-16, baza `domilo.duckdb` (eksport 2026-09-30). Model `v2b_lgbm_czas_winda` (zapisany
 `model.joblib`, bez douczania; [porownanie.md](../api/api/ai/failure_model/evals/porownanie.md)), okres testowy
@@ -8,21 +8,25 @@ Stan: 2026-11-16, baza `domilo.duckdb` (eksport 2026-09-30). Model `v2b_lgbm_cza
 ## Wnioski
 
 1. Przy 3 alarmach w tygodniu (114 alarmów w 38 tygodni) po 56 alarmach (49,1%) winda faktycznie zepsuła się
-   w ciągu 7 dni. Przy losowym wyborze wind trafnych byłoby średnio 6,0%, więc technik wysłany na alarm co drugi raz
-   znajdzie windę tuż przed awarią.
-2. Alarm poprzedził jednak tylko 57 z 322 awarii (17,7%), a wśród awarii, które czujniki mogą zapowiedzieć
-   (drzwi, napęd, hamulec/liny, sterownik) 52 z 216 (24,1%). Nawet ranking znający przyszłość przy 3 alarmach
-   tygodniowo uprzedziłby 115 awarii (35,7%): przy tym limicie głównym ograniczeniem jest liczba alarmów,
-   nie tylko model.
-3. Prosta reguła „drzwi częściej otwierają się ponownie niż zwykle” daje 50 trafnych alarmów, model 56. Różnica
-   (precyzja +5,3 pp, 95% CI −1,8 … +12,3 pp) jest w granicach przypadku, więc w tym punkcie pracy **nie możemy
-   powiedzieć, że model jest lepszy od reguły**. Działają inaczej: reguła łapie więcej awarii drzwi (43 wobec 34),
-   model łapie awarie napędu (12 wobec 0) i hamulca/lin (4 wobec 0). Tylko dla awarii z sygnałem przewaga
-   modelu jest na granicy (czułość +3,7 pp, 95% CI +0,0 … +7,8 pp).
-4. Alarm wyprzedza start awarii o medianę 85 godzin (ok. 3,5 dnia); 10 z 56 trafnych alarmów ma najwyżej dobę
-   zapasu. Na windach, których model nie widział w treningu, trafnych jest 11 z 34 alarmów.
-5. Wyniki skaczą z tygodnia na tydzień: 5 tygodni bez żadnego trafnego alarmu, 3 tygodnie z trzema. Przerwa 7 dni
-   kosztuje 5 trafnych alarmów (bez niej 61), ale rozkłada alarmy na 69 wind zamiast 59.
+   w ciągu 7 dni; przy losowym wyborze byłoby to średnio 6,0%. Alarm poprzedził jednak tylko 57 z 322 awarii
+   (17,7%), a nawet ranking znający przyszłość uprzedziłby przy tym limicie 115 (35,7%), więc główne ograniczenie
+   to liczba alarmów. Alarm wyprzedza awarię o medianę 85 godzin, a wyniki skaczą z tygodnia na tydzień
+   (5 tygodni bez trafienia, 3 z trzema trafieniami).
+2. Przy założeniach działu technicznego (trafny alarm wart 0,85 × 4 000 − 650 = 2 750 PLN, fałszywy −650 PLN)
+   te 3 alarmy tygodniowo dały w teście 116 300 PLN, czyli w skali roku ok. 159 tys. PLN. Alarm opłaca się wtedy,
+   gdy szansa awarii windy w 7 dni wynosi co najmniej p* = 19,1%.
+3. Gdyby alarm dostawała każda winda z ryzykiem co najmniej p* (po kalibracji), dział miałby średnio 7,7 alarmu
+   tygodniowo (od 2 do 15), z precyzją 34,0% i wartością 147 450 PLN. **Limit 3 alarmów kosztuje więc 31 150 PLN
+   w teście, ok. 42,6 tys. PLN rocznie** (przy skuteczności wizyty 0,70–0,95: 31–66 tys. PLN rocznie). Więcej
+   niż ok. 15 alarmów tygodniowo przynosi już stratę.
+4. Prosta reguła „drzwi częściej otwierają się ponownie niż zwykle” przy tym samym limicie daje 50 trafnych alarmów
+   i 95 900 PLN, model 56 i 116 300 PLN. Różnica (+20 400 PLN, 95% CI −6 800 … +47 600 PLN; precyzja +5,3 pp,
+   −1,8 … +12,3 pp) mieści się w granicach przypadku, więc **nie możemy powiedzieć, że model jest lepszy od
+   reguły**. Działają inaczej: reguła łapie więcej awarii drzwi (43 wobec 34), model awarie napędu (12 wobec 0)
+   i hamulca/lin (4 wobec 0).
+5. Przerwa 7 dni dla tej samej windy jest kosztowna: przy p* bez przerwy wartość rośnie do 261 300 PLN (10,9 alarmu
+   tygodniowo). Ten wynik zakłada jednak, że wizyta nie zmienia ryzyka windy w kolejnym tygodniu, czego dane
+   historyczne (bez wizyt po alarmach) nie pokazują; decyzja o przerwie należy do działu technicznego.
 
 ## Definicje i decyzje
 
@@ -46,6 +50,24 @@ Stan: 2026-11-16, baza `domilo.duckdb` (eksport 2026-09-30). Model `v2b_lgbm_cza
   `drzwi_ponowne_otwarcia_do_normy_24h` (ta sama reguła co w [evals/porownanie.md](../evals/porownanie.md); brak
   pomiaru = najniższa pozycja). Dodatkowo ranking losowy (1 000 symulacji) i „wyrocznia” (ranking = `awaria_7d`,
   wiedza o przyszłości) jako górna granica przy 3 alarmach tygodniowo.
+- **Wartość (założenia użytkownika, `maintenance_bc/zalozenia.yaml`):** trafny alarm = skuteczność × koszt awarii
+  ponad naprawę planową − wizyta = 0,85 × 4 000 − 650 = 2 750 PLN; fałszywy = −650 PLN. Koszt awarii 4 000 PLN =
+  dopłata za tryb pilny 1 710 (FinKs) + rekompensaty 290 (PMS) + skargi 800 i uwolnienia z kabiny 1 200 (szacunek
+  kierownika działu technicznego); wizyta 650 PLN (FinKs); skuteczność 0,85, zakres 0,70–0,95 (ocena koordynatora).
+  Wartość liczymy na alarmach, tak jak podał użytkownik: alarm, w którego oknie zaczęły się dwie awarie, liczy się raz.
+  Historycznie nikt nie jechał na alarm, więc wartość to symulacja „co by było” oparta na skuteczności 0,85.
+- **Próg opłacalności** p* = 650 / (0,85 × 4 000) = 0,191: przy prawdopodobieństwie awarii p* wartość oczekiwana
+  alarmu wynosi 0 (p* × 2 750 − (1 − p*) × 650 = 0). Przy skuteczności 0,70: p* = 0,232; przy 0,95: p* = 0,171.
+- **Kalibracja:** wynik LightGBM nie jest prawdopodobieństwem z założenia (`failure_model/base.py`), więc p* stosujemy
+  do ryzyka po regresji izotonicznej dopasowanej na walidacji 2025-07-01 – 2025-12-31 (20 433 wiersze, 112 wind; ta
+  sama walidacja wybrała liczbę drzew). Test 2026 nie służy do kalibracji. Reguła p*: w każdy poniedziałek alarm dostają
+  wszystkie windy z ryzykiem ≥ p*, przerwa 7 dni bez zmian. Baseline kalibrujemy tak samo (izotonia na walidacji).
+- **Krzywa wartości:** ta sama reguła z limitem k = 1 … 30 alarmów w poniedziałek (ranking na surowym wyniku, przerwa
+  7 dni). Punkt p* nie leży na krzywej: liczba alarmów zmienia się co tydzień, na osi jest średnia.
+- **Koszt limitu** = wartość reguły p* bez limitu − wartość reguły 3 alarmów. Najlepsze k na krzywej (6 alarmów,
+  154 400 PLN) wybrano na teście, więc jest optymistyczne; p* ustalono z góry z kosztów i walidacji.
+- **Skala roku** = wartość w teście × 52 / 38 (52 poniedziałki z alarmem w roku; decyzja metodyczna). Test obejmuje
+  styczeń – wrzesień, więc sezonowość października – grudnia nie jest w nim widoczna.
 - **95% CI:** bootstrap tygodni (10 000 losowań 38 tygodni ze zwracaniem, te same dla modelu i baseline). Tygodnie
   nie są całkiem niezależne (przerwa łączy sąsiednie tygodnie), więc przedziały są przybliżone.
 
@@ -149,14 +171,110 @@ Przedziały w nawiasach: 95% CI z bootstrapu tygodni (model i baseline). „Zła
 | model bez przerwy (`przerwa_dni = 0`) | 61 | 1,2 | 34,0 | 81,5 | 127,0 | 152,2 | 9 |
 | wyrocznia (zna `awaria_7d`) | 114 | 1,2 | 33,5 | 88,9 | 121,3 | 157,8 | 16 |
 
+### T7. Wartość w PLN: limit 3 alarmów i próg p* (skuteczność 0,85)
+
+„średnie p alarmów” = średnie skalibrowane ryzyko wind z alarmem (oczekiwana precyzja); wartość = trafne × 2 750 −
+fałszywe × 650 PLN; skala roku = × 52 / 38. Baseline z progiem p*: ryzyko reguły skalibrowane tak samo na walidacji.
+
+| ranking | reguła alarmu | alarmy | alarmy / tydzień (min–max) | trafne | precyzja | średnie p alarmów | złapane awarie (z 322) | wartość w teście (PLN) | wartość w skali roku (PLN) |
+|---|---|---:|---|---:|---:|---:|---:|---:|---:|
+| model | 3 alarmy w poniedziałek, przerwa 7 dni | 114 | 3,0 (3–3) | 56 | 49,1% | 0,508 | 57 | 116 300 | 159 147 |
+| model | p ≥ p* bez limitu, przerwa 7 dni | 291 | 7,7 (2–15) | 99 | 34,0% | 0,363 | 100 | 147 450 | 201 774 |
+| model | p ≥ p* bez limitu, bez przerwy | 414 | 10,9 (6–19) | 156 | 37,7% | 0,388 | 157 | 261 300 | 357 568 |
+| baseline: reguła drzwi | 3 alarmy w poniedziałek, przerwa 7 dni | 114 | 3,0 (3–3) | 50 | 43,9% | 0,445 | 51 | 95 900 | 131 232 |
+| baseline: reguła drzwi | p ≥ p* bez limitu, przerwa 7 dni | 126 | 3,3 (1–9) | 60 | 47,6% | 0,471 | 61 | 122 100 | 167 084 |
+| baseline: reguła drzwi | p ≥ p* bez limitu, bez przerwy | 168 | 4,4 (2–9) | 79 | 47,0% | 0,492 | 80 | 159 400 | 218 126 |
+
+### T8. Koszt limitu 3 alarmów i wrażliwość na skuteczność wizyty (model, przerwa 7 dni)
+
+Koszt limitu = wartość reguły p* bez limitu − wartość 3 alarmów tygodniowo. Ostatnia kolumna: k z najwyższą wartością
+na krzywej (wybrane na teście, więc optymistyczne). Przy skuteczności 0,95 reguła p* daje tę samą liczbę alarmów
+i trafnych co przy 0,85 (291 i 99): skalibrowane ryzyko jest schodkowe (izotonia), więc niższy próg nie dodał alarmów.
+
+| skuteczność | p* | wartość trafnego (PLN) | model, 3 / tydz.: wartość w teście | model, p*: alarmy / tydz. | model, p*: precyzja | model, p*: wartość w teście | koszt limitu w teście | koszt limitu w skali roku | najlepsze k na krzywej (wartość w teście) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+| 0,85 | 0,191 | 2 750 | 116 300 | 7,7 | 34,0% | 147 450 | 31 150 | 42 626 | 6 (154 400) |
+| 0,70 | 0,232 | 2 150 | 82 700 | 6,8 | 37,7% | 105 400 | 22 700 | 31 063 | 5 (103 300) |
+| 0,95 | 0,171 | 3 150 | 138 700 | 7,7 | 34,0% | 187 050 | 48 350 | 66 163 | 6 (190 000) |
+
+### T9. Model − baseline w PLN (bootstrap tygodni, 10 000 losowań, skuteczność 0,85)
+
+| reguła alarmu | model (PLN) | reguła (PLN) | model − reguła | 95% CI |
+|---|---:|---:|---:|---|
+| 3 alarmy / tydzień | 116 300 | 95 900 | 20 400 | −6 800 … 47 600 |
+| p ≥ p* bez limitu | 147 450 | 122 100 | 25 350 | −12 552 … 61 300 |
+
+### T10. Krzywa wartości: limit k alarmów w poniedziałek (przerwa 7 dni, skuteczność 0,85)
+
+![Wartość alarmów wind w PLN od liczby alarmów tygodniowo](img/b4_krzywa_wartosci.png)
+
+Pas = model przy skuteczności 0,70–0,95. Kółko: limit 3 alarmów; romb: reguła p* bez limitu (oś X = średnia liczba
+alarmów w tygodniu). Dane wykresu:
+
+| alarmy / tydzień | model: trafne / alarmy | model: wartość (PLN) | reguła: trafne / alarmy | reguła: wartość (PLN) |
+|---:|---:|---:|---:|---:|
+| 1 | 27 / 38 | 67 100 | 19 / 38 | 39 900 |
+| 2 | 45 / 76 | 103 600 | 39 / 76 | 83 200 |
+| 3 | 56 / 114 | 116 300 | 50 / 114 | 95 900 |
+| 4 | 70 / 152 | 139 200 | 57 / 152 | 95 000 |
+| 5 | 81 / 190 | 151 900 | 67 / 190 | 104 300 |
+| 6 | 89 / 228 | 154 400 | 72 / 228 | 96 600 |
+| 7 | 95 / 266 | 150 100 | 75 / 266 | 82 100 |
+| 8 | 101 / 304 | 145 800 | 76 / 304 | 60 800 |
+| 9 | 98 / 342 | 110 900 | 77 / 342 | 39 500 |
+| 10 | 99 / 380 | 89 600 | 79 / 380 | 21 600 |
+| 11 | 103 / 418 | 78 500 | 78 / 418 | −6 500 |
+| 12 | 110 / 456 | 77 600 | 80 / 456 | −24 400 |
+| 13 | 111 / 494 | 56 300 | 84 / 494 | −35 500 |
+| 14 | 114 / 532 | 41 800 | 85 / 532 | −56 800 |
+| 15 | 111 / 570 | 6 900 | 92 / 570 | −57 700 |
+| 16 | 111 / 608 | −17 800 | 95 / 608 | −72 200 |
+| 17 | 113 / 646 | −35 700 | 95 / 646 | −96 900 |
+| 18 | 115 / 684 | −53 600 | 97 / 684 | −114 800 |
+| 19 | 119 / 722 | −64 700 | 99 / 722 | −132 700 |
+| 20 | 117 / 760 | −96 200 | 98 / 760 | −160 800 |
+| 21 | 124 / 798 | −97 100 | 101 / 798 | −175 300 |
+| 22 | 126 / 836 | −115 000 | 100 / 836 | −203 400 |
+| 23 | 125 / 874 | −143 100 | 101 / 874 | −224 700 |
+| 24 | 126 / 912 | −164 400 | 102 / 912 | −246 000 |
+| 25 | 127 / 950 | −185 700 | 104 / 950 | −263 900 |
+| 26 | 127 / 988 | −210 400 | 101 / 988 | −298 800 |
+| 27 | 127 / 1026 | −235 100 | 104 / 1026 | −313 300 |
+| 28 | 128 / 1064 | −256 400 | 106 / 1064 | −331 200 |
+| 29 | 128 / 1102 | −281 100 | 108 / 1102 | −349 100 |
+| 30 | 128 / 1140 | −305 800 | 108 / 1140 | −373 800 |
+
+### T11. Kalibracja ryzyka modelu na teście (izotonia dopasowana na walidacji 2025-07 – 2025-12)
+
+Brier na teście: surowy wynik 0,04601, po kalibracji 0,04599; ROC AUC po kalibracji 0,7725 (izotonia robi remisy,
+surowy 0,773). Granica 0,191 = p*.
+
+| p (skalibrowane) | wiersze testu | średnie p | odsetek `awaria_7d` | wiersze w poniedziałki |
+|---|---:|---:|---:|---:|
+| [0,000; 0,020) | 466 | 0,014 | 0,024 | 78 |
+| [0,020; 0,050) | 29 278 | 0,029 | 0,029 | 4241 |
+| [0,050; 0,100) | 3 773 | 0,055 | 0,059 | 497 |
+| [0,100; 0,191) | 378 | 0,124 | 0,103 | 56 |
+| [0,191; 0,300) | 757 | 0,234 | 0,230 | 115 |
+| [0,300; 1,000) | 2 122 | 0,455 | 0,432 | 299 |
+| **razem test** | 36 774 | 0,0614 | 0,0600 | 5286 |
+| walidacja (dopasowanie) | 20 433 | 0,0575 | 0,0575 | — |
+
 ## SQL i kod
 
 Powtórzenie (z katalogu głównego; potrzebna baza z `dni_wind`, `cechy_windy`, `cechy_windy_tsfresh`, `pypyr baza`):
 
 ```bash
 cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.punkt_pracy   # tabele T1–T6 (ok. 1,5 min)
-poetry run pytest tests/test_alarmy_wind.py                                         # reguła, przerwa, okno, miary
+cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.wartosc_alarmow  # T7–T11 + wykres (ok. 1 min)
+poetry run pytest tests/test_alarmy_wind.py                                         # reguła, przerwa, próg, miary, PLN
 ```
+
+- Wartość: `api/api/contexts_boundaries/maintenance_bc/wartosc_alarmow.py` — `ekonomia(z, skutecznosc)` (wartość
+  trafnego / fałszywego alarmu i p*), `wartosc(trafne, alarmy, ekon)`, `kalibruj` (`IsotonicRegression` na walidacji),
+  `przebieg` (reguła z limitem albo progiem: `wybierz_alarmy(..., limit=None, prog=p*)`), `krzywa` (k = 1 … 30),
+  `bootstrap_roznicy` (T9), `rysuj` (`docs/img/b4_krzywa_wartosci.png`). Założenia: `wczytaj_zalozenia_pelne()`
+  (rozbicie 4 000 PLN, zakres skuteczności); skrypt sprawdza, że składniki sumują się do 4 000.
 
 - Reguła: `api/api/contexts_boundaries/maintenance_bc/alarmy_wind.py` — `wybierz_alarmy(ryzyko, limit, przerwa_dni,
   dzien_alarmu)` (ranking → alarmy), `ocen_alarmy(alarmy, awarie, poniedzialki)` (trafność, czułość, tygodnie,

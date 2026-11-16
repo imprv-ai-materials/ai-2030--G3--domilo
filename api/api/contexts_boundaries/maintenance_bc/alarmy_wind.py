@@ -26,9 +26,14 @@ OKNO = pd.Timedelta(days=7)
 PODZESPOLY_Z_SYGNALEM = ("drzwi", "naped", "hamulec_liny", "sterownik")
 
 
-def wczytaj_zalozenia(plik: Path = PLIK_ZALOZEN) -> dict[str, int]:
+def wczytaj_zalozenia_pelne(plik: Path = PLIK_ZALOZEN) -> dict[str, dict]:
+    """Cały zalozenia.yaml (z rozbiciem kosztu awarii i zakresem skuteczności)."""
+    return yaml.safe_load(plik.read_text(encoding="utf-8"))
+
+
+def wczytaj_zalozenia(plik: Path = PLIK_ZALOZEN) -> dict[str, float]:
     """{nazwa: wartosc} z zalozenia.yaml; brak wartości = błąd (liczby tylko od użytkownika)."""
-    z = yaml.safe_load(plik.read_text(encoding="utf-8"))
+    z = wczytaj_zalozenia_pelne(plik)
     wyj = {k: v["wartosc"] for k, v in z.items()}
     brak = [k for k, v in wyj.items() if v is None]
     if brak:
@@ -41,18 +46,29 @@ def moment(dzien: pd.Timestamp) -> pd.Timestamp:
     return (pd.Timestamp(dzien).normalize() + pd.Timedelta(hours=GODZINA_ALARMU)).tz_localize(STREFA)
 
 
-def wybierz_alarmy(ryzyko: pd.DataFrame, limit: int, przerwa_dni: int, dzien_alarmu: int = 0) -> pd.DataFrame:
+def wybierz_alarmy(
+    ryzyko: pd.DataFrame,
+    limit: int | None,
+    przerwa_dni: int,
+    dzien_alarmu: int = 0,
+    prog: float | None = None,
+) -> pd.DataFrame:
     """ryzyko: kolumny id_windy, dzien, ryzyko (wiersz = winda × dzień oceny o 06:00).
+    limit: najwięcej alarmów w dniu (None = bez limitu); prog: alarm tylko przy ryzyku >= prog (None = bez progu).
     Zwraca alarmy: dzien, pozycja (1 = najwyższe ryzyko), id_windy, ryzyko."""
     r = ryzyko[["id_windy", "dzien", "ryzyko"]].copy()
     r["dzien"] = pd.to_datetime(r["dzien"]).dt.normalize()
     r = r[r["dzien"].dt.day_of_week == dzien_alarmu]
+    if prog is not None:
+        r = r[r["ryzyko"] >= prog]
     ostatni: dict[str, pd.Timestamp] = {}
     wyj = []
     for dzien, grupa in r.groupby("dzien", sort=True):
         granica = dzien - pd.Timedelta(days=przerwa_dni)
         wolne = grupa[[not (w in ostatni and ostatni[w] >= granica) for w in grupa["id_windy"]]]
-        wybrane = wolne.sort_values(["ryzyko", "id_windy"], ascending=[False, True]).head(limit)
+        wybrane = wolne.sort_values(["ryzyko", "id_windy"], ascending=[False, True])
+        if limit is not None:
+            wybrane = wybrane.head(limit)
         for poz, (w, ryz) in enumerate(zip(wybrane["id_windy"], wybrane["ryzyko"], strict=True), start=1):
             ostatni[w] = dzien
             wyj.append((dzien, poz, w, float(ryz)))

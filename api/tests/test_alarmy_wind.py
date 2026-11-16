@@ -84,3 +84,32 @@ def test_ocena_precyzja_czulosc_wyprzedzenie():
     assert t.loc[PON, "awarie"] == 3 and t.loc[PON + TYDZ, "awarie"] == 1
     assert t.loc[PON, "trafne"] == 1 and t.loc[PON + TYDZ, "trafne"] == 0
     assert set(PODZESPOLY_Z_SYGNALEM) == {"drzwi", "naped", "hamulec_liny", "sterownik"}
+
+
+def test_prog_bez_limitu():
+    dni = [PON, PON + TYDZ]
+    r = _ryzyko(dni, {"A": [0.5, 0.5], "B": [0.3, 0.1], "C": [0.2, 0.25], "D": [0.1, 0.1]})
+    a = wybierz_alarmy(r, limit=None, przerwa_dni=7, prog=0.2)
+    # PON: A, B, C (>= 0,2); PON+7: A i C zablokowane przerwą, B poniżej progu
+    assert list(zip(a["dzien"], a["id_windy"], strict=True)) == [(PON, "A"), (PON, "B"), (PON, "C")]
+
+
+def test_zalozenia_ekonomiczne_i_wartosc():
+    from api.contexts_boundaries.maintenance_bc.alarmy_wind import wczytaj_zalozenia_pelne
+    from api.contexts_boundaries.maintenance_bc.wartosc_alarmow import ekonomia, wartosc
+
+    pelne = wczytaj_zalozenia_pelne()
+    skladniki = pelne["koszt_awarii_ponad_planowa"]["skladniki"]
+    assert sum(s["wartosc"] for s in skladniki.values()) == pelne["koszt_awarii_ponad_planowa"]["wartosc"] == 4000
+    assert pelne["skutecznosc"]["zakres"] == [0.70, 0.95]
+    for k in ("koszt_awarii_ponad_planowa", "koszt_wizyty", "skutecznosc", "alarmy_na_tydzien"):
+        assert pelne[k]["zrodlo"] and pelne[k]["odpowiedzialny"] is not None or k == "koszt_wizyty"
+    z = wczytaj_zalozenia()
+    e = ekonomia(z)
+    assert e["trafny"] == pytest.approx(0.85 * 4000 - 650)
+    assert e["falszywy"] == -650
+    assert e["prog"] == pytest.approx(650 / (0.85 * 4000))
+    # p*: alarm z prawdopodobieństwem p* ma zerową wartość oczekiwaną
+    assert e["prog"] * e["trafny"] + (1 - e["prog"]) * e["falszywy"] == pytest.approx(0)
+    assert wartosc(56, 114, e) == pytest.approx(56 * 2750 - 58 * 650)
+    assert ekonomia(z, 0.7)["prog"] == pytest.approx(650 / 2800)

@@ -108,7 +108,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   │                         # Parquet w dev/metabase/dane/; ostatni krok zadania lista-retencyjna (docs/panel_kampanii.md)
 │   └── maintenance_bc/       # serwis i windy; alarmy_wind.py: reguła alarmu (pon. 06:00, 3 windy o najwyższym
 │                             # ryzyku, przerwa 7 dni; zalozenia.yaml), punkt_pracy.py: ocena na teście v2b
-│                             # (precyzja, czułość, wyprzedzenie tydzień po tygodniu; docs/b4_punkt_pracy.md)
+│                             # (precyzja, czułość, wyprzedzenie tydzień po tygodniu; docs/b4_punkt_pracy.md);
+│                             # wartosc_alarmow.py: PLN alarmów (trafny = skuteczność × koszt awarii − wizyta), p*
+│                             # na ryzyku skalibrowanym izotonią na walidacji, krzywa wartości, koszt limitu
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
 │   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)

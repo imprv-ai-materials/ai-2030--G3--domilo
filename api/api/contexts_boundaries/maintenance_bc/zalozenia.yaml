@@ -1,9 +1,14 @@
-# Stałe operacyjne alarmów o awariach wind (maintenance_bc).
+# Stałe operacyjne i ekonomiczne alarmów o awariach wind (maintenance_bc).
 #
-# Zasada (CLAUDE.md): liczby tylko od użytkownika, każda z opisem źródła i datą.
+# Zasada (CLAUDE.md): liczby tylko od użytkownika, każda z opisem źródła, datą i osobą odpowiedzialną.
 # Każda pozycja: wartosc, jednostka, opis, zrodlo (kto i kiedy podał), data (od kiedy obowiązuje), odpowiedzialny.
-# Odczyt: api.contexts_boundaries.maintenance_bc.alarmy_wind.wczytaj_zalozenia().
-# Użycie: reguła alarmu (maintenance_bc/alarmy_wind.py, docs/b4_punkt_pracy.md).
+# Odczyt: api.contexts_boundaries.maintenance_bc.alarmy_wind.wczytaj_zalozenia() (same wartości) i
+# wczytaj_zalozenia_pelne() (z rozbiciem kosztu i zakresem skuteczności).
+# Użycie: reguła alarmu (maintenance_bc/alarmy_wind.py) i wartość alarmów (maintenance_bc/wartosc_alarmow.py):
+#   wartość trafnego alarmu = skutecznosc × koszt_awarii_ponad_planowa − koszt_wizyty,
+#   wartość fałszywego alarmu = − koszt_wizyty,
+#   próg opłacalności p* = koszt_wizyty / (skutecznosc × koszt_awarii_ponad_planowa)
+# (docs/b4_punkt_pracy.md). Osoby: użytkownik nie podał nazwisk, tylko role.
 
 alarmy_na_tydzien:
   wartosc: 3
@@ -13,9 +18,10 @@ alarmy_na_tydzien:
     o najwyższym ryzyku.
   zrodlo: >
     Podane przez użytkownika w czacie 2026-11-16: „dział techniczny przyjmie najwyżej 3 alarmy tygodniowo dla
-    wszystkich 140 wind”.
+    wszystkich 140 wind”; potwierdzone 2026-11-16: „limit 3 alarmy tygodniowo (ten sam kierownik)”, czyli
+    kierownik działu technicznego.
   data: 2026-11-16
-  odpowiedzialny: null  # nie podano osoby w dziale technicznym
+  odpowiedzialny: kierownik działu technicznego
 
 dzien_alarmu:
   wartosc: 0
@@ -26,7 +32,7 @@ dzien_alarmu:
     Podane przez użytkownika w czacie 2026-11-16: „w każdy poniedziałek o 06:00 alarm dostają 3 windy o najwyższym
     ryzyku”.
   data: 2026-11-16
-  odpowiedzialny: null
+  odpowiedzialny: null  # nie podano
 
 przerwa_dni:
   wartosc: 7
@@ -40,4 +46,53 @@ przerwa_dni:
     Podane przez użytkownika w czacie 2026-11-16: „ta sama winda najwyżej raz na 7 dni (przerwa)”;
     interpretację „włącznie z dniem 7.” przyjęto w tej pracy.
   data: 2026-11-16
-  odpowiedzialny: null
+  odpowiedzialny: null  # nie podano
+
+koszt_awarii_ponad_planowa:
+  wartosc: 4000
+  jednostka: PLN na jedną awarię windy (ponad koszt tej samej naprawy wykonanej planowo)
+  opis: >
+    Ile więcej kosztuje awaria niż naprawa planowa po alarmie. Suma czterech składników (niżej); dwa pochodzą
+    z systemów (FinKs, PMS), dwa to szacunek. Wartości nie wyliczano z data/.
+  skladniki:
+    doplata_tryb_pilny:
+      wartosc: 1710
+      zrodlo: FinKs (dopłata za tryb pilny serwisu)
+    rekompensaty:
+      wartosc: 290
+      zrodlo: PMS (rekompensaty dla najemców)
+    skargi:
+      wartosc: 800
+      zrodlo: szacunek kierownika działu technicznego
+    uwolnienia_z_kabiny:
+      wartosc: 1200
+      zrodlo: szacunek kierownika działu technicznego
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „koszt awarii ponad naprawę planową 4 000 PLN = dopłata za tryb
+    pilny 1 710 (FinKs) + rekompensaty 290 (PMS) + skargi 800 i uwolnienia z kabiny 1 200 (szacunek kierownika
+    działu technicznego)”.
+  data: 2026-11-16
+  odpowiedzialny: kierownik działu technicznego
+
+koszt_wizyty:
+  wartosc: 650
+  jednostka: PLN za jedną wizytę technika po alarmie (trafnym i fałszywym)
+  opis: >
+    Koszt sprawdzenia windy po alarmie. Płacimy go przy każdym alarmie, także fałszywym.
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „wizyta 650 PLN (FinKs)”.
+  data: 2026-11-16
+  odpowiedzialny: null  # nie podano; źródło FinKs
+
+skutecznosc:
+  wartosc: 0.85
+  zakres: [0.70, 0.95]
+  jednostka: odsetek (0–1) trafnych alarmów, po których wizyta zapobiega awarii
+  opis: >
+    Jaka część awarii zostaje uniknięta, gdy technik przyjdzie po trafnym alarmie. Wartość środkowa 0,85,
+    zakres niepewności 0,70–0,95 (wrażliwość w docs/b4_punkt_pracy.md).
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „skuteczność 0,85 (0,7-0,95, ocena koordynatora)”;
+    to ocena ekspercka, nie wartość z danych.
+  data: 2026-11-16
+  odpowiedzialny: koordynator (serwisu wind; nie podano nazwiska)

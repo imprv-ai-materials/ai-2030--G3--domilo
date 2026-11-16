@@ -85,3 +85,14 @@ rankingu `drzwi_ponowne_otwarcia_do_normy_24h`. 95% CI: bootstrap tygodni (10 00
 Model − baseline: precyzja +5,3 pp (−1,8 … +12,3 pp), czułość +1,9 pp (−0,6 … +4,5 pp), czułość dla awarii
 z sygnałem +3,7 pp (+0,0 … +7,8 pp). W tym punkcie pracy przewaga modelu nad regułą **nie jest potwierdzona**
 (przedziały obejmują 0 albo na nim się kończą), choć PR-AUC na wszystkich dniach jest wyraźnie lepsze (wyżej).
+
+Wartość w PLN (założenia użytkownika, `maintenance_bc/zalozenia.yaml`: trafny alarm = 0,85 × 4 000 − 650 = 2 750 PLN,
+fałszywy −650 PLN; p* = 650 / (0,85 × 4 000) = 0,191 na ryzyku skalibrowanym izotonią na walidacji 2025-07 – 12):
+
+| Ranking | 3 alarmy / tydz.: wartość w teście | p ≥ p* bez limitu: alarmy / tydz., precyzja, wartość w teście | Koszt limitu (test / rok) |
+|---|---:|---|---|
+| reguła `drzwi_ponowne_otwarcia_do_normy_24h` (baseline) | 95 900 PLN | 3,3; 47,6%; 122 100 PLN | 26 200 / 35 853 PLN |
+| **v2b_lgbm_czas_winda** | 116 300 PLN (rok: 159 147) | 7,7; 34,0%; 147 450 PLN (rok: 201 774) | 31 150 / 42 626 PLN |
+
+Model − baseline: 3 alarmy +20 400 PLN (−6 800 … +47 600), p* +25 350 PLN (−12 552 … +61 300); przewaga modelu
+w PLN **nie jest potwierdzona**. Rok = test × 52 / 38.
