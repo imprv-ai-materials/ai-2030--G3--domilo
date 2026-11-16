@@ -22,6 +22,7 @@ padł). Kroki przekazują sobie dane przez pliki Parquet w katalogu przebiegu
 - Kampania: z wywołania albo `kampania_RRRRqN` według kwartału miesiąca końca umowy minus 2 miesiące (oferta idzie
   45 dni przed końcem): końce 2026-12 – 2027-02 -> kampania_2026q4, 2027-03 – 2027-05 -> kampania_2027q1 itd.
 - Zapis: tabela lista_retencyjna, zastępuje cały dzień listy (adapters/lista_retencyjna.py).
+- Panel: pliki Parquet panelu kampanii w Metabase (retention_bc/panel_kampanii.py, dev/metabase/), z najnowszą listą.
 
 Ręcznie (bez Inngest): `pypyr lista_retencyjna [data=RRRR-MM-DD] [kampania=...]` albo
 `cd api && poetry run python -m api.contexts_boundaries.retention_bc.lista_retencyjna [RRRR-MM-DD] [kampania]`.
@@ -41,6 +42,7 @@ from api.adapters import lista_retencyjna
 from api.adapters.duckdb_baza import KATALOG_REPO, SCIEZKA_BAZY, polaczenie
 from api.ai.churn_model.base import wczytaj_obecny
 from api.ai.features.najemcy.cechy_okresow import okresy_umow
+from api.contexts_boundaries.retention_bc import panel_kampanii
 from api.contexts_boundaries.retention_bc.oferta_najmu import (
     decyzja,
     miesci_sie_w_budzecie,
@@ -283,6 +285,11 @@ def krok_zapis(
     }
 
 
+def krok_panel(sciezka: Path = SCIEZKA_BAZY, katalog_panelu: Path = panel_kampanii.KATALOG_PANELU) -> dict:
+    """Odświeża dane panelu kampanii (Metabase czyta pliki Parquet przy każdym zapytaniu)."""
+    return {"katalog": str(katalog_panelu), "wiersze": panel_kampanii.zbuduj_panel(sciezka, katalog_panelu)}
+
+
 # --- przebieg -------------------------------------------------------------------------------------------------------
 
 
@@ -293,6 +300,7 @@ def wykonaj_liste_retencyjna(
     kampania: str | None = None,
     sciezka: Path = SCIEZKA_BAZY,
     katalog_bazowy: Path = KATALOG_PRZEBIEGOW,
+    katalog_panelu: Path = panel_kampanii.KATALOG_PANELU,
 ) -> dict:
     """Kolejność kroków; `krok(id, handler, *args)` = ctx.step.run w Inngest (w testach i CLI: wywołanie wprost)."""
     par = krok("parametry", krok_parametry, data_listy, id_przebiegu, str(katalog_bazowy), kampania)
@@ -304,6 +312,7 @@ def wykonaj_liste_retencyjna(
     wynik["grupy"] = krok("grupy-kampanii", krok_grupy, kat, par["kampania"])
     wersje = (wynik["ryzyko"]["wersja_modelu"], wynik["uplift"]["wersja_modelu"])
     wynik["zapis"] = krok("zapis-listy", krok_zapis, kat, dzien, stan, *wersje, id_przebiegu, sciezka)
+    wynik["panel"] = krok("panel-kampanii", krok_panel, sciezka, str(katalog_panelu))
     return wynik
 
 

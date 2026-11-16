@@ -1,0 +1,25 @@
+# Metabase z panelem kampanii retencyjnej (docs/panel_kampanii.md). Start: `pypyr metabase` (z katalogu głównego).
+# Sterownik DuckDB (motherduckdb/metabase_duckdb_driver 1.5.6.0) obsługuje Metabase 0.62.19 i 0.63.17
+# (metabase_versions.json sterownika). Pobiera go dev/metabase/konfiguruj.py do plugins/ (poza gitem).
+# Obraz budujemy z Dockerfile (glibc), bo oficjalny obraz (Alpine) nie ma libstdc++ dla DuckDB.
+# Dane: dane/panel_kampanii.duckdb (retention_bc/panel_kampanii.py), stan Metabase (H2): stan/ (poza gitem).
+name: domilo-metabase
+services:
+  metabase:
+    build: .
+    image: domilo-metabase:v0.63.17-duckdb1.5.6
+    container_name: domilo-metabase
+    ports:
+      - "3300:3000"
+    environment:
+      MB_PLUGINS_DIR: /plugins
+      MB_DB_FILE: /stan/metabase.db
+      MB_SITE_LOCALE: pl
+      MB_ANON_TRACKING_ENABLED: "false"
+      MB_CHECK_FOR_UPDATES: "false"
+      JAVA_TIMEZONE: Europe/Warsaw
+    volumes:
+      - ./plugins:/plugins
+      - ./stan:/stan
+      - ./dane:/dane
+    restart: unless-stopped

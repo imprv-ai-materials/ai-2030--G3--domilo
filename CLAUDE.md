@@ -73,6 +73,9 @@ docs/                         # raporty (wnioski → tabele → SQL i kod)
 evals/porownanie.md           # model vs baseline, wszystkie cztery modele
 dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml, mock_lejek.yaml)
 ├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
+├── metabase/                 # Metabase 0.63.17 + sterownik DuckDB 1.5.6.0 (port 3300; pypyr metabase): panel kampanii
+│                             # dla marketingu; czyta Parquet z dane/ (DuckDB :memory: + widoki read_parquet), bo
+│                             # sterownik (DuckDB 1.5) nie otwiera domilo.duckdb; plugins/, stan/, dane/, .env poza gitem
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 ├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, /risk/{id_najmu}, Inngest (pypyr api)
 ├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka),
@@ -100,6 +103,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   │                         # i polityki rabatów na rok (docs/polityka_rabatow.md)
 │   │                         # lista_retencyjna.py: kroki zadania lista-retencyjna (current.yaml listy, grupa =
 │   │                         # md5_number(id_umowy:kampania) % 100 < 20 -> kontrola; docs/lista_retencyjna.md)
+│   │                         # panel_kampanii.py: tabele panelu Metabase (lista tygodnia, wynik kampanii Q3) jako
+│   │                         # Parquet w dev/metabase/dane/; ostatni krok zadania lista-retencyjna (docs/panel_kampanii.md)
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)

@@ -49,3 +49,8 @@ dev/mock_lejek/stan*.tmp
 
 # Lista retencyjna (retention_bc/lista_retencyjna.py): pliki pośrednie przebiegów
 lista_retencyjna/
+
+# Metabase (dev/metabase/): sterownik DuckDB, stan aplikacji (H2), dane panelu i hasło administratora (.env)
+dev/metabase/plugins/
+dev/metabase/stan/
+dev/metabase/dane/

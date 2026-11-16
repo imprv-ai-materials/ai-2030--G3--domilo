@@ -62,6 +62,7 @@ kolejka = { pipeline_name = "dev/kolejka" }
 kolejka_wstecz = { pipeline_name = "dev/kolejka_wstecz" }
 mock_lejek = { pipeline_name = "dev/mock_lejek" }
 lista_retencyjna = { pipeline_name = "dev/lista_retencyjna" }
+metabase = { pipeline_name = "dev/metabase" }
 
 [tool.pytest.ini_options]
 pythonpath = ["api"]

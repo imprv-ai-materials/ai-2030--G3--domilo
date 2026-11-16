@@ -160,7 +160,11 @@ def dwa_przebiegi(tmp_path_factory):
     shutil.copyfile(SCIEZKA_BAZY, baza)
     wyniki, tabele = [], []
     for n in (1, 2):
-        wyniki.append(lr.wykonaj_liste_retencyjna(_wprost, f"test-{n}", DZIEN, sciezka=baza, katalog_bazowy=katalog))
+        wyniki.append(
+            lr.wykonaj_liste_retencyjna(
+                _wprost, f"test-{n}", DZIEN, sciezka=baza, katalog_bazowy=katalog, katalog_panelu=katalog / "panel"
+            )
+        )
         with polacz(baza) as con:
             tabele.append(tabela.wczytaj(con, date.fromisoformat(DZIEN)))
     return wyniki, tabele
@@ -183,3 +187,11 @@ def test_lista_ma_okno_60_66_dni_grupy_z_hasha_i_oferte_tylko_w_polityce(dwa_prz
     assert not t.loc[t["grupa"] == "kontrola", "wyslac_oferte"].any()
     assert (t["wyslac_oferte"] == ((t["grupa"] == "polityka") & (t["akcja"] == "rabat"))).all()
     assert t["ryzyko"].between(0, 1).all() and t["rmst60_mies"].between(0, 60).all()
+
+
+def test_przebieg_odswieza_panel_kampanii_najnowsza_lista(dwa_przebiegi):
+    wyniki, (t, _) = dwa_przebiegi
+    panel = wyniki[1]["panel"]
+    assert panel["wiersze"]["lista_tydzien"] == len(t)
+    lista = pd.read_parquet(f"{panel['katalog']}/lista_tydzien.parquet")
+    assert sorted(lista["id_umowy"]) == sorted(t["id_umowy"])

@@ -1,0 +1,13 @@
+steps:
+  - name: pypyr.steps.cmd
+    description: >
+      Panel kampanii retencyjnej w Metabase (docs/panel_kampanii.md): dane panelu (Parquet w dev/metabase/dane/),
+      sterownik DuckDB, kontener Metabase (port 3300) i konfiguracja przez API (konto, baza, karty, panel, link publiczny).
+      Wymaga Dockera i domilo.duckdb z tabelą lista_retencyjna (pypyr lista_retencyjna).
+    in:
+      cmd:
+        - run: poetry run python -m api.contexts_boundaries.retention_bc.panel_kampanii
+          cwd: api
+        - poetry run python dev/metabase/konfiguruj.py --tylko-sterownik
+        - docker compose -f dev/metabase/compose.yaml up -d --build
+        - poetry run python dev/metabase/konfiguruj.py
