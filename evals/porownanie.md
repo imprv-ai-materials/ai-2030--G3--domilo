@@ -50,3 +50,19 @@ v4 − v1 na operatach: −1,74 pp (−2,22 … −1,29), więc v4 zastąpiła v
 (+0,93 pp), testowe dopasowania ze zdjęciami 8,56% wobec 7,89%. Tokeny na 1 000 opisów: 1,66 mln wejścia
 (1,51 mln z cache OpenAI), 59 tys. wyjścia; na 1 000 lokali ze zdjęciami: 3,42 mln wejścia (1,30 mln z cache),
 61 tys. wyjścia; koszt w zł: brak cennika w danych.
+
+### Alerty o awariach wind: etykieta awarii z notatek, LLM `awaria_v1` (2026-11-16, [b4_ekstrakcja.md](../docs/b4_ekstrakcja.md))
+
+To nie model alertów, tylko etykieta (target) do jego uczenia. Prawda: `serwis_zloty_zbior` (400 zgłoszeń wind,
+etykiety koordynatora). Baseline: `kategoria = 'awaria'` z Serwisownika. 95% CI z bootstrapu zgłoszeń
+(2 000 losowań, te same dla obu metod).
+
+| Metoda | TP | FP | FN | TN | Precision | Recall | F1 (95% CI) |
+|---|---:|---:|---:|---:|---:|---:|---|
+| `kategoria = 'awaria'` (baseline) | 55 | 2 | 125 | 218 | 96,5% | 30,6% | 46,4% (38,8–53,9%) |
+| LLM `awaria_v1` (notatki, bez kategorii) | 176 | 0 | 4 | 220 | 100,0% | 97,8% | **98,9%** (97,7–99,7%) |
+
+LLM − baseline: F1 +52,5 p.p. (+45,0 … +60,1), recall +67,2 p.p. (+60,1 … +73,8). Podzespół trafny w 157 ze 180
+prawdziwych awarii (87,2%); 19 trafionych awarii bez podzespołu ma notatki bez przyczyny. Zastrzeżenie: prompt
+układany po wglądzie w część złotego zbioru, a notatki są szablonowe (150 różnych treści na 573 notatki). Wynik jest
+więc optymistyczny, a etykietę trzeba potwierdzić na świeżo oznaczonych zgłoszeniach.

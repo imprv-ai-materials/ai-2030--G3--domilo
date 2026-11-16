@@ -129,6 +129,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     └── llm/
         ├── ekstrakcja_awarii.py # awaria windy z notatek (prompt awaria_v1, schemat schemas/awaria.py): wejście =
         │                     # zgłoszenie + wszystkie notatki, bez kategorii; wynik features/windy/awarie_llm/*.parquet
+        ├── evals/            # m.in. ocena_awarii.py: ekstrakcja awarii wobec serwis_zloty_zbior i kategorii „awaria”
+        │                     # (precision / recall / F1 z bootstrapem, podzespół; docs/b4_ekstrakcja.md)
         ├── prompts/          # prompty
         ├── schemas/          # schematy odpowiedzi
         └── cache/            # cache odpowiedzi LLM (poza gitem; klucz sha256(wersja promptu + wejście),
