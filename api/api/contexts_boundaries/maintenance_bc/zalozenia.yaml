@@ -1,0 +1,43 @@
+# Stałe operacyjne alarmów o awariach wind (maintenance_bc).
+#
+# Zasada (CLAUDE.md): liczby tylko od użytkownika, każda z opisem źródła i datą.
+# Każda pozycja: wartosc, jednostka, opis, zrodlo (kto i kiedy podał), data (od kiedy obowiązuje), odpowiedzialny.
+# Odczyt: api.contexts_boundaries.maintenance_bc.alarmy_wind.wczytaj_zalozenia().
+# Użycie: reguła alarmu (maintenance_bc/alarmy_wind.py, docs/b4_punkt_pracy.md).
+
+alarmy_na_tydzien:
+  wartosc: 3
+  jednostka: alarmy tygodniowo dla wszystkich 140 wind razem
+  opis: >
+    Najwięcej alarmów, które dział techniczny przyjmie i sprawdzi w ciągu tygodnia. Reguła wybiera tyle wind
+    o najwyższym ryzyku.
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „dział techniczny przyjmie najwyżej 3 alarmy tygodniowo dla
+    wszystkich 140 wind”.
+  data: 2026-11-16
+  odpowiedzialny: null  # nie podano osoby w dziale technicznym
+
+dzien_alarmu:
+  wartosc: 0
+  jednostka: dzień tygodnia (0 = poniedziałek, jak pandas day_of_week), ocena o 06:00 Europe/Warsaw
+  opis: >
+    Alarmy wychodzą raz w tygodniu, w poniedziałek o 06:00 (to moment predykcji z dni_wind, docs/b4_target.md).
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „w każdy poniedziałek o 06:00 alarm dostają 3 windy o najwyższym
+    ryzyku”.
+  data: 2026-11-16
+  odpowiedzialny: null
+
+przerwa_dni:
+  wartosc: 7
+  jednostka: dni po alarmie, w których ta sama winda nie dostaje kolejnego alarmu (włącznie z dniem 7.)
+  opis: >
+    „Ta sama winda najwyżej raz na 7 dni (przerwa)”. Interpretacja (do potwierdzenia): winda z alarmem w dniu t
+    nie dostaje alarmu w dniach t+1 … t+7, więc przy alarmach co poniedziałek nie dostanie alarmu w następny
+    poniedziałek (najwcześniej po 14 dniach). Wariant „odstęp ≥ 7 dni” przy alarmach co poniedziałek niczego
+    nie blokuje; jego wynik jest w docs/b4_punkt_pracy.md jako wariant bez przerwy.
+  zrodlo: >
+    Podane przez użytkownika w czacie 2026-11-16: „ta sama winda najwyżej raz na 7 dni (przerwa)”;
+    interpretację „włącznie z dniem 7.” przyjęto w tej pracy.
+  data: 2026-11-16
+  odpowiedzialny: null

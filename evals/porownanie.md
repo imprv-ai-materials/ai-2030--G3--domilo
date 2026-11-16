@@ -66,3 +66,22 @@ LLM − baseline: F1 +52,5 p.p. (+45,0 … +60,1), recall +67,2 p.p. (+60,1 … 
 prawdziwych awarii (87,2%); 19 trafionych awarii bez podzespołu ma notatki bez przyczyny. Zastrzeżenie: prompt
 układany po wglądzie w część złotego zbioru, a notatki są szablonowe (150 różnych treści na 573 notatki). Wynik jest
 więc optymistyczny, a etykietę trzeba potwierdzić na świeżo oznaczonych zgłoszeniach.
+
+### Alerty o awariach wind: punkt pracy 3 alarmy w tygodniu (2026-11-16, [b4_punkt_pracy.md](../docs/b4_punkt_pracy.md))
+
+Reguła (`maintenance_bc/alarmy_wind.py`): w każdy poniedziałek o 06:00 alarm dostają 3 windy o najwyższym ryzyku,
+ta sama winda nie dostaje alarmu w 7 dni po poprzednim (stałe od użytkownika: `maintenance_bc/zalozenia.yaml`).
+Alarm trafny = start awarii w (06:00; 06:00 + 7 dni]. Okres testowy v2b: 38 poniedziałków 2026-01-05 – 2026-09-21,
+322 awarie w ich oknach (216 z sygnałem: drzwi, napęd, hamulec/liny, sterownik). Baseline: ta sama reguła na
+rankingu `drzwi_ponowne_otwarcia_do_normy_24h`. 95% CI: bootstrap tygodni (10 000 losowań, te same dla obu).
+
+| Ranking | Alarmy | Trafne | Precyzja (95% CI) | Czułość (95% CI) | Czułość, awarie z sygnałem (95% CI) | Mediana wyprzedzenia |
+|---|---:|---:|---|---|---|---:|
+| reguła `drzwi_ponowne_otwarcia_do_normy_24h` (baseline) | 114 | 50 | 43,9% (34,2% … 53,5%) | 15,8% (12,2% … 19,9%) | 20,4% (15,5% … 25,2%) | 82,5 h |
+| **v2b_lgbm_czas_winda** | 114 | 56 | 49,1% (40,4% … 57,9%) | 17,7% (14,2% … 21,6%) | 24,1% (19,5% … 28,8%) | 85,1 h |
+| losowo (średnia z 1 000 symulacji) | 114 | 6,9 | 6,0% | 2,1% | 2,2% | 77,8 h |
+| wyrocznia (zna `awaria_7d`; górna granica) | 114 | 114 | 100,0% | 35,7% | 38,9% | 88,9 h |
+
+Model − baseline: precyzja +5,3 pp (−1,8 … +12,3 pp), czułość +1,9 pp (−0,6 … +4,5 pp), czułość dla awarii
+z sygnałem +3,7 pp (+0,0 … +7,8 pp). W tym punkcie pracy przewaga modelu nad regułą **nie jest potwierdzona**
+(przedziały obejmują 0 albo na nim się kończą), choć PR-AUC na wszystkich dniach jest wyraźnie lepsze (wyżej).
