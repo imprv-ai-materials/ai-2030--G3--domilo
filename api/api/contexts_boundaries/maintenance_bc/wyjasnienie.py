@@ -12,6 +12,9 @@ awarii (SHAP z LightGBM, kolumny `wklad_<cecha>`).
   wkładzie z wartością dnia względem normy z 30 dni (norma = mediana średnich dobowych z dni 15–44 przed oceną,
   features/windy/cechy.py) i co sprawdzić, np. „Drzwi: najdłuższy czas zamykania +102% względem normy z 30 dni,
   ponowne otwarcia 9×. Sprawdź operator drzwi i rolki.”
+- Reguła zapasowa (winda bez normy, failure_model/versions/zapasowa_if): `podzespoly_zapasowe` i `opis_zapasowy` z 2
+  cech najdalej od mediany wind tego samego modelu (w rozstępach międzykwartylowych), np. „Reguła zapasowa (nowa
+  winda, 12 dni telemetrii, bez normy): drgania kabiny 2,1× mediany wind Liftar Flow, prąd silnika +35%. Sprawdź …”.
 """
 
 from functools import lru_cache
@@ -213,3 +216,66 @@ def podzespoly_z_wkladow(wklady: np.ndarray, cechy_modelu: list[str], mapa: dict
         kolejnosc = sorted((i for i in range(len(podzespoly)) if wiersz[i] > 0), key=lambda i: (-wiersz[i], i))
         wyniki.append([podzespoly[i] for i in kolejnosc])
     return wyniki
+
+
+OKIEN_NA_DOBE = 24 * 6  # okna telemetrii 10-minutowe
+
+STATYSTYKI_W_ZDANIU = {
+    "sr_24h": "",
+    "max_24h": " (maks., doba)",
+    "sr_3d": " (3 dni)",
+    "max_3d": " (maks., 3 dni)",
+    "sr_7d": " (7 dni)",
+    "max_7d": " (maks., 7 dni)",
+}
+
+
+def podzespoly_zapasowe(odchylenia: list[dict]) -> list[dict]:
+    """Podzespoły cech najdalej od mediany modelu windy: [{podzespol, wklad = suma |odchylenie w IQR|, sygnaly}]."""
+    wagi: dict[str, float] = {}
+    sygnaly: dict[str, list[str]] = {}
+    for o in odchylenia:
+        p = mapa_cech().get(o["cecha"])
+        if not p:
+            continue
+        wagi[p] = wagi.get(p, 0.0) + abs(float(o["odchylenie_iqr"]))
+        s = sygnal_cechy(o["cecha"])
+        if s not in sygnaly.setdefault(p, []):
+            sygnaly[p].append(s)
+    return [
+        {"podzespol": p, "wklad": round(v, 4), "sygnaly": sygnaly[p]}
+        for p, v in sorted(wagi.items(), key=lambda kv: (-kv[1], kv[0]))
+    ]
+
+
+def opis_odchylenia(o: dict, model_windy: str | None, z_odniesieniem: bool = True) -> str:
+    """Fragment zdania: sygnał (statystyka) względem mediany wind tego samego modelu; odniesienie tylko raz w zdaniu."""
+    sygnal = sygnal_cechy(o["cecha"])
+    nazwa = konfiguracja()["sygnaly"][sygnal]["nazwa"]
+    dopisek = STATYSTYKI_W_ZDANIU.get(o["cecha"].removeprefix(f"{sygnal}_"), "")
+    odniesienie = f" mediany wind {model_windy}" if model_windy and z_odniesieniem else ""
+    wartosc, mediana = float(o["wartosc"]), float(o["mediana_modelu"])
+    if mediana > 0:
+        r = wartosc / mediana
+        if r >= 2:
+            return f"{nazwa}{dopisek} {_liczba(r, 0 if r >= 10 or r == round(r) else 1)}×{odniesienie}"
+        wzgledem = f" względem{odniesienie}" if odniesienie else ""
+        return f"{nazwa}{dopisek} {'+' if r >= 1 else ''}{_liczba(100 * (r - 1))}%{wzgledem}"
+    if "liczba" in str(katalog_sygnalow().get(sygnal, {}).get("jednostka", "")):
+        # licznik na okno 10 min -> na dobę (OKIEN_NA_DOBE okien); mediana 0 = zwykle bez zdarzeń
+        zwykle = f" (zwykle 0 w windach {model_windy})" if odniesienie else " (zwykle 0)"
+        return f"{nazwa}{dopisek} {_liczba(wartosc * OKIEN_NA_DOBE, 1)} na dobę{zwykle}"
+    zwykle = (
+        f" (mediana wind {model_windy}: {_liczba(mediana, 2)})" if odniesienie else f" (mediana {_liczba(mediana, 2)})"
+    )
+    return f"{nazwa}{dopisek} {_liczba(wartosc, 2)}{zwykle}"
+
+
+def opis_zapasowy(odchylenia: list[dict], model_windy: str | None, dni_telemetrii: int | None) -> str:
+    """Jedno zdanie alertu z reguły zapasowej (winda bez normy)."""
+    dni = f", {dni_telemetrii} dni telemetrii" if dni_telemetrii is not None else ""
+    fragmenty = [opis_odchylenia(o, model_windy, i == 0) for i, o in enumerate(odchylenia[:SYGNALOW_W_OPISIE])]
+    podzespoly = podzespoly_zapasowe(odchylenia)
+    sprawdz = konfiguracja()["podzespoly"][podzespoly[0]["podzespol"]]["sprawdz"] if podzespoly else "windę w całości"
+    tresc = ", ".join(fragmenty) if fragmenty else "nietypowe odczyty"
+    return f"Reguła zapasowa (nowa winda{dni}, bez normy): {tresc}. Sprawdź {sprawdz}."

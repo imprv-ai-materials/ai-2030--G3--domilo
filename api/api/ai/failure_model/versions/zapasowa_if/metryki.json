@@ -1,0 +1,40 @@
+{
+ "wersja": "zapasowa_if",
+ "uczenie": "trening 2023-03-01 – 2025-06-30, windy treningu v2b, dni z >= 44 dniami telemetrii",
+ "udzial_alarmow": 0.02142857142857143,
+ "sygnaly": [
+  "drzwi_ponowne_otwarcia",
+  "drzwi_czas_zamykania_sr",
+  "drzwi_czas_zamykania_max",
+  "drzwi_bledy",
+  "naped_prad_sr",
+  "naped_prad_max",
+  "naped_temp_silnika",
+  "naped_blad_poziomowania",
+  "naped_bledy",
+  "wibracje_rms",
+  "sterownik_bledy"
+ ],
+ "wiersze": {
+  "DM-1000": 11815,
+  "DM-630": 16937,
+  "EL-450": 9310,
+  "EL-800": 7618,
+  "Liftar Compact": 6894,
+  "Liftar Flow": 4960,
+  "Liftar Flow+": 8336,
+  "V-Line 10": 13544,
+  "V-Line 8": 9319
+ },
+ "progi": {
+  "DM-1000": 0.5394337098977223,
+  "DM-630": 0.5472818569178786,
+  "EL-450": 0.5492547196398887,
+  "EL-800": 0.5617469092152834,
+  "Liftar Compact": 0.5557157474928456,
+  "Liftar Flow": 0.570702739598567,
+  "Liftar Flow+": 0.5642524653664618,
+  "V-Line 10": 0.5518392427983622,
+  "V-Line 8": 0.5537892695299942
+ }
+}

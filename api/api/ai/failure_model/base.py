@@ -96,3 +96,18 @@ def wczytaj_obecny(sciezka_current: Path = SCIEZKA_CURRENT) -> ModelWind:
     if model.wersja != current.get("wersja"):
         raise ValueError(f"current.yaml wskazuje {current.get('wersja')}, a plik zawiera {model.wersja}")
     return model
+
+
+def _current(sciezka_current: Path = SCIEZKA_CURRENT) -> dict:
+    return yaml.safe_load(Path(sciezka_current).read_text(encoding="utf-8")) or {}
+
+
+def ustawienia_cech(sciezka_current: Path = SCIEZKA_CURRENT) -> dict:
+    """Sekcja `cechy` z current.yaml (np. korekta_bledow_drzwi_lf5); brak sekcji = ustawienia domyślne."""
+    return {"korekta_bledow_drzwi_lf5": False, **(_current(sciezka_current).get("cechy") or {})}
+
+
+def wczytaj_regule_zapasowa(sciezka_current: Path = SCIEZKA_CURRENT):
+    """Reguła zapasowa dla wind bez normy (pole `regula_zapasowa`); None, gdy nie jest wskazana."""
+    plik = _current(sciezka_current).get("regula_zapasowa")
+    return joblib.load(Path(sciezka_current).parent / plik) if plik else None

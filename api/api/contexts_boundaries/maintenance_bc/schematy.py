@@ -27,6 +27,7 @@ class Podzespol(BaseModel):
 class Alarm(BaseModel):
     pozycja: int
     id_zgloszenia: str | None = Field(description="zgłoszenie w Serwisowniku (None = jeszcze nie wysłane)")
+    tryb_oceny: str | None = Field(default=None, description="model albo zapasowa (alarm z reguły zapasowej)")
 
 
 class OdpowiedzRyzykaWindy(BaseModel):
@@ -34,7 +35,13 @@ class OdpowiedzRyzykaWindy(BaseModel):
     dzien_oceny: date
     moment_oceny: datetime = Field(description="06:00 Europe/Warsaw dnia oceny; cechy z okien do 05:50")
     wersja_modelu: str
-    ryzyko: float | None = Field(description="P(awaria w ciągu 7 dni od oceny), po kalibracji (p_awarii_7d)")
+    ryzyko: float | None = Field(
+        description="P(awaria w ciągu 7 dni od oceny), po kalibracji (p_awarii_7d); None przy regule zapasowej"
+    )
+    tryb_oceny: str = Field(default="model", description="model albo zapasowa (winda bez normy, < 44 dni telemetrii)")
+    dni_telemetrii: int | None = Field(default=None, description="dni od pierwszego okna telemetrii windy")
+    wynik_zapasowy: float | None = Field(default=None, description="wynik Isolation Forest (wyżej = nietypowo)")
+    prog_zapasowy: float | None = Field(default=None, description="próg alarmu zapasowego dla modelu windy")
     wynik_modelu: float = Field(description="wynik rankingu (predict); tym wynikiem reguła wybiera alarmy")
     ranga: int = Field(description="miejsce windy w rankingu dnia (1 = najwyższe ryzyko)")
     ocenione_windy: int

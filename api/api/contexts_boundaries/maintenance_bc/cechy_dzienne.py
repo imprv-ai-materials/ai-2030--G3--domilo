@@ -13,7 +13,9 @@ Kroki (ctx.step.run):
    `PONOW_PO`), bo okno 05:40–05:50 mogło jeszcze nie przyjść (zadanie `telemetra-okna` też rusza o 05:50).
    Po tym czasie liczymy cechy z tym, co jest, a liczba wind bez okna trafia do wyniku.
 3. `cechy`: cechy ręczne + tsfresh + stan telemetrii windy (ostatnie okno przed odcięciem, liczba okien z 24 h,
-   tryb ostatniego okna, `stoi` = tryb `wylaczona` o 05:50) -> plik Parquet.
+   tryb ostatniego okna, `stoi` = tryb `wylaczona` o 05:50, `pierwsze_okno` i `dni_telemetrii` = dni od pierwszego
+   okna windy do dnia oceny: poniżej 44 dni winda nie ma normy i ocenia ją reguła zapasowa) -> plik Parquet.
+   Definicja bledy_drzwi: `cechy.korekta_bledow_drzwi_lf5` z failure_model/current.yaml (base.ustawienia_cech).
 `CZEKAJ_DO` i `PONOW_PO` to parametry techniczne przyjęte w tej pracy (nie z danych).
 
 Ręcznie: `cd api && poetry run python -m api.contexts_boundaries.maintenance_bc.cechy_dzienne [RRRR-MM-DD]`.
@@ -31,7 +33,8 @@ import inngest
 import pandas as pd
 from api.adapters import telemetra
 from api.adapters.duckdb_baza import KATALOG_REPO, SCIEZKA_BAZY, polaczenie
-from api.ai.failure_model.base import wczytaj_obecny
+from api.ai.failure_model.base import ustawienia_cech, wczytaj_obecny
+from api.ai.failure_model.versions.zapasowa_if.model import DNI_BEZ_NORMY
 from api.ai.features.windy.cechy import ODCIECIE, cechy_dnia, odciecie_s
 from api.ai.features.windy.tsfresh_cechy import cechy_tsfresh_dnia
 
@@ -64,19 +67,23 @@ def stan_telemetrii(con, dzien: date, zrodlo: str) -> pd.DataFrame:
             SELECT id_windy, ts_utc, tryb
             FROM {zrodlo}
             WHERE ts_utc > to_timestamp(? - 86400) AND ts_utc <= to_timestamp(?)
-        )
+        ),
+        poczatek AS (SELECT id_windy, min(ts_utc) AS pierwsze_okno FROM {zrodlo} GROUP BY id_windy)
         SELECT
             w.id_windy,
+            any_value(p.pierwsze_okno) AS pierwsze_okno,
+            date_diff('day', CAST(any_value(p.pierwsze_okno) AS DATE), CAST(? AS DATE)) AS dni_telemetrii,
             max(t.ts_utc) AS ostatnie_okno,
             count(t.ts_utc) AS okna_24h,
             arg_max(t.tryb, t.ts_utc) AS tryb_ostatniego,
             coalesce(bool_or(t.ts_utc = to_timestamp(?)), false) AS okno_odciecia
         FROM serwis_windy AS w
         LEFT JOIN t USING (id_windy)
+        LEFT JOIN poczatek AS p USING (id_windy)
         GROUP BY w.id_windy
         ORDER BY w.id_windy
         """,
-        [odciecie, odciecie, odciecie],
+        [odciecie, odciecie, dzien, odciecie],
     ).df()
 
 
@@ -109,15 +116,16 @@ def krok_kompletnosc(
 def krok_cechy(dzien: str, plik: str, katalog_magazynu: str | None, sciezka: Path = SCIEZKA_BAZY) -> dict:
     d = date.fromisoformat(dzien)
     bez_serwisu = bool(getattr(wczytaj_obecny(), "bez_serwisu", True))
+    korekta = bool(ustawienia_cech()["korekta_bledow_drzwi_lf5"])
     with polaczenie(sciezka=sciezka) as con:
         zrodlo = telemetra.utworz_widok_zrodla(con, telemetra.MagazynTelemetrii(katalog_magazynu))
-        reczne = cechy_dnia(con, d, zrodlo=zrodlo, bez_serwisu=bez_serwisu)
+        reczne = cechy_dnia(con, d, zrodlo=zrodlo, bez_serwisu=bez_serwisu, korekta_lf5=korekta)
         ts = cechy_tsfresh_dnia(con, d, zrodlo=zrodlo, bez_serwisu=bez_serwisu)
         stan = stan_telemetrii(con, d, zrodlo)
     df = (
         stan.merge(reczne, on="id_windy", how="inner", validate="1:1")
         .merge(ts.drop(columns="dzien"), on="id_windy", how="left", validate="1:1")
-        .assign(stoi=lambda x: x["tryb_ostatniego"].eq("wylaczona"), bez_serwisu=bez_serwisu)
+        .assign(stoi=lambda x: x["tryb_ostatniego"].eq("wylaczona"), bez_serwisu=bez_serwisu, korekta_lf5=korekta)
     )
     Path(plik).parent.mkdir(parents=True, exist_ok=True)
     tymczasowy = Path(plik).with_suffix(".tmp")
@@ -129,6 +137,8 @@ def krok_cechy(dzien: str, plik: str, katalog_magazynu: str | None, sciezka: Pat
         "stoi": int(df["stoi"].sum()),
         "bez_okna_odciecia": int((~df["okno_odciecia"]).sum()),
         "bez_serwisu": bez_serwisu,
+        "korekta_lf5": korekta,
+        "bez_normy": int((df["dni_telemetrii"] < DNI_BEZ_NORMY).sum()),
     }
 
 

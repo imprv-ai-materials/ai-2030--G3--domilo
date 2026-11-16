@@ -46,6 +46,14 @@ NORMA_MIN_DNI = 20
 TREND_DNI = 7
 TREND_MIN_DNI = 5
 KLUCZ = ("id_windy", "ts_utc")
+# Korekta definicji sygnału bledy_drzwi (docs/b4_dryf_i_fallback.md): firmware Liftar LF-5 (od 2025-11-17) dodaje do
+# błędu drzwi E07 kod E17 (para E07|E17), a bledy_drzwi liczy oba. Po korekcie okno z LF-5 ma tyle błędów drzwi, ile
+# kodów E07 (jak LF-3 / LF-4: tam E17 nie występuje); inne firmware bez zmian. Wariant „max(E07, E17)” zostawiał
+# samotne E17 i dawał więcej błędów niż przed aktualizacją (raport, D2). Przed 2025-11-17 nie ma okien z LF-5, więc
+# korekta nie zmienia danych treningowych modelu (2023-03 – 2025-06) — model nie wymaga ponownego uczenia.
+SQL_BLEDY_DRZWI_LF5 = """CASE WHEN firmware LIKE 'LF-5%'
+    THEN CAST(len(list_filter(string_split(coalesce(kody_bledow, ''), '|'), lambda k: k = 'E07')) AS TINYINT)
+    ELSE bledy_drzwi END"""
 
 
 def sql_pliku(nazwa: str) -> str:
@@ -62,14 +70,17 @@ def przygotuj(
     bez_serwisu: bool = True,
     zrodlo: str = "telemetra_windy",
     dni: tuple[str, str] = (PIERWSZY_DZIEN, OSTATNI_DZIEN),
+    korekta_lf5: bool = False,
 ) -> None:
     """Widok `telemetria` (bez okien serwisowych, do odcięcia ostatniego dnia) i tabela `kotwice` (winda × dzień).
     bez_serwisu=False zostawia okna serwisowe (tylko do porównania, failure_model/evals/tryb_serwisowy.py).
-    zrodlo: relacja okien 10-min (kolumny telemetra_windy); dni: pierwszy i ostatni dzień kotwic (RRRR-MM-DD)."""
+    zrodlo: relacja okien 10-min (kolumny telemetra_windy); dni: pierwszy i ostatni dzień kotwic (RRRR-MM-DD).
+    korekta_lf5: bledy_drzwi według SQL_BLEDY_DRZWI_LF5 (LF-5: liczba kodów E07, bez dodatkowego E17)."""
     pierwszy_dzien, ostatni_dzien = dni
+    zamiana = f" REPLACE ({SQL_BLEDY_DRZWI_LF5} AS bledy_drzwi)" if korekta_lf5 else ""
     con.execute(f"""
         CREATE OR REPLACE TEMP VIEW telemetria AS
-        SELECT *
+        SELECT *{zamiana}
         FROM {zrodlo}
         WHERE {filtr_serwisu(bez_serwisu)}
           AND ts_utc <= timezone('Europe/Warsaw', TIMESTAMP '{ostatni_dzien} {ODCIECIE}')
@@ -200,9 +211,11 @@ def _tabele_rodzin(con: duckdb.DuckDBPyConnection, od_s: int | None = None) -> l
     return czesci
 
 
-def zbuduj_cechy_windy(con: duckdb.DuckDBPyConnection, tabela: str = TABELA, bez_serwisu: bool = True) -> int:
+def zbuduj_cechy_windy(
+    con: duckdb.DuckDBPyConnection, tabela: str = TABELA, bez_serwisu: bool = True, korekta_lf5: bool = False
+) -> int:
     """Zapisuje (od nowa) tabelę cech (domyślnie cechy_windy) dla wierszy dni_wind; zwraca liczbę wierszy."""
-    przygotuj(con, bez_serwisu=bez_serwisu)
+    przygotuj(con, bez_serwisu=bez_serwisu, korekta_lf5=korekta_lf5)
     czesci = _tabele_rodzin(con)
     zlaczenia = "\n".join(f"LEFT JOIN {t} USING (id_windy, dzien)" for t in czesci)
     kolumny = ", ".join(f"{t}.* EXCLUDE (id_windy, dzien)" for t in czesci)
@@ -225,7 +238,11 @@ def odciecie_s(dzien: date) -> int:
 
 
 def cechy_dnia(
-    con: duckdb.DuckDBPyConnection, dzien: date, zrodlo: str = "telemetra_windy", bez_serwisu: bool = True
+    con: duckdb.DuckDBPyConnection,
+    dzien: date,
+    zrodlo: str = "telemetra_windy",
+    bez_serwisu: bool = True,
+    korekta_lf5: bool = False,
 ) -> pd.DataFrame:
     """Cechy ręczne (kolumny cechy_windy) dla dnia oceny `dzien`: wiersz na windę z telemetrią przed odcięciem.
 
@@ -233,7 +250,7 @@ def cechy_dnia(
     potrzebują wcześniejszych kotwic), wynik tylko dla dnia t. Wiersze: windy z `zrodlo` z pierwszym oknem przed
     odcięciem dnia t (bez ograniczenia do dni_wind, którego dla przyszłych dni nie ma)."""
     pierwszy = dzien - timedelta(days=NORMA_DNI[1] - 1)
-    przygotuj(con, bez_serwisu=bez_serwisu, zrodlo=zrodlo, dni=(pierwszy.isoformat(), dzien.isoformat()))
+    przygotuj(con, bez_serwisu, zrodlo, (pierwszy.isoformat(), dzien.isoformat()), korekta_lf5)
     czesci = _tabele_rodzin(con, od_s=odciecie_s(pierwszy) - max(OKNA_GODZIN.values()) * 3600)
     zlaczenia = "\n".join(f"LEFT JOIN {t} USING (id_windy, dzien)" for t in czesci)
     kolumny = ", ".join(f"{t}.* EXCLUDE (id_windy, dzien)" for t in czesci)

@@ -16,3 +16,11 @@ uzasadnienie: 'Test 2026-01-05 – 2026-09-21 (38 poniedziałków), 3 alarmy / t
 ograniczenia: Model bazowy uczony na danych do 2025-06. Przewaga nad regułą drzwi przy 3 alarmach nie jest potwierdzona
   (95% CI obejmuje 0). Kalibracja na tej samej walidacji, która wybrała liczbę drzew.
 poprzednia: brak (current.yaml był pusty)
+# Reguła zapasowa dla wind bez normy (pierwsze 44 dni telemetrii): Isolation Forest per model windy
+# (failure_model/evals/zapasowa.py --zapisz; docs/b4_dryf_i_fallback.md). Pusta = brak reguły (windy bez normy w rankingu modelu).
+regula_zapasowa: versions/zapasowa_if/model.joblib
+# Ustawienia cech dla zadania cechy-wind (maintenance_bc/cechy_dzienne.py). korekta_bledow_drzwi_lf5: definicja
+# bledy_drzwi bez dodatkowego kodu E17 z firmware Liftar LF-5 (features/windy/cechy.py: SQL_BLEDY_DRZWI_LF5).
+# Propozycja z docs/b4_dryf_i_fallback.md; włączenie (true) = decyzja użytkownika, model bez ponownego uczenia.
+cechy:
+  korekta_bledow_drzwi_lf5: false

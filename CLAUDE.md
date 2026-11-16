@@ -127,7 +127,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │                             # ryzyko-wind (current.yaml, alarmy_wind.wybierz_alarmy z `poprzednie`, bez wind z tryb
 │                             # 'wylaczona' o 05:50, krok serwisownik-<id_windy>); wyjasnienie.py: 3 sygnały (SHAP po
 │                             # sygnałach), podzespoły = suma SHAP według podzespoly.yaml (cecha -> podzespół, teksty
-│                             # „Sprawdź …”; założenie) i opis alertu jednym zdaniem; docs/b4_ryzyko_dzienne.md
+│                             # „Sprawdź …”; założenie) i opis alertu jednym zdaniem; docs/b4_ryzyko_dzienne.md;
+│                             # windy < 44 dni telemetrii: tryb_oceny 'zapasowa' (reguła zapasowa, alarm zapasowy
+│                             # przed rankingiem modelu w limicie 3, flaga w zgłoszeniu; docs/b4_dryf_i_fallback.md)
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
 │   ├── dbt/                  # projekt dbt: modele schematu metryki w domilo.duckdb + testy (docs/kolejka_metryki.md)
@@ -150,11 +152,16 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     │   ├── base.py           # (w każdym modelu) wspólny interfejs / definicja modelu; wind: ModelWind,
     │   │                     # KOLUMNY_ZAKAZANE (target, przyszła awaria, id_windy / id_budynku / dzien)
     │   ├── versions/         # kolejne wersje modelu (wind: v2_lgbm_losowy = przestroga, v2b_lgbm_czas_winda,
-│   │                     # v3_punkt_pracy = v2b + izotonia + punkt pracy; base.wczytaj_obecny())
+│   │                     # v3_punkt_pracy = v2b + izotonia + punkt pracy; base.wczytaj_obecny();
+│   │                     # zapasowa_if = Isolation Forest per model windy dla wind < 44 dni telemetrii,
+│   │                     # base.wczytaj_regule_zapasowa(); current.yaml: regula_zapasowa, cechy.korekta_bledow_drzwi_lf5)
     │   ├── evals/            # ewaluacje wersji (failure_model/evals/historia_awarii.py: docs/b4_historia_awarii.md;
     │   │                     # ewaluacja_v2.py + porownanie.md: losowy podział vs czas + 28 wind poza treningiem;
     │   │                     # podzespoly.py: lista podzespołów vs baseline, --wybor na walidacji;
-    │   │                     # przyklady_alertow.py: alerty z poniedziałków testu przez atrapę Serwisownika)
+    │   │                     # przyklady_alertow.py: alerty z poniedziałków testu przez atrapę Serwisownika;
+    │   │                     # dryf.py: tabela psi_cech_windy (PSI tygodniowe vs trening per producent) i ocena
+    │   │                     # korekty LF-5; zapasowa.py: reguła zapasowa na B37/B38 + symulacja, --zapisz artefakt;
+    │   │                     # docs/b4_dryf_i_fallback.md)
     │   └── current.yaml      # wskazanie wersji używanej obecnie
     └── llm/
         ├── ekstrakcja_awarii.py # awaria windy z notatek (prompt awaria_v1, schemat schemas/awaria.py): wejście =
@@ -211,7 +218,10 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   godziny), norma = mediana średnich dobowych z dni 15–44 (≥ 20 dni), stosunek do normy, trend 7 dni; wibracje przed
   montażem NULL + `ma_czujnik_wibracji`; `firmware_dni_od_zmiany`, `firmware_zmiana_glowna_44d`. **Pułapka:**
   Liftar LF-5 od 2025-11-17 raportuje błąd drzwi parą `E07|E17` (błędy ×2–3 bez wzrostu awarii;
-  `docs/b4_cechy.md`).
+  `docs/b4_cechy.md`). Korekta definicji (dla LF-5 tylko E07): `cechy.py` `korekta_lf5` / `SQL_BLEDY_DRZWI_LF5`,
+  tabela `cechy_windy_korekta_lf5` (poza `pypyr baza`), w produkcji wyłączona do decyzji
+  (`current.yaml` `cechy.korekta_bledow_drzwi_lf5`; `docs/b4_dryf_i_fallback.md`). Dryf: `psi_cech_windy`
+  (`failure_model/evals/dryf.py`, poza `pypyr baza`); PSI wibracji jest wysokie z powodu montażu czujników w treningu.
   `cechy_windy_tsfresh` — tsfresh 0.21 z 168 godzinnych średnich przed 05:50 (czas zamykania drzwi, prąd, wibracje):
   RMS, kurtoza, energia, udziały pasm FFT (k 1–6 / 7 = doba / 8–14 / 15–84); puste godziny interpolowane, < 84 h
   z wartością -> NULL (`features/windy/tsfresh_cechy.py`, ok. 1,5 min; `extract_features` z `n_jobs=0` — szybsze

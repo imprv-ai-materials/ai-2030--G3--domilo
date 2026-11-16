@@ -5,7 +5,10 @@
 `p_awarii_7d` = P(awaria w 7 dni) po kalibracji (`prawdopodobienstwo`; NULL, gdy wersja go nie ma), `ranga` w dniu,
 `stoi` = ostatnie okno przed odcięciem ma `tryb = 'wylaczona'` (winda stoi, alarmu nie dostaje), `sygnaly` (JSON:
 najsilniejsze sygnały), `podzespoly` (JSON: podejrzane podzespoły z sumą wkładów SHAP) i `opis` (zdanie alertu)
-z maintenance_bc/wyjasnienie.py. Kolumnę `opis` dopisuje `utworz` także do tabeli założonej przed jej dodaniem.
+z maintenance_bc/wyjasnienie.py; `tryb_oceny` (`model` / `zapasowa` = winda bez normy, reguła zapasowa),
+`dni_telemetrii`, `wynik_zapasowy`, `prog_zapasowy`, `odchylenia` (JSON) z reguły zapasowej
+(docs/b4_dryf_i_fallback.md).
+Kolumny dodane później (KOLUMNY_DODANE) `utworz` dopisuje także do tabel założonych wcześniej.
 Zapis zastępuje cały dzień (ponowny przebieg tego dnia liczy to samo z tych samych cech).
 
 `alarmy_wind`: alarmy dnia z reguły maintenance_bc/alarmy_wind.wybierz_alarmy. Pierwsza decyzja dnia zostaje:
@@ -38,6 +41,11 @@ CREATE TABLE IF NOT EXISTS {TABELA_RYZYKA} (
     wersja_modelu VARCHAR NOT NULL,
     id_przebiegu VARCHAR NOT NULL,
     opis VARCHAR,
+    tryb_oceny VARCHAR,
+    dni_telemetrii INTEGER,
+    wynik_zapasowy DOUBLE,
+    prog_zapasowy DOUBLE,
+    odchylenia VARCHAR,
     PRIMARY KEY (dzien, id_windy)
 )
 """
@@ -52,6 +60,8 @@ CREATE TABLE IF NOT EXISTS {TABELA_ALARMOW} (
     id_przebiegu VARCHAR NOT NULL,
     id_zgloszenia VARCHAR,
     wyslano TIMESTAMPTZ,
+    tryb_oceny VARCHAR,
+    wynik_zapasowy DOUBLE,
     PRIMARY KEY (dzien, id_windy),
     UNIQUE (dzien, pozycja)
 )
@@ -71,14 +81,43 @@ KOLUMNY_RYZYKA = (
     "wersja_modelu",
     "id_przebiegu",
     "opis",
+    "tryb_oceny",
+    "dni_telemetrii",
+    "wynik_zapasowy",
+    "prog_zapasowy",
+    "odchylenia",
 )
-KOLUMNY_ALARMOW = ("dzien", "pozycja", "id_windy", "wynik", "p_awarii_7d", "wersja_modelu", "id_przebiegu")
+KOLUMNY_ALARMOW = (
+    "dzien",
+    "pozycja",
+    "id_windy",
+    "wynik",
+    "p_awarii_7d",
+    "wersja_modelu",
+    "id_przebiegu",
+    "tryb_oceny",
+    "wynik_zapasowy",
+)
+# kolumny dopisane po pierwszej wersji tabel (ALTER TABLE ... ADD COLUMN IF NOT EXISTS w `utworz`)
+KOLUMNY_DODANE = {
+    TABELA_RYZYKA: {
+        "opis": "VARCHAR",
+        "tryb_oceny": "VARCHAR",
+        "dni_telemetrii": "INTEGER",
+        "wynik_zapasowy": "DOUBLE",
+        "prog_zapasowy": "DOUBLE",
+        "odchylenia": "VARCHAR",
+    },
+    TABELA_ALARMOW: {"tryb_oceny": "VARCHAR", "wynik_zapasowy": "DOUBLE"},
+}
 
 
 def utworz(con: duckdb.DuckDBPyConnection) -> None:
     con.execute(SQL_RYZYKA)
-    con.execute(f"ALTER TABLE {TABELA_RYZYKA} ADD COLUMN IF NOT EXISTS opis VARCHAR")
     con.execute(SQL_ALARMOW)
+    for tabela, kolumny in KOLUMNY_DODANE.items():
+        for kolumna, typ in kolumny.items():
+            con.execute(f"ALTER TABLE {tabela} ADD COLUMN IF NOT EXISTS {kolumna} {typ}")
 
 
 def _istnieje(con: duckdb.DuckDBPyConnection, tabela: str) -> bool:
@@ -177,5 +216,6 @@ def ocena_windy(con: duckdb.DuckDBPyConnection, id_windy: str, dzien: date | Non
         w["alarm"] = {
             "pozycja": int(a["pozycja"]),
             "id_zgloszenia": None if pd.isna(a["id_zgloszenia"]) else str(a["id_zgloszenia"]),
+            "tryb_oceny": None if pd.isna(a.get("tryb_oceny")) else str(a.get("tryb_oceny")),
         }
     return w

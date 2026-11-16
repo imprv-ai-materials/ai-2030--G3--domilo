@@ -251,5 +251,9 @@ def ryzyko_windy(
         sygnaly=o["sygnaly"],
         podzespoly=o["podzespoly"],
         opis=o.get("opis"),
+        tryb_oceny=o.get("tryb_oceny") or "model",
+        dni_telemetrii=o.get("dni_telemetrii"),
+        wynik_zapasowy=o.get("wynik_zapasowy"),
+        prog_zapasowy=o.get("prog_zapasowy"),
         alarm=o["alarm"],
     )
