@@ -36,6 +36,12 @@ steps:
         run: poetry run python -m api.ai.features.windy.zgloszenia_wind
         cwd: api
   - name: pypyr.steps.cmd
+    description: Tabela awarie_odtworzone (LLM z notatek + start z telemetrii; pomijana bez features/windy/awarie_llm/awaria_v1_windy.parquet)
+    in:
+      cmd:
+        run: poetry run python -m api.ai.features.windy.awarie_odtworzone
+        cwd: api
+  - name: pypyr.steps.cmd
     description: Modele dbt metryk (schemat metryki; api/api/data_platform/dbt, docs/kolejka_metryki.md) z testami
     in:
       cmd:

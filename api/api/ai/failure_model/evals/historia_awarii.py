@@ -5,6 +5,10 @@ Uruchomienie (z katalogu api/): `python -m api.ai.failure_model.evals.historia_a
 — wypisuje tabele Markdown (wszystkie albo wybrane).
 
 Losowanie notatek (R9) jest powtarzalne: kolejność według md5(id_notatki || ':' || ZIARNO), pierwsze 30.
+
+R10–R14 (awarie odtworzone) czytają dodatkowo tabelę `awarie_odtworzone`, odpowiedzi ekstrakcji LLM
+(`features/windy/awarie_llm/awaria_v1_windy.parquet`, rejestrowane jako `awarie_llm`) i tymczasową tabelę
+`serie_przestoju` (`api.ai.features.windy.awarie_odtworzone`).
 """
 
 import sys
@@ -152,7 +156,7 @@ SELECT
 FROM zgloszenia_wind AS z
 JOIN serwis_zloty_zbior AS zz USING (id_zgloszenia)
 GROUP BY ROLLUP (z.kategoria)
-ORDER BY z.kategoria IS NULL, w_zlotym_zbiorze DESC
+ORDER BY z.kategoria IS NULL, w_zlotym_zbiorze DESC, z.kategoria
 """,
     # Przeniesienie złotego zbioru na wszystkie zgłoszenia wind: liczba zgłoszeń kategorii × odsetek awarii w złotym
     # zbiorze tej kategorii. ZAŁOŻENIE: złoty zbiór jest losowy w obrębie kategorii (jak go wybrano — brak w danych).
@@ -177,9 +181,199 @@ FROM szac
 UNION ALL
 SELECT 'RAZEM', sum(zgloszenia), sum(w_zlotym_zbiorze), NULL, CAST(round(sum(awarie)) AS BIGINT), 100.0
 FROM szac
-ORDER BY kategoria = 'RAZEM', szac_awarii DESC
+ORDER BY kategoria = 'RAZEM', szac_awarii DESC, kategoria
 """,
 }
+
+PODZESPOLY = "'drzwi', 'naped', 'hamulec_liny', 'sterownik', 'zewnetrzna', 'brak'"
+
+ZAPYTANIA_AWARIE: dict[str, str] = {
+    # Ekstrakcja LLM na wszystkich zgłoszeniach wind
+    "R10": """
+SELECT
+    count(*) AS zgloszenia_wind,
+    count(a.id_zgloszenia) AS z_odpowiedzia_llm,
+    count(*) FILTER (a.czy_awaria) AS awaria_llm,
+    count(*) FILTER (a.czy_awaria AND zw.id_windy IS NOT NULL) AS awaria_llm_winda_ustalona,
+    count(*) FILTER (a.czy_awaria AND zw.id_windy IS NULL) AS awaria_llm_winda_nieustalona,
+    count(*) FILTER (zw.kategoria = 'awaria') AS kategoria_awaria,
+    count(*) FILTER (zw.kategoria = 'awaria' AND a.czy_awaria) AS kategoria_awaria_i_llm
+FROM zgloszenia_wind AS zw
+LEFT JOIN awarie_llm AS a USING (id_zgloszenia)
+""",
+    # Odpowiedź LLM według kategorii Serwisownika (wszystkie zgłoszenia wind)
+    "R10b": """
+SELECT
+    coalesce(zw.kategoria, 'RAZEM') AS kategoria,
+    count(*) AS zgloszenia,
+    count(*) FILTER (a.czy_awaria) AS awaria_llm,
+    round(100.0 * count(*) FILTER (a.czy_awaria) / count(*), 1) AS proc_awarii_llm
+FROM zgloszenia_wind AS zw
+JOIN awarie_llm AS a USING (id_zgloszenia)
+GROUP BY ROLLUP (zw.kategoria)
+ORDER BY zw.kategoria IS NULL, zgloszenia DESC
+""",
+    # Zdarzenia: łączenie zgłoszeń w awarie
+    "R11": """
+WITH odstepy AS (
+    SELECT epoch(CAST(pierwsze_zgloszenie AS TIMESTAMPTZ) - CAST(lag(ostatnie_zgloszenie) OVER (
+               PARTITION BY id_windy ORDER BY pierwsze_zgloszenie) AS TIMESTAMPTZ)) / 3600 AS h
+    FROM awarie_odtworzone
+)
+SELECT
+    count(*) AS awarie,
+    count(DISTINCT id_windy) AS windy,
+    sum(liczba_zgloszen_awaria) AS zgl_z_awaria,
+    sum(liczba_zgloszen) - sum(liczba_zgloszen_awaria) AS zgl_dolaczone_bez_awarii,
+    count(*) FILTER (liczba_zgloszen_awaria >= 2) AS awarie_z_2_i_wiecej_zgl_z_awaria,
+    count(*) FILTER (liczba_zgloszen >= 2) AS awarie_z_2_i_wiecej_zgl,
+    max(liczba_zgloszen) AS max_zgl,
+    (SELECT round(min(h), 1) FROM odstepy) AS min_odstep_miedzy_awariami_windy_h,
+    (SELECT count(*) FILTER (h <= 7 * 24) FROM odstepy) AS kolejna_awaria_windy_do_7_dni
+FROM awarie_odtworzone
+""",
+    # Dołączone zgłoszenia bez awarii: treść zgłoszenia i pierwsza notatka (cyfry -> N)
+    "R11c": """
+WITH d AS (
+    SELECT u.id_zgloszenia
+    FROM awarie_odtworzone AS a, unnest(a.id_zgloszen) AS u(id_zgloszenia)
+    WHERE NOT list_contains(a.id_zgloszen_awaria, u.id_zgloszenia)
+),
+n AS (
+    SELECT id_zgloszenia, arg_min(tresc, data_czas) AS tresc FROM serwis_notatki GROUP BY id_zgloszenia
+)
+SELECT
+    coalesce(regexp_replace(regexp_replace(n.tresc, '\\s+', ' ', 'g'), '[0-9]+', 'N', 'g'), '(brak notatek)')
+        AS pierwsza_notatka,
+    count(*) AS zgloszenia
+FROM d
+LEFT JOIN n USING (id_zgloszenia)
+GROUP BY 1
+ORDER BY zgloszenia DESC, pierwsza_notatka
+LIMIT 10
+""",
+    # Skąd start awarii
+    "R11b": """
+SELECT
+    coalesce(zrodlo_startu, 'RAZEM') AS zrodlo_startu,
+    count(*) AS awarie,
+    round(100.0 * count(*) / sum(count(*)) FILTER (zrodlo_startu IS NOT NULL) OVER (), 1) AS proc,
+    count(*) FILTER (wylaczona) AS z_trybem_wylaczona,
+    median(okna_przestoju) AS mediana_okien_przestoju,
+    median(przestoj_h) AS mediana_przestoju_h,
+    median(minuty_start_do_zgloszenia) AS mediana_min_start_do_zgloszenia
+FROM awarie_odtworzone
+GROUP BY ROLLUP (zrodlo_startu)
+ORDER BY zrodlo_startu IS NULL, awarie DESC
+""",
+    # Walidacja startu: awarie zawierające zgłoszenie złotego zbioru z czy_awaria = true
+    "R12": """
+WITH z AS (
+    SELECT a.id_awarii, a.start_awarii, a.zrodlo_startu, zz.id_zgloszenia, zz.start_awarii AS start_koordynatora
+    FROM awarie_odtworzone AS a, unnest(a.id_zgloszen) AS u(id_zgloszenia)
+    JOIN serwis_zloty_zbior AS zz USING (id_zgloszenia)
+    WHERE zz.czy_awaria
+)
+SELECT
+    (SELECT count(*) FROM serwis_zloty_zbior WHERE czy_awaria) AS awarie_zz,
+    count(*) AS w_awariach_odtworzonych,
+    count(start_awarii) AS ze_startem_z_telemetrii,
+    count(*) FILTER (start_awarii = start_koordynatora) AS start_ten_sam,
+    count(*) FILTER (abs(date_diff('minute', start_koordynatora, start_awarii)) <= 30) AS start_do_30_min,
+    median(date_diff('minute', start_koordynatora, start_awarii)) AS mediana_roznicy_min,
+    quantile_cont(abs(date_diff('minute', start_koordynatora, start_awarii)), 0.9) AS p90_abs_roznicy_min,
+    max(abs(date_diff('minute', start_koordynatora, start_awarii))) AS max_abs_roznicy_min
+FROM z
+""",
+    # Start z telemetrii -> pierwsza notatka / pierwsza notatka konserwatora / pierwsze zgłoszenie (minuty)
+    "R13": """
+SELECT miara, count(m) AS awarie, median(m) AS mediana_min, quantile_cont(m, 0.25) AS p25_min,
+       quantile_cont(m, 0.75) AS p75_min, quantile_cont(m, 0.9) AS p90_min, count(*) FILTER (m < 0) AS ujemne
+FROM (
+    SELECT 'start -> pierwsza notatka' AS miara, minuty_start_do_notatki AS m, 1 AS k FROM awarie_odtworzone
+    UNION ALL
+    SELECT 'start -> pierwsza notatka konserwatora', minuty_start_do_notatki_konserwatora, 2 FROM awarie_odtworzone
+    UNION ALL
+    SELECT 'start -> pierwsze zgłoszenie', minuty_start_do_zgloszenia, 3 FROM awarie_odtworzone
+)
+WHERE m IS NOT NULL
+GROUP BY miara, k
+ORDER BY k
+""",
+    # Awarie miesięcznie według podzespołu (miesiąc startu z telemetrii, bez niego — pierwszego zgłoszenia)
+    "R14": f"""
+WITH a AS (SELECT strftime(czas_awarii, '%Y-%m') AS miesiac, podzespol FROM awarie_odtworzone),
+p AS (PIVOT a ON podzespol IN ({PODZESPOLY}) USING count(*) GROUP BY miesiac),
+k AS (
+    SELECT strftime(utworzono, '%Y-%m') AS miesiac, count(*) AS zgl_kategoria_awaria
+    FROM zgloszenia_wind
+    WHERE kategoria = 'awaria' AND id_windy IS NOT NULL
+    GROUP BY 1
+)
+SELECT
+    coalesce(p.miesiac, k.miesiac) AS miesiac,
+    coalesce(p.drzwi, 0) AS drzwi, coalesce(p.naped, 0) AS naped, coalesce(p.hamulec_liny, 0) AS hamulec_liny,
+    coalesce(p.sterownik, 0) AS sterownik, coalesce(p.zewnetrzna, 0) AS zewnetrzna, coalesce(p.brak, 0) AS brak,
+    coalesce(p.drzwi + p.naped + p.hamulec_liny + p.sterownik + p.zewnetrzna + p.brak, 0) AS razem,
+    coalesce(k.zgl_kategoria_awaria, 0) AS zgl_kategoria_awaria
+FROM p
+FULL JOIN k USING (miesiac)
+ORDER BY miesiac
+""",
+    # Według roku (rok 2026: styczeń–wrzesień)
+    "R14b": """
+SELECT
+    coalesce(CAST(year(czas_awarii) AS VARCHAR), 'RAZEM') AS rok,
+    count(*) FILTER (podzespol = 'drzwi') AS drzwi,
+    count(*) FILTER (podzespol = 'naped') AS naped,
+    count(*) FILTER (podzespol = 'hamulec_liny') AS hamulec_liny,
+    count(*) FILTER (podzespol = 'sterownik') AS sterownik,
+    count(*) FILTER (podzespol = 'zewnetrzna') AS zewnetrzna,
+    count(*) FILTER (podzespol = 'brak') AS brak,
+    count(*) AS razem
+FROM awarie_odtworzone
+GROUP BY ROLLUP (year(czas_awarii))
+ORDER BY year(czas_awarii) IS NULL, year(czas_awarii)
+""",
+}
+
+# Warianty reguły startu sprawdzane na złotym zbiorze (R12b). Kotwica = utworzenie zgłoszenia złotego zbioru.
+# W awarie_odtworzone.sql jest wariant B (seria >= 3 okna, nie wcześniej niż 24 h przed kotwicą).
+WARIANTY_STARTU: dict[str, str] = {
+    "A: dowolna seria (≥ 1 okno), do 24 h przed": "s.pierwsze_martwe >= g.kotwica - INTERVAL 24 HOUR",
+    "B: seria ≥ 3 okna (30 min), do 24 h przed [wybrany]": (
+        "s.pierwsze_martwe >= g.kotwica - INTERVAL 24 HOUR AND s.okna >= 3"
+    ),
+    "C: seria ≥ 6 okien (1 h), do 24 h przed": "s.pierwsze_martwe >= g.kotwica - INTERVAL 24 HOUR AND s.okna >= 6",
+    "D: seria trwająca w chwili zgłoszenia": "s.ostatnie_martwe >= g.kotwica",
+}
+
+SQL_WARIANT_STARTU = """
+WITH g AS (
+    SELECT zz.id_zgloszenia, zw.id_windy, CAST(zw.utworzono AS TIMESTAMPTZ) AS kotwica, zz.start_awarii
+    FROM serwis_zloty_zbior AS zz
+    JOIN zgloszenia_wind AS zw USING (id_zgloszenia)
+    WHERE zz.czy_awaria
+),
+k AS (
+    SELECT g.id_zgloszenia, g.start_awarii,
+           timezone('Europe/Warsaw', arg_max(s.ostatnie_aktywne, s.pierwsze_martwe)) AS start_tel
+    FROM g
+    LEFT JOIN serie_przestoju AS s
+        ON s.id_windy = g.id_windy AND s.ostatnie_aktywne IS NOT NULL
+       AND s.pierwsze_martwe <= g.kotwica + INTERVAL 10 MINUTE AND {warunek}
+    GROUP BY g.id_zgloszenia, g.start_awarii
+)
+SELECT
+    ? AS wariant,
+    count(*) AS awarie_zz,
+    count(start_tel) AS ze_startem,
+    count(*) FILTER (start_tel = start_awarii) AS start_ten_sam,
+    count(*) FILTER (abs(date_diff('minute', start_awarii, start_tel)) <= 30) AS start_do_30_min,
+    median(date_diff('minute', start_awarii, start_tel)) AS mediana_roznicy_min,
+    quantile_cont(abs(date_diff('minute', start_awarii, start_tel)), 0.9) AS p90_abs_roznicy_min
+FROM k
+"""
 
 # Notatki do porównania: pula = notatki zgłoszeń wind z daną kategorią.
 SQL_PULA_NOTATEK = """
@@ -251,6 +445,24 @@ def notatki_obok_siebie(con: duckdb.DuckDBPyConnection) -> str:
     return tabela_md(kolumny, wiersze)
 
 
+def warianty_startu_md(con: duckdb.DuckDBPyConnection) -> str:
+    """R12b: warianty reguły startu wobec start_awarii koordynatora (wymaga tabeli serie_przestoju)."""
+    kolumny, wiersze = None, []
+    for nazwa, warunek in WARIANTY_STARTU.items():
+        kursor = con.execute(SQL_WARIANT_STARTU.format(warunek=warunek), [nazwa])
+        kolumny = [k[0] for k in kursor.description]
+        wiersze += kursor.fetchall()
+    return tabela_md(kolumny, wiersze)
+
+
+def przygotuj_awarie(con: duckdb.DuckDBPyConnection) -> None:
+    """Rejestruje odpowiedzi LLM jako `awarie_llm` i tworzy tymczasową `serie_przestoju` (R10–R14)."""
+    from api.ai.features.windy.awarie_odtworzone import utworz_serie_przestoju, wczytaj_llm
+
+    con.register("awarie_llm", wczytaj_llm())
+    utworz_serie_przestoju(con)
+
+
 def main(wybrane: list[str]) -> None:
     from api.adapters.duckdb_baza import polacz
 
@@ -261,6 +473,13 @@ def main(wybrane: list[str]) -> None:
     if not wybrane or "R9" in wybrane:
         print(f"### R9 pula\n\n{zapytanie_md(con, SQL_PULA_NOTATEK)}\n")
         print(f"### R9\n\n{notatki_obok_siebie(con)}\n")
+    awarie = [n for n in ZAPYTANIA_AWARIE if not wybrane or n in wybrane]
+    if awarie:
+        przygotuj_awarie(con)
+    for nazwa in awarie:
+        print(f"### {nazwa}\n\n{zapytanie_md(con, ZAPYTANIA_AWARIE[nazwa])}\n")
+        if nazwa == "R12":
+            print(f"### R12b\n\n{warianty_startu_md(con)}\n")
 
 
 if __name__ == "__main__":

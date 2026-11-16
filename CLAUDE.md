@@ -117,7 +117,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     │   ├── wycena/
     │   ├── leady/
     │   ├── najemcy/
-    │   └── windy/            # zgloszenia_wind.sql/.py: zgłoszenia wind z ustaloną windą (docs/b4_historia_awarii.md)
+    │   └── windy/            # zgloszenia_wind.sql/.py: zgłoszenia wind z ustaloną windą (docs/b4_historia_awarii.md);
+    │                         # awarie_odtworzone.sql/.py + serie_przestoju.sql: awarie z LLM i startem z telemetrii
     ├── valuation_model/      # wycena lokali z przedziałem
     ├── lead_model/           # kolejka zapytań dla doradców
     ├── churn_model/          # lista retencyjna najemców
@@ -164,6 +165,12 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   `id_windy` z `id_urzadzenia`, a gdy puste — jedyna winda budynku, inaczej `ustalenie_windy = 'nieustalona'`
   (`api/api/ai/features/windy/zgloszenia_wind.sql`). To nie jest target: kategoria `awaria` nie oznacza faktycznej
   awarii (złoty zbiór, notatki: `docs/b4_historia_awarii.md`).
+  `awarie_odtworzone` — awaria windy = zgłoszenia z `czy_awaria` z LLM (`awaria_v1`, plik
+  `features/windy/awarie_llm/awaria_v1_windy.parquet`; bez niego krok jest pomijany) tej samej windy, każde do 24 h
+  po poprzednim; `podzespol` = najczęstszy różny od `brak`; `start_awarii` (lokalny Europe/Warsaw, `*_tz` = moment)
+  = koniec ostatniego okna z kursami > 0 przed serią ≥ 3 okien bez kursów / `tryb = wylaczona`, zaczętą do 24 h
+  przed pierwszym zgłoszeniem; `zrodlo_startu` = telemetria / brak_serii / brak_telemetrii; `czas_awarii` = start
+  albo pierwsze zgłoszenie (`api/api/ai/features/windy/awarie_odtworzone.sql`, `docs/b4_historia_awarii.md` R10–R14).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
