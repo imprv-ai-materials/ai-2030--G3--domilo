@@ -16,6 +16,13 @@ z `data.data_kolejki` = "RRRR-MM-DD"): kroki z contexts_boundaries/leasing_bc/ko
 ctx.step.run: parametry -> otwarte-zapytania -> sygnaly-llm -> cechy -> wynik-modelu -> ev -> kolejki -> uzasadnienia
 -> zapis-kolejki -> webhook-crm-<id_doradcy> (osobny krok na doradcę). Webhook jest idempotentny po
 (id_leada, data_kolejki) (adapters/crm_lejek.py). Opis: docs/kolejka_dzienna.md.
+
+`lista-retencyjna` (w każdy poniedziałek o 07:00 czasu warszawskiego albo na zdarzenie `domilo/lista.retencyjna`,
+opcjonalnie z `data.data_listy` = "RRRR-MM-DD" i `data.kampania`): kroki z
+contexts_boundaries/retention_bc/lista_retencyjna.py, każdy przez ctx.step.run: parametry -> umowy-w-oknie (koniec
+umowy za 60–66 dni) -> ryzyko-i-czas -> uplift-i-akcja (modele z churn_model/current.yaml) -> grupy-kampanii (hash
+id_umowy i nazwy kampanii) -> zapis-listy (tabela lista_retencyjna, zastępuje dzień listy). Opis:
+docs/lista_retencyjna.md.
 """
 
 import os
@@ -25,12 +32,15 @@ from typing import Any
 
 import inngest
 from api.contexts_boundaries.leasing_bc import kolejka_dzienna
+from api.contexts_boundaries.retention_bc import lista_retencyjna
 from api.contexts_boundaries.valuation_bc import nocne
 
 ZDARZENIE_RECZNE = "domilo/wyceny.nocne"
 HARMONOGRAM = "TZ=Europe/Warsaw 0 2 * * *"
 ZDARZENIE_KOLEJKI = "domilo/kolejka.doradcow"
 HARMONOGRAM_KOLEJKI = "TZ=Europe/Warsaw 30 5 * * *"
+ZDARZENIE_LISTY = "domilo/lista.retencyjna"
+HARMONOGRAM_LISTY = "TZ=Europe/Warsaw 0 7 * * 1"  # poniedziałek 07:00, po kolejce doradców (05:30)
 
 klient_inngest = inngest.Inngest(app_id="domilo", is_production=os.environ.get("INNGEST_PRODUKCJA") == "1")
 
@@ -77,4 +87,23 @@ def kolejka_doradcow(ctx: inngest.ContextSync) -> dict:
     return kolejka_dzienna.wykonaj_kolejke_doradcow(ctx.step.run, ctx.run_id, data_kolejki_ze_zdarzenia(dane))
 
 
-FUNKCJE = [wyceny_nocne, kolejka_doradcow]
+def parametry_listy_ze_zdarzenia(dane: dict | None) -> tuple[str | None, str | None]:
+    """(`data_listy`, `kampania`) ze zdarzenia ręcznego; dla harmonogramu (None, None) = dziś, kampania z daty."""
+    dane = dane or {}
+    data, kampania = dane.get("data_listy"), dane.get("kampania")
+    return (str(data) if data else None, str(kampania) if kampania else None)
+
+
+@klient_inngest.create_function(
+    fn_id="lista-retencyjna",
+    name="Lista retencyjna: umowy za 60–66 dni, ryzyko, czas, uplift, akcja, grupa kampanii",
+    trigger=[inngest.TriggerCron(cron=HARMONOGRAM_LISTY), inngest.TriggerEvent(event=ZDARZENIE_LISTY)],
+    concurrency=[inngest.Concurrency(limit=1)],
+    retries=3,
+)
+def lista_retencyjna_tygodniowa(ctx: inngest.ContextSync) -> dict:
+    data_listy, kampania = parametry_listy_ze_zdarzenia(ctx.event.data if ctx.event is not None else None)
+    return lista_retencyjna.wykonaj_liste_retencyjna(ctx.step.run, ctx.run_id, data_listy, kampania)
+
+
+FUNKCJE = [wyceny_nocne, kolejka_doradcow, lista_retencyjna_tygodniowa]

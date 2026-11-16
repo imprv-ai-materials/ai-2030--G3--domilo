@@ -14,11 +14,14 @@ rankingu (AUC, recall w górnym decylu), więc wynik nie musi być skalibrowanym
 
 from abc import ABC, abstractmethod
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import joblib
 import numpy as np
 import pandas as pd
+import yaml
 from api.ai.features.najemcy.cechy import KOLUMNY_CECH
 from api.ai.features.najemcy.wykluczone import WYKLUCZONE
 
@@ -86,3 +89,51 @@ class ModelNajemcow(ABC):
         if not isinstance(model, ModelNajemcow):
             raise TypeError(f"{sciezka} nie zawiera modelu listy retencyjnej")
         return model
+
+
+# --- obecne wersje (current.yaml) ----------------------------------------------------------------------------------
+
+KATALOG_MODELU = Path(__file__).resolve().parent
+SCIEZKA_CURRENT = KATALOG_MODELU / "current.yaml"
+CZESCI_OBECNEGO = ("ryzyko", "uplift")
+
+
+@dataclass(frozen=True)
+class ObecnyModelNajemcow:
+    """Wersje listy retencyjnej z current.yaml: `ryzyko` (model przeżycia: ryzyko i czas), `uplift` (oferta)."""
+
+    wersja: str
+    wersja_ryzyka: str
+    ryzyko: Any
+    wersja_upliftu: str
+    uplift: Any
+
+
+def _wczytaj_czesc(opis: dict, czesc: str) -> Any:
+    """Model jednej części current.yaml; sprawdza, że plik zawiera klasę i wersję wpisaną w current.yaml."""
+    brak = [k for k in ("wersja", "model", "klasa") if not opis.get(k)]
+    if brak:
+        raise ValueError(f"churn_model/current.yaml: część `{czesc}` bez pól {', '.join(brak)}")
+    model = joblib.load(KATALOG_MODELU / opis["model"])
+    klasa = f"{type(model).__module__}.{type(model).__qualname__}"
+    if klasa != opis["klasa"]:
+        raise ValueError(f"current.yaml ({czesc}): klasa {opis['klasa']}, a plik {opis['model']} zawiera {klasa}")
+    if getattr(model, "wersja", None) != opis["wersja"]:
+        raise ValueError(f"current.yaml ({czesc}): wersja {opis['wersja']}, a model ma wersja = {model.wersja}")
+    return model
+
+
+def wczytaj_obecny(sciezka_current: Path = SCIEZKA_CURRENT) -> ObecnyModelNajemcow:
+    """Obecne wersje listy retencyjnej. Pusty current.yaml albo brak części = błąd (nie zgadujemy wersji)."""
+    current = yaml.safe_load(Path(sciezka_current).read_text(encoding="utf-8")) or {}
+    brak = [c for c in CZESCI_OBECNEGO if not current.get(c)]
+    if brak:
+        raise ValueError(f"churn_model/current.yaml: brak części {', '.join(brak)} (żadna wersja nie jest aktywna)")
+    ryzyko, uplift = (_wczytaj_czesc(current[c], c) for c in CZESCI_OBECNEGO)
+    return ObecnyModelNajemcow(
+        wersja=str(current.get("wersja") or f"{ryzyko.wersja}+{uplift.wersja}"),
+        wersja_ryzyka=ryzyko.wersja,
+        ryzyko=ryzyko,
+        wersja_upliftu=uplift.wersja,
+        uplift=uplift,
+    )

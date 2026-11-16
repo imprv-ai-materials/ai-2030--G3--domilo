@@ -195,3 +195,9 @@ i SQL: [uplift.md](uplift.md); test rabatu: [docs/test_rabatu_2025.md](../../../
 v3 − baseline: AUUC +0,60 (−2,31 … +3,46). Ani dla v3, ani dla S-learnera nie wykazaliśmy przewagi nad regułą;
 `current.yaml` zostaje pusty.
 
+## current.yaml: lista retencyjna (2026-11-16)
+
+Cotygodniowe zadanie `lista-retencyjna` (docs/lista_retencyjna.md) wymaga aktywnej wersji, więc `current.yaml`
+wskazuje teraz `v2_przezycie_cox` (ryzyko i czas) i `v3_uplift_tlearner` (uplift i akcja), czyli te same wersje,
+których używa GET /risk. To decyzja wykonawcy, do potwierdzenia: wyniki powyżej się nie zmieniły, a v3 nadal nie ma
+wykazanej przewagi nad regułą „górne 35% `score_polityki`”.

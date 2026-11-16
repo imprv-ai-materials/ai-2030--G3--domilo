@@ -1,0 +1,33 @@
+# Wersje modeli listy retencyjnej używane obecnie (katalogi w versions/), wczytywane przez base.wczytaj_obecny().
+# Lista ma dwie części o różnych kontraktach: ryzyko i czas do odejścia (model przeżycia) oraz uplift oferty.
+wersja: v2_przezycie_cox+v3_uplift_tlearner
+ryzyko:
+  wersja: v2_przezycie_cox
+  model: versions/v2_przezycie_cox/model.joblib
+  klasa: api.ai.churn_model.versions.v2_przezycie_cox.model.ModelCox
+  daje: >
+    ryzyko = P(koniec najmu w bieżącym okresie umowy) od dnia oceny, mediana czasu do odejścia i RMST60
+    (retention_bc/ryzyko_najmu.py)
+uplift:
+  wersja: v3_uplift_tlearner
+  model: versions/v3_uplift_tlearner/model.joblib
+  klasa: api.ai.churn_model.versions.v3_uplift_tlearner.model.ModelUpliftT
+  daje: >
+    P(przedłuży | oferta), P(przedłuży | bez oferty), uplift, EV i akcja rabat / bez rabatu / nie budzić
+    (retention_bc/oferta_najmu.py)
+ustalono: 2026-11-16
+regula_wyboru: >
+  Decyzja wykonawcy z 2026-11-16, do potwierdzenia przez użytkownika: polecenie „ryzyko, czas, uplift i akcja
+  z aktywnej wersji modelu (przez base.py i current.yaml)” przy pustym current.yaml. Wpisano te wersje, których
+  używa już GET /risk (v2 dla ryzyka i czasu, v3 dla oferty), więc lista retencyjna i /risk liczą to samo.
+  Uwaga: churn_model/evals/uplift.md zalecał nie wpisywać v3 do current.yaml (brak przewagi nad regułą
+  „górne 35% score_polityki”); wpis v3 jest więc warunkowy, do decyzji użytkownika.
+uzasadnienie: >
+  v2 (evals/porownanie.md): test, pierwszy okres, C-index 0,664 (0,639–0,692) wobec reguły „B2B najpierw” 0,595
+  (v2 − baseline +0,069, od +0,042 do +0,100). v3: AUUC +4,03 p.p. (+0,49 … +7,62) wobec reguły „górne 35%
+  score_polityki” +3,43 p.p.; v3 − baseline +0,60 (−2,31 … +3,46), czyli bez wykazanej przewagi.
+ograniczenia: >
+  v2 w B2C prawie nie rozróżnia najemców (C-index 0,501), a dla B2B zawyża przeżycie (docs/przezycie_cox.md).
+  v3 nie jest lepszy od reguły firmy i zawyża skrajne uplifty (najwyższy kwintyl: przewidywane +22,2 p.p.,
+  obserwowane +11,4 p.p.). Dla najmów z cechami poza zakresem danych uczących v3 akcja to zawsze „bez rabatu”.
+poprzednia: brak (current.yaml był pusty)

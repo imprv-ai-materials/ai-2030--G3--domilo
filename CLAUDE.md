@@ -75,7 +75,8 @@ dev/                          # pipeline'y pypyr (m.in. baza.yaml, kolejka.yaml,
 ├── mock_lejek/               # atrapa CRM dla webhooka kolejek (port 8102, stan w stan.json poza gitem)
 api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 ├── main.py                   # FastAPI: /valuation, /leads/next, /leads/skips, /team/dashboard, /risk/{id_najmu}, Inngest (pypyr api)
-├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka)
+├── inngest_app.py            # Inngest: wyceny-nocne (02:00; pypyr nocne), kolejka-doradcow (05:30; pypyr kolejka),
+│                             # lista-retencyjna (pon. 07:00; pypyr lista_retencyjna)
 ├── adapters/                 # połączenia z systemami zewnętrznymi
 │   ├── duckdb_baza.py        # polacz(), polaczenie() (blokada procesu) i zbuduj_baze() dla domilo.duckdb
 │   ├── wyceny_historia.py    # tabela wyceny_historia w domilo.duckdb (przenoszona przy przebudowie bazy)
@@ -83,7 +84,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   ├── kolejka_ranking.py    # tabela kolejka_ranking: pełny ranking dnia (zadanie / symulacja wstecz), dla panelu
 │   ├── kolejka_pominiecia.py # tabela kolejka_pominiecia: pominięcia z CRM z powodem (POST /leads/skips)
 │   ├── kolejka_historia.py   # tabela kolejka_historia: pozycje kolejek z wariantem eksperymentu i flagą losowa (5%)
-│   └── crm_lejek.py          # webhook kolejek do CRM, idempotentny po (id_leada, data_kolejki); atrapa: dev/mock_lejek/
+│   ├── crm_lejek.py          # webhook kolejek do CRM, idempotentny po (id_leada, data_kolejki); atrapa: dev/mock_lejek/
+│   └── lista_retencyjna.py   # tabela lista_retencyjna: umowy za 60–66 dni z ryzykiem, upliftem, akcją i grupą kampanii
 ├── contexts_boundaries/      # konteksty biznesowe (bounded contexts)
 │   ├── valuation_bc/         # wycena lokali
 │   ├── leasing_bc/           # zapytania i doradcy (najem); kolejka_dzienna.py: kroki zadania kolejka-doradcow;
@@ -96,6 +98,8 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
 │   │                         # docs/ryzyko_oferta.md), przeglad_ofert.py: akcje dla aktywnych najmów i przykłady
 │   │                         # polityka_rabatow.py: EV oferty (uplift v3 × R − D × P − k, zalozenia.yaml)
 │   │                         # i polityki rabatów na rok (docs/polityka_rabatow.md)
+│   │                         # lista_retencyjna.py: kroki zadania lista-retencyjna (current.yaml listy, grupa =
+│   │                         # md5_number(id_umowy:kampania) % 100 < 20 -> kontrola; docs/lista_retencyjna.md)
 │   └── maintenance_bc/       # serwis i windy
 │       └── zalozenia.yaml    # (w każdym bc) stałe ekonomiczne — tylko od użytkownika, z opisem źródła
 ├── data_platform/            # wspólne definicje metryk (raport = eksperyment)
@@ -155,7 +159,7 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   i widok `eksperyment_tydzien` (wariant tygodnia z `kolejka_historia`).
 - **Tabele trwałe aplikacji** (nie z `data/`; przebudowa je przenosi, a brakujące tworzy puste):
   `wyceny_historia`, `kolejka_doradcow`, `kolejka_ranking` (`zrodlo_kolejki`: `zadanie` albo `symulacja_wstecz`,
-  `pypyr kolejka_wstecz`), `kolejka_pominiecia`, `kolejka_historia`.
+  `pypyr kolejka_wstecz`), `kolejka_pominiecia`, `kolejka_historia`, `lista_retencyjna` (klucz data_listy × id_umowy).
 - **Kolejka a eksperyment:** 5% pozycji każdej kolejki doradcy (40 → 2) jest losowych, z ziarnem `dzień:miasto:wariant`
   (ten sam dzień = ta sama kolejka, webhook idempotentny); ranga zawsze według EV. Nie zmieniaj w trakcie
   eksperymentu modelu, założeń EV, 5%, limitu wartości umowy ani zmiennych korekty.
@@ -190,5 +194,5 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   ale wciąż czyta pliki Parquet.
 - MLflow 3.18: eksperymenty w `mlflow.db` + `mlartifacts/` (katalog główny, w .gitignore), połączenie przez
   `api.adapters.mlflow_rejestr.ustaw_eksperyment()`; wycena loguje się do eksperymentu `wycena`
-  (`valuation_model/evals/ewaluacja.py`), kolejka zapytań do eksperymentu `leady` (`lead_model/evals/ewaluacja.py`: v0/v1 w oknie migracji; `ewaluacja_v2.py`: v2 na teście i w oknie; `ewaluacja_v2b.py`: v2b z wagami IPW; `ewaluacja_v3.py`: `v3_ev_kalibracja`, obecna w `current.yaml`), lista retencyjna do eksperymentu `najemcy` (`churn_model/evals/ewaluacja_v1.py`: `v1_ryzyko` wobec `score_polityki` i reguły „B2B najpierw”; kontrakt w `churn_model/base.py`, `current.yaml` pusty; `ewaluacja_v2.py`: `v2_przezycie_cox`, model Coxa na okresach umów, cechy v1 na `data_od` okresu z `features/najemcy/cechy_okresow.py`, C-index wobec reguły „B2B najpierw”, `docs/przezycie_cox.md`; `evals/uplift.py`: `v3_uplift_tlearner` (T-learner, 2 × LightGBM) i S-learner z causalml na losowym `test_2025` 70 / 30 według id_umowy, wobec reguły „górne 35% `score_polityki`”, miary Qini / AUUC w `evals/metryki_uplift.py`, raport `churn_model/evals/uplift.md`). Cechy chronione wykluczone z modelu kolejki i z promptów (`jezyk`, `imie`, `rok_urodzenia`): `api/api/ai/features/leady/wykluczone.yaml`, pilnuje test `api/tests/test_cechy_wykluczone.py`. Podgląd: `poetry run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
+  (`valuation_model/evals/ewaluacja.py`), kolejka zapytań do eksperymentu `leady` (`lead_model/evals/ewaluacja.py`: v0/v1 w oknie migracji; `ewaluacja_v2.py`: v2 na teście i w oknie; `ewaluacja_v2b.py`: v2b z wagami IPW; `ewaluacja_v3.py`: `v3_ev_kalibracja`, obecna w `current.yaml`), lista retencyjna do eksperymentu `najemcy` (`churn_model/evals/ewaluacja_v1.py`: `v1_ryzyko` wobec `score_polityki` i reguły „B2B najpierw”; kontrakt w `churn_model/base.py`; `current.yaml` od 2026-11-16: `ryzyko` = v2_przezycie_cox, `uplift` = v3_uplift_tlearner, wczytuje `base.wczytaj_obecny()`, wpis do potwierdzenia; `ewaluacja_v2.py`: `v2_przezycie_cox`, model Coxa na okresach umów, cechy v1 na `data_od` okresu z `features/najemcy/cechy_okresow.py`, C-index wobec reguły „B2B najpierw”, `docs/przezycie_cox.md`; `evals/uplift.py`: `v3_uplift_tlearner` (T-learner, 2 × LightGBM) i S-learner z causalml na losowym `test_2025` 70 / 30 według id_umowy, wobec reguły „górne 35% `score_polityki`”, miary Qini / AUUC w `evals/metryki_uplift.py`, raport `churn_model/evals/uplift.md`). Cechy chronione wykluczone z modelu kolejki i z promptów (`jezyk`, `imie`, `rok_urodzenia`): `api/api/ai/features/leady/wykluczone.yaml`, pilnuje test `api/tests/test_cechy_wykluczone.py`. Podgląd: `poetry run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
 - Skille procesu pracy: `.claude/skills/` (m.in. `use-sw-development-workflow`, `sw-test-driven-development`).

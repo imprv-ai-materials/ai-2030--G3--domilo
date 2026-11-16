@@ -130,6 +130,60 @@ def krzywa_pozostala(
     return KrzywaNajmu(czasy=u, przezycie=S, p_konca_biezacego_okresu=float(p_konca))
 
 
+def krzywa_od_dnia_oceny(
+    model: ModelCox, X0: pd.DataFrame, data_od: date, miesiecy_umowy: float, dzien_oceny: date
+) -> tuple[KrzywaNajmu, float]:
+    """Krzywa S(u) od dnia oceny dla bieżącego okresu zaczętego `data_od` i miesiące okresu przed dniem oceny."""
+    jutro = dzien_oceny + timedelta(days=1)
+    if data_od > dzien_oceny:
+        minelo, opoznienie = 0.0, miesiace_kalendarzowe(jutro, data_od)
+    else:
+        minelo, opoznienie = miesiace_kalendarzowe(data_od, jutro), 0.0
+    return krzywa_pozostala(model, X0, miesiecy_umowy, minelo, opoznienie), minelo
+
+
+def ryzyko_okresow(
+    con: duckdb.DuckDBPyConnection, okresy: pd.DataFrame, model: ModelCox, dzien_oceny: date = DZIEN_OCENY
+) -> pd.DataFrame:
+    """Wsadowo to samo co `ryzyko_najmu` (bez części `oferta`) dla bieżących okresów z `okresy_umow`.
+
+    Kolumny: id_umowy, ryzyko (= P(koniec najmu w bieżącym okresie) od dnia oceny), ryzyko_12_od_poczatku_okresu,
+    przezycie_12_mies, mediana_do_odejscia_mies (NaN = powyżej horyzontu 60 mies.), rmst60_mies."""
+    cechy = cechy_okresow(con, okresy).drop(columns=["linia", "miesiecy_umowy", "nr_okresu"])
+    wiersze = okresy.merge(cechy, on="id_umowy", how="left", validate="1:1").reset_index(drop=True)
+    if wiersze.empty:
+        return pd.DataFrame(columns=KOLUMNY_RYZYKA_OKRESOW)
+    X = model.macierz(wiersze).reset_index(drop=True)
+    ryzyko_12 = model.ryzyko(wiersze)
+    wyniki = []
+    for i, w in wiersze.iterrows():
+        krzywa, _ = krzywa_od_dnia_oceny(
+            model, X.iloc[[i]], pd.Timestamp(w["data_od"]).date(), float(w["miesiecy_umowy"]), dzien_oceny
+        )
+        mediana = krzywa.mediana()
+        wyniki.append(
+            {
+                "id_umowy": str(w["id_umowy"]),
+                "ryzyko": krzywa.p_konca_biezacego_okresu,
+                "ryzyko_12_od_poczatku_okresu": float(ryzyko_12[i]),
+                "przezycie_12_mies": krzywa.przezycie_po(12),
+                "mediana_do_odejscia_mies": np.nan if mediana is None else round(mediana, 2),
+                "rmst60_mies": round(krzywa.rmst(HORYZONT_MIES), 2),
+            }
+        )
+    return pd.DataFrame(wyniki, columns=KOLUMNY_RYZYKA_OKRESOW)
+
+
+KOLUMNY_RYZYKA_OKRESOW = [
+    "id_umowy",
+    "ryzyko",
+    "ryzyko_12_od_poczatku_okresu",
+    "przezycie_12_mies",
+    "mediana_do_odejscia_mies",
+    "rmst60_mies",
+]
+
+
 SQL_NAJEM = """
 SELECT id_najmu, linia, data_wprowadzenia::DATE AS od, data_wyprowadzenia::DATE AS do
 FROM pms_najmy
@@ -170,12 +224,7 @@ def ryzyko_najmu(
     X0 = model.macierz(wiersz)
 
     data_od = pd.Timestamp(wiersz["data_od"].iloc[0]).date()
-    jutro = dzien_oceny + timedelta(days=1)
-    if data_od > dzien_oceny:
-        minelo, opoznienie = 0.0, miesiace_kalendarzowe(jutro, data_od)
-    else:
-        minelo, opoznienie = miesiace_kalendarzowe(data_od, jutro), 0.0
-    krzywa = krzywa_pozostala(model, X0, float(wiersz["miesiecy_umowy"].iloc[0]), minelo, opoznienie)
+    krzywa, minelo = krzywa_od_dnia_oceny(model, X0, data_od, float(wiersz["miesiecy_umowy"].iloc[0]), dzien_oceny)
     mediana = krzywa.mediana()
     return {
         "id_najmu": id_najmu,

@@ -1,0 +1,16 @@
+context_parser: pypyr.parser.keyvaluepairs
+steps:
+  - name: pypyr.steps.default
+    description: data= opcjonalna (RRRR-MM-DD; pusta = dziś w Europe/Warsaw), kampania= opcjonalna (pusta = z daty końca umowy)
+    in:
+      defaults:
+        data: ""
+        kampania: ""
+  - name: pypyr.steps.cmd
+    description: >
+      Zadanie lista-retencyjna bez Inngest (te same kroki co funkcja Inngest): umowy kończące się za 60–66 dni,
+      ryzyko i czas, uplift i akcja (churn_model/current.yaml), grupa kampanii z hasha, zapis w tabeli lista_retencyjna.
+    in:
+      cmd:
+        run: poetry run python -m api.contexts_boundaries.retention_bc.lista_retencyjna {data} {kampania}
+        cwd: api

@@ -41,7 +41,14 @@ _NAZWA_TABELI = re.compile(r"^[a-z][a-z0-9_]*$")
 
 def _tabele_trwale() -> dict[str, str]:
     """Tabele spoza data/ (zapisywane przez aplikację), które przebudowa przenosi ze starej bazy: nazwa -> DDL."""
-    from api.adapters import kolejka_doradcow, kolejka_historia, kolejka_pominiecia, kolejka_ranking, wyceny_historia
+    from api.adapters import (
+        kolejka_doradcow,
+        kolejka_historia,
+        kolejka_pominiecia,
+        kolejka_ranking,
+        lista_retencyjna,
+        wyceny_historia,
+    )
 
     return {
         wyceny_historia.TABELA: wyceny_historia.SQL_TABELI,
@@ -49,6 +56,7 @@ def _tabele_trwale() -> dict[str, str]:
         kolejka_ranking.TABELA: kolejka_ranking.SQL_TABELI,
         kolejka_pominiecia.TABELA: kolejka_pominiecia.SQL_TABELI,
         kolejka_historia.TABELA: kolejka_historia.SQL_TABELI,
+        lista_retencyjna.TABELA: lista_retencyjna.SQL_TABELI,
     }
 
 
