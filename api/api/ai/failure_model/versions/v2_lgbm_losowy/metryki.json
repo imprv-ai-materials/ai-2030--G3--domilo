@@ -1,0 +1,98 @@
+{
+  "podzial": {
+    "rodzaj": "losowy podział wierszy",
+    "ziarno": 2026,
+    "test": 0.2,
+    "walidacja": 0.1
+  },
+  "cechy": 179,
+  "liczba_drzew": 3000,
+  "zbiory": {
+    "trening": {
+      "model": {
+        "wiersze": 121859,
+        "windy": 140,
+        "dodatnie": 7095,
+        "odsetek_dodatnich": 0.05822302825396565,
+        "roc_auc": 0.9999898569307744,
+        "roc_auc_lo": 0.9999817805670053,
+        "roc_auc_hi": 0.9999957051695457,
+        "pr_auc": 0.9998490602826438,
+        "pr_auc_lo": 0.9997380001281485,
+        "pr_auc_hi": 0.9999311052089629,
+        "pr_auc_do_odsetka": 17.17274230260503
+      }
+    },
+    "walidacja": {
+      "model": {
+        "wiersze": 17499,
+        "windy": 140,
+        "dodatnie": 950,
+        "odsetek_dodatnich": 0.05428881650380022,
+        "roc_auc": 0.9635235075421953,
+        "roc_auc_lo": 0.956106575028189,
+        "roc_auc_hi": 0.9702359328556421,
+        "pr_auc": 0.7577605912740107,
+        "pr_auc_lo": 0.7315458302899416,
+        "pr_auc_hi": 0.7818201636424132,
+        "pr_auc_do_odsetka": 13.957950091267277
+      }
+    },
+    "test": {
+      "model": {
+        "wiersze": 35264,
+        "windy": 140,
+        "dodatnie": 2014,
+        "odsetek_dodatnich": 0.057112068965517244,
+        "roc_auc": 0.9675796342892983,
+        "roc_auc_lo": 0.9627376248641456,
+        "roc_auc_hi": 0.9723480016431398,
+        "pr_auc": 0.7629468900531474,
+        "pr_auc_lo": 0.7422573086578537,
+        "pr_auc_hi": 0.7841054455477648,
+        "pr_auc_do_odsetka": 13.358768188100392
+      },
+      "regula": {
+        "wiersze": 35264,
+        "windy": 140,
+        "dodatnie": 2014,
+        "odsetek_dodatnich": 0.057112068965517244,
+        "roc_auc": 0.6344943963682792,
+        "roc_auc_lo": 0.6170424764917088,
+        "roc_auc_hi": 0.6516010457585164,
+        "pr_auc": 0.23079883905804277,
+        "pr_auc_lo": 0.20833691986622477,
+        "pr_auc_hi": 0.2580961333581022,
+        "pr_auc_do_odsetka": 4.0411570310540315
+      },
+      "model_minus_regula": {
+        "roc_auc": 0.3330852379210191,
+        "roc_auc_lo": 0.3160638712804518,
+        "roc_auc_hi": 0.35075282510886596,
+        "pr_auc": 0.5321480509951046,
+        "pr_auc_lo": 0.5070903302161046,
+        "pr_auc_hi": 0.5564205289947075
+      }
+    }
+  },
+  "przeciek": {
+    "proc_dodatnich_testu_z_ta_sama_awaria_w_treningu": 100.0,
+    "proc_wierszy_testu_z_sasiednim_dniem_w_treningu": 95.76622050816697
+  },
+  "diagnoza_pamieci": {
+    "test": {
+      "wiersze": 35264,
+      "windy": 140,
+      "dodatnie": 2014,
+      "odsetek_dodatnich": 0.057112068965517244,
+      "roc_auc": 0.8919300162023729,
+      "roc_auc_lo": 0.8823146358907974,
+      "roc_auc_hi": 0.901558054315061,
+      "pr_auc": 0.39642246558358807,
+      "pr_auc_lo": 0.36571280977117987,
+      "pr_auc_hi": 0.42976312641949627,
+      "pr_auc_do_odsetka": 6.941132982293768
+    },
+    "liczba_drzew": 2998
+  }
+}

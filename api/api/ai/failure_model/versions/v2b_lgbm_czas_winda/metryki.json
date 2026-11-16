@@ -1,0 +1,228 @@
+{
+  "podzial": {
+    "rodzaj": "czas + windy poza treningiem",
+    "trening": [
+      "2023-03-01",
+      "2025-06-30"
+    ],
+    "walidacja": [
+      "2025-07-01",
+      "2025-12-31"
+    ],
+    "test": [
+      "2026-01-01",
+      "2026-09-22"
+    ],
+    "windy_poza_treningiem": [
+      "B18-W4",
+      "B14-W1",
+      "B32-W3",
+      "B13-W1",
+      "B23-W1",
+      "B20-W1",
+      "B17-W4",
+      "B27-W1",
+      "B18-W1",
+      "B25-W3",
+      "B15-W3",
+      "B06-W2",
+      "B36-W1",
+      "B37-W2",
+      "B35-W3",
+      "B06-W4",
+      "B25-W1",
+      "B25-W4",
+      "B14-W2",
+      "B08-W4",
+      "B12-W1",
+      "B04-W2",
+      "B21-W3",
+      "B33-W1",
+      "B31-W2",
+      "B30-W1",
+      "B23-W3",
+      "B30-W2"
+    ]
+  },
+  "cechy": 179,
+  "liczba_drzew": 111,
+  "zbiory": {
+    "trening": {
+      "model": {
+        "wiersze": 89172,
+        "windy": 112,
+        "dodatnie": 5189,
+        "odsetek_dodatnich": 0.05819091194545373,
+        "roc_auc": 0.9283754675300252,
+        "roc_auc_lo": 0.9210373954638837,
+        "roc_auc_hi": 0.9352222045641844,
+        "pr_auc": 0.5697411545332925,
+        "pr_auc_lo": 0.542379141359313,
+        "pr_auc_hi": 0.5967203642282437,
+        "pr_auc_do_odsetka": 9.790895785708761
+      }
+    },
+    "walidacja": {
+      "model": {
+        "wiersze": 20433,
+        "windy": 112,
+        "dodatnie": 1174,
+        "odsetek_dodatnich": 0.05745607595556208,
+        "roc_auc": 0.7785009119389568,
+        "roc_auc_lo": 0.7446397326869184,
+        "roc_auc_hi": 0.8120155054690815,
+        "pr_auc": 0.330800632325383,
+        "pr_auc_lo": 0.2785427176014246,
+        "pr_auc_hi": 0.3933152960286853,
+        "pr_auc_do_odsetka": 5.757452572661457
+      }
+    },
+    "test": {
+      "model": {
+        "wiersze": 36774,
+        "windy": 140,
+        "dodatnie": 2205,
+        "odsetek_dodatnich": 0.059960841899167894,
+        "roc_auc": 0.772954482110084,
+        "roc_auc_lo": 0.7430302405753613,
+        "roc_auc_hi": 0.802906815358243,
+        "pr_auc": 0.352199442644625,
+        "pr_auc_lo": 0.3047965954502635,
+        "pr_auc_hi": 0.4011516448208302,
+        "pr_auc_do_odsetka": 5.873824174065051
+      },
+      "regula": {
+        "wiersze": 36774,
+        "windy": 140,
+        "dodatnie": 2205,
+        "odsetek_dodatnich": 0.059960841899167894,
+        "roc_auc": 0.6359438669737327,
+        "roc_auc_lo": 0.6107726634584526,
+        "roc_auc_hi": 0.6605252758364599,
+        "pr_auc": 0.2384999875911497,
+        "pr_auc_lo": 0.19968033756284792,
+        "pr_auc_hi": 0.27865466435223024,
+        "pr_auc_do_odsetka": 3.977595711418113
+      },
+      "model_minus_regula": {
+        "roc_auc": 0.13701061513635127,
+        "roc_auc_lo": 0.10686239863153132,
+        "roc_auc_hi": 0.16780991782812782,
+        "pr_auc": 0.11369945505347528,
+        "pr_auc_lo": 0.08324250772220584,
+        "pr_auc_hi": 0.1440518750352803
+      }
+    },
+    "test_windy_widziane": {
+      "model": {
+        "wiersze": 29422,
+        "windy": 112,
+        "dodatnie": 1775,
+        "odsetek_dodatnich": 0.06032900550608388,
+        "roc_auc": 0.7722268417172837,
+        "roc_auc_lo": 0.7379896423826391,
+        "roc_auc_hi": 0.8047495986629559,
+        "pr_auc": 0.3564808145204528,
+        "pr_auc_lo": 0.30181435863194556,
+        "pr_auc_hi": 0.4101108999684274,
+        "pr_auc_do_odsetka": 5.908945647786346
+      },
+      "regula": {
+        "wiersze": 29422,
+        "windy": 112,
+        "dodatnie": 1775,
+        "odsetek_dodatnich": 0.06032900550608388,
+        "roc_auc": 0.630147549310039,
+        "roc_auc_lo": 0.6028905156052932,
+        "roc_auc_hi": 0.6553887166546483,
+        "pr_auc": 0.24740631262960144,
+        "pr_auc_lo": 0.2012650386648729,
+        "pr_auc_hi": 0.29782194722600547,
+        "pr_auc_do_odsetka": 4.100951284613033
+      },
+      "model_minus_regula": {
+        "roc_auc": 0.1420792924072447,
+        "roc_auc_lo": 0.10947058952585301,
+        "roc_auc_hi": 0.17179772682995245,
+        "pr_auc": 0.10907450189085138,
+        "pr_auc_lo": 0.07310650202357098,
+        "pr_auc_hi": 0.14087998030078436
+      }
+    },
+    "test_windy_niewidziane": {
+      "model": {
+        "wiersze": 7352,
+        "windy": 28,
+        "dodatnie": 430,
+        "odsetek_dodatnich": 0.05848748639825898,
+        "roc_auc": 0.7778633006994886,
+        "roc_auc_lo": 0.7097927814828159,
+        "roc_auc_hi": 0.8440718756058744,
+        "pr_auc": 0.36261552360534555,
+        "pr_auc_lo": 0.25635459279755946,
+        "pr_auc_hi": 0.48437816924699334,
+        "pr_auc_do_odsetka": 6.199882161736047
+      },
+      "regula": {
+        "wiersze": 7352,
+        "windy": 28,
+        "dodatnie": 430,
+        "odsetek_dodatnich": 0.05848748639825898,
+        "roc_auc": 0.6610725492699381,
+        "roc_auc_lo": 0.6037147758094678,
+        "roc_auc_hi": 0.7184495834425417,
+        "pr_auc": 0.2492874682301216,
+        "pr_auc_lo": 0.17353702976911975,
+        "pr_auc_hi": 0.3328074697934891,
+        "pr_auc_do_odsetka": 4.26223596843687
+      },
+      "model_minus_regula": {
+        "roc_auc": 0.11679075142955053,
+        "roc_auc_lo": 0.03893839704863135,
+        "roc_auc_hi": 0.18543738446754637,
+        "pr_auc": 0.11332805537522395,
+        "pr_auc_lo": 0.04401146523951663,
+        "pr_auc_hi": 0.2014062738058046
+      }
+    }
+  },
+  "przeciek": {
+    "proc_dodatnich_testu_z_ta_sama_awaria_w_treningu": 0.27210884353741494,
+    "proc_wierszy_testu_z_sasiednim_dniem_w_treningu": 0.2991243813563931
+  },
+  "diagnoza_pamieci": {
+    "test": {
+      "wiersze": 36774,
+      "windy": 140,
+      "dodatnie": 2205,
+      "odsetek_dodatnich": 0.059960841899167894,
+      "roc_auc": 0.4959452352975864,
+      "roc_auc_lo": 0.4626114199182754,
+      "roc_auc_hi": 0.5294806027639835,
+      "pr_auc": 0.06485053520516787,
+      "pr_auc_lo": 0.05351178978201802,
+      "pr_auc_hi": 0.07716962889144723,
+      "pr_auc_do_odsetka": 1.0815481095849628
+    },
+    "test_windy_niewidziane": {
+      "wiersze": 7352,
+      "windy": 28,
+      "dodatnie": 430,
+      "odsetek_dodatnich": 0.05848748639825898,
+      "roc_auc": 0.523901715460648,
+      "roc_auc_lo": 0.457500320132722,
+      "roc_auc_hi": 0.5854316103946661,
+      "pr_auc": 0.062023591121072585,
+      "pr_auc_lo": 0.04544356435060802,
+      "pr_auc_hi": 0.08612619440659915,
+      "pr_auc_do_odsetka": 1.0604591672607573
+    },
+    "liczba_drzew": 126
+  },
+  "producenci_wind_poza": {
+    "Dźwigmet": 12,
+    "Elmont": 2,
+    "Liftar": 7,
+    "Vertica": 7
+  }
+}

@@ -126,9 +126,11 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     ├── lead_model/           # kolejka zapytań dla doradców
     ├── churn_model/          # lista retencyjna najemców
     ├── failure_model/        # alerty o awariach wind
-    │   ├── base.py           # (w każdym modelu) wspólny interfejs / definicja modelu
-    │   ├── versions/         # kolejne wersje modelu
-    │   ├── evals/            # ewaluacje wersji (failure_model/evals/historia_awarii.py: docs/b4_historia_awarii.md)
+    │   ├── base.py           # (w każdym modelu) wspólny interfejs / definicja modelu; wind: ModelWind,
+    │   │                     # KOLUMNY_ZAKAZANE (target, przyszła awaria, id_windy / id_budynku / dzien)
+    │   ├── versions/         # kolejne wersje modelu (wind: v2_lgbm_losowy = przestroga, v2b_lgbm_czas_winda)
+    │   ├── evals/            # ewaluacje wersji (failure_model/evals/historia_awarii.py: docs/b4_historia_awarii.md;
+    │   │                     # ewaluacja_v2.py + porownanie.md: losowy podział vs czas + 28 wind poza treningiem)
     │   └── current.yaml      # wskazanie wersji używanej obecnie
     └── llm/
         ├── ekstrakcja_awarii.py # awaria windy z notatek (prompt awaria_v1, schemat schemas/awaria.py): wejście =
@@ -193,6 +195,10 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   opis wszystkich cech wind: `features/windy/katalog.yaml` (spójność: `tests/test_katalog_windy.py`).
   Porównanie (`failure_model/evals/tsfresh_porownanie.py`, `docs/b4_tsfresh.md`, MLflow `windy`): test od 2025-07-08
   (przerwa 7 dni po treningu = okno targetu).
+  Model wind (`features/windy/zbior.py` składa dni_wind + cechy): **v2b_lgbm_czas_winda** (trening 2023-03 – 2025-06,
+  walidacja 2025-07 – 12, test 2026-01-01 – 09-22, 28 wind poza treningiem) test PR-AUC 0,352, ROC AUC 0,773;
+  `v2_lgbm_losowy` (losowe wiersze 80/20) 0,763 / 0,968 to **przeciek** (te same awarie w treningu i teście) —
+  nigdy nie oceniaj modelu wind losowym podziałem wierszy (`failure_model/evals/porownanie.md`). `current.yaml` pusty.
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
@@ -241,5 +247,5 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   ale wciąż czyta pliki Parquet.
 - MLflow 3.18: eksperymenty w `mlflow.db` + `mlartifacts/` (katalog główny, w .gitignore), połączenie przez
   `api.adapters.mlflow_rejestr.ustaw_eksperyment()`; wycena loguje się do eksperymentu `wycena`
-  (`valuation_model/evals/ewaluacja.py`), kolejka zapytań do eksperymentu `leady` (`lead_model/evals/ewaluacja.py`: v0/v1 w oknie migracji; `ewaluacja_v2.py`: v2 na teście i w oknie; `ewaluacja_v2b.py`: v2b z wagami IPW; `ewaluacja_v3.py`: `v3_ev_kalibracja`, obecna w `current.yaml`), lista retencyjna do eksperymentu `najemcy` (`churn_model/evals/ewaluacja_v1.py`: `v1_ryzyko` wobec `score_polityki` i reguły „B2B najpierw”; kontrakt w `churn_model/base.py`; `current.yaml` od 2026-11-16: `ryzyko` = v2_przezycie_cox, `uplift` = v3_uplift_tlearner, wczytuje `base.wczytaj_obecny()`, wpis do potwierdzenia; `ewaluacja_v2.py`: `v2_przezycie_cox`, model Coxa na okresach umów, cechy v1 na `data_od` okresu z `features/najemcy/cechy_okresow.py`, C-index wobec reguły „B2B najpierw”, `docs/przezycie_cox.md`; `evals/uplift.py`: `v3_uplift_tlearner` (T-learner, 2 × LightGBM) i S-learner z causalml na losowym `test_2025` 70 / 30 według id_umowy, wobec reguły „górne 35% `score_polityki`”, miary Qini / AUUC w `evals/metryki_uplift.py`, raport `churn_model/evals/uplift.md`). Cechy chronione wykluczone z modelu kolejki i z promptów (`jezyk`, `imie`, `rok_urodzenia`): `api/api/ai/features/leady/wykluczone.yaml`, pilnuje test `api/tests/test_cechy_wykluczone.py`. Podgląd: `poetry run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
+  (`valuation_model/evals/ewaluacja.py`), kolejka zapytań do eksperymentu `leady` (`lead_model/evals/ewaluacja.py`: v0/v1 w oknie migracji; `ewaluacja_v2.py`: v2 na teście i w oknie; `ewaluacja_v2b.py`: v2b z wagami IPW; `ewaluacja_v3.py`: `v3_ev_kalibracja`, obecna w `current.yaml`), model wind do eksperymentu `windy` (`failure_model/evals/tsfresh_porownanie.py`, `ewaluacja_v2.py`), lista retencyjna do eksperymentu `najemcy` (`churn_model/evals/ewaluacja_v1.py`: `v1_ryzyko` wobec `score_polityki` i reguły „B2B najpierw”; kontrakt w `churn_model/base.py`; `current.yaml` od 2026-11-16: `ryzyko` = v2_przezycie_cox, `uplift` = v3_uplift_tlearner, wczytuje `base.wczytaj_obecny()`, wpis do potwierdzenia; `ewaluacja_v2.py`: `v2_przezycie_cox`, model Coxa na okresach umów, cechy v1 na `data_od` okresu z `features/najemcy/cechy_okresow.py`, C-index wobec reguły „B2B najpierw”, `docs/przezycie_cox.md`; `evals/uplift.py`: `v3_uplift_tlearner` (T-learner, 2 × LightGBM) i S-learner z causalml na losowym `test_2025` 70 / 30 według id_umowy, wobec reguły „górne 35% `score_polityki`”, miary Qini / AUUC w `evals/metryki_uplift.py`, raport `churn_model/evals/uplift.md`). Cechy chronione wykluczone z modelu kolejki i z promptów (`jezyk`, `imie`, `rok_urodzenia`): `api/api/ai/features/leady/wykluczone.yaml`, pilnuje test `api/tests/test_cechy_wykluczone.py`. Podgląd: `poetry run mlflow ui --backend-store-uri sqlite:///mlflow.db`.
 - Skille procesu pracy: `.claude/skills/` (m.in. `use-sw-development-workflow`, `sw-test-driven-development`).
