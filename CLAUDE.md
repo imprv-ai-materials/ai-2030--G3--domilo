@@ -118,7 +118,9 @@ api/api/                      # kod Pythona (src_dir pypyr; testy w api/tests/)
     │   ├── leady/
     │   ├── najemcy/
     │   └── windy/            # zgloszenia_wind.sql/.py: zgłoszenia wind z ustaloną windą (docs/b4_historia_awarii.md);
-    │                         # awarie_odtworzone.sql/.py + serie_przestoju.sql: awarie z LLM i startem z telemetrii
+    │                         # awarie_odtworzone.sql/.py + serie_przestoju.sql: awarie z LLM i startem z telemetrii;
+    │                         # dni_wind.sql/.py: target awaria_7d (docs/b4_target.md); cechy.py + sql/: cechy_windy
+    │                         # (docs/b4_cechy.md)
     ├── valuation_model/      # wycena lokali z przedziałem
     ├── lead_model/           # kolejka zapytań dla doradców
     ├── churn_model/          # lista retencyjna najemców
@@ -176,6 +178,13 @@ Powiązania: `valuation_bc` ↔ `features/wycena` ↔ `valuation_model`; `leasin
   o 06:00 winda stoi z powodu awarii; `id_awarii`, `podzespol`, `liczba_awarii_7d`, `godziny_do_startu` to przyszłość,
   nie cechy (`api/api/ai/features/windy/dni_wind.sql`, `docs/b4_target.md`). Różnice godzin licz jako
   `epoch(a) − epoch(b)`: `TIMESTAMPTZ − TIMESTAMPTZ` w DuckDB 2.0 daje dni kalendarzowe (zmiana czasu = ±1 h błędu).
+  `cechy_windy` — cechy z telemetrii dla wierszy `dni_wind`: tylko okna zakończone do 05:50 dnia oceny, bez
+  `tryb = 'serwis'`; rodziny w `api/api/ai/features/windy/sql/` (drzwi, naped, wibracje, sterownik, uzycie; plik =
+  sygnały z okien 10-min), statystyki generuje `features/windy/cechy.py`: średnia / max z 24 h, 3 i 7 dni (dokładne
+  godziny), norma = mediana średnich dobowych z dni 15–44 (≥ 20 dni), stosunek do normy, trend 7 dni; wibracje przed
+  montażem NULL + `ma_czujnik_wibracji`; `firmware_dni_od_zmiany`, `firmware_zmiana_glowna_44d`. **Pułapka:**
+  Liftar LF-5 od 2025-11-17 raportuje błąd drzwi parą `E07|E17` (błędy ×2–3 bez wzrostu awarii;
+  `docs/b4_cechy.md`).
 - **Metryki dbt** (trzeci krok `pypyr baza`: `dbt build` z testami): schemat `metryki` — `umowa_45d`, `obsluzony`
   (oba z `leady_cel`), `wartosc_umowy` (podpisanie; ramowa = jeden wiersz), `przychod_na_godzine_doradcy`
   (tydzień / kwartał). Raporty i eksperymenty o wyniku zespołu czytają te tabele, nie liczą po swojemu
