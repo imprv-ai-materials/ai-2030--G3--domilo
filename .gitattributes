@@ -6,3 +6,6 @@
 # a wtedy bash w kontenerze nie wystartuje).
 *.sh text eol=lf
 .devcontainer/* text eol=lf
+
+# Strona firmy (website/) w zwykłym gicie, nie w LFS - GitHub Pages nie serwuje plików LFS.
+website/** -filter -diff -merge

@@ -4,10 +4,28 @@ Repozytorium do kursu „Zostań praktykiem modeli predykcyjnych”. Budujemy w 
 
 Na start repozytorium ma tylko dane i narzędzia. Kod, bazę i raporty buduje agent, lekcja po lekcji.
 
+## Strona firmy Domilo
+
+**[imprv-ai-materials.github.io/ai-2030--G3--domilo](https://imprv-ai-materials.github.io/ai-2030--G3--domilo/)**
+
+Zanim napiszesz pierwszy prompt, poznaj firmę. Strona to wewnętrzny katalog wiedzy Domilo:
+
+- ludzie i ich role;
+- cztery projekty;
+- systemy i katalog danych z opisem tabel;
+- budynki i windy;
+- historia firmy;
+- film „Poznaj Domilo”.
+
+To ta sama wiedza, którą ma pracownik firmy. Firma, ludzie i systemy są fikcyjne.
+
+Strona leży w `website/`: jeden plik `index.html`, bez budowania i bez serwera, więc możesz też otworzyć go lokalnie w przeglądarce. Workflow `.github/workflows/pages.yml` publikuje ją w GitHub Pages przy każdym pushu do `main`, który zmienia `website/`. Folder jest generowany z materiałów kursu, więc nie edytuj go ręcznie.
+
 ## Co tu jest
 
 | Co | Gdzie |
 |---|---|
+| Strona firmy Domilo (GitHub Pages) | `website/`, `.github/workflows/pages.yml` |
 | Dane Domilo (Parquet, zdjęcia), opis tabel | `data/`, [data/README.md](data/README.md) |
 | Skille dla Claude Code (praca krok po kroku, TDD, przegląd kodu, modelowanie domeny…) | `.claude/skills/` |
 | Devcontainer: Python 3.12, Poetry, Node 20, pnpm, Claude Code, serwer Inngest | `.devcontainer/` |
